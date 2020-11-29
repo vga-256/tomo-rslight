@@ -93,6 +93,8 @@ chmod 700 "$configpath/users"
 chown $username "$configpath/userconfig"
 chgrp $username "$configpath/userconfig"
 chmod 700 "$configpath/userconfig"
+chown $username "$configpath/rslight.inc.php"
+chgrp $username "$configpath/rslight.inc.php"
 echo "done"
 
 echo
