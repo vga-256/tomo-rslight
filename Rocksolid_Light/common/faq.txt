@@ -1,0 +1,43 @@
+
+q: what is this ?
+a: it is a node of the rocksolid forums.
+The rocksolid forums are technically some news
+servers running private newsgroups together and offering web frontends
+for user access. the intention is to have redundant web forums, which
+are always up and reachable in a way.
+a2: some nodes may carry other groups, including common usenet groups.
+
+q: what are the tos ?
+a: don't irritate the admins. they/we run these sites because we want
+to. Don't troll, post crap, illegal stuff, and it should be fine.
+
+q: will you tolerate links to cp ?
+a: no (see above).
+
+q: why do you use stoneage technology ?
+a1: because it's fun.
+a2: because it saves you (the user) and me (the admin) from some
+security holes the newer stuff brings with it (having said that, of
+course there are security holes in the old stuff as well...)
+a3: because it handles the job well (even on old hardware and minimal
+systems)
+
+q: what do i do when this node is down or unreachable ?
+a: use any other rocksolid site, they all carry the same message base
+(and some of them other groups as well, like usenet, dovenet or freenet
+groups).
+
+q: i discovered a piece of information that should not be here. what do
+i do ?
+a: ask in rocksolid.nodes.help for the admin of the node you are using 
+and how to contact them.
+a2: For novabbs or rocksolidbbs, email admin@novabbs.com
+
+q: what is the point of all of this ?
+a: it's free anonymous speech, and the fun of running a service that
+supports it.
+
+q: can i run my own node ?
+a: sure you can. it is easier then it might look. contact us in the
+rocksolid.shared.rocksolid group.
+

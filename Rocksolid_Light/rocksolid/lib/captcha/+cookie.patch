@@ -1,0 +1,48 @@
+# Apply this patch to the 'captcha.php' script to get built-in
+# that disables the check automatically for two weeks (it sets
+# a validation cookie).
+#
+#     patch < +cookie.patch
+#
+#
+--- captcha.php	2005-08-09 09:41:09.000000000 +0000
++++ captcha+cookies.php	2005-08-09 09:42:36.000000000 +0000
+@@ -25,6 +25,7 @@
+ define("CAPTCHA_INVERSE", 0);                 // white or black(=1)
+ define("CAPTCHA_TIMEOUT", 5000);              // in seconds (=max 4 hours)
+ define("CAPTCHA_MAXSIZE", 4500);              // preferred image size
++define("CAPTCHA_COOKIE", "captcha_solved");   // to unlock captcha protection
+ define("CAPTCHA_DATA_URLS", 0);               // RFC2397-URLs exclude MSIE users
+ define("CAPTCHA_TEMP_DIR", "/tmp/captcha");
+ define("CAPTCHA_BASE_URL", "http://$_SERVER[SERVER_NAME]:$_SERVER[SERVER_PORT]/" . substr(realpath(__FILE__), strlen($_SERVER["DOCUMENT_ROOT"])));
+@@ -38,9 +39,17 @@
+       verify input, @returns boolean
+    */
+    function check() {
++      $to = (int)(time()/1000000);
++      if ($_COOKIE[CAPTCHA_COOKIE] == $to) {
++         return(true);
++      }
+       if (($hash = $_REQUEST["captcha_hash"])
+       and ($pw = trim($_REQUEST["captcha_input"]))) {
+-         return((captcha::hash($pw)==$hash) || (captcha::hash($pw,-1)==$hash));
++         $r = (captcha::hash($pw)==$hash) || (captcha::hash($pw,-1)==$hash);
++         if ($r) {
++            setcookie(CAPTCHA_COOKIE, $to, time()+1000000);
++         }
++         return($r);
+       }
+    }
+ 
+@@ -50,6 +59,11 @@
+    */
+    function form($title="&rarr; retype that here", $more="<small>Enter the correct letters and numbers from the image into the text box. This small test serves as access restriction against malicious bots. Simply reload the page if this graphic is too hard to read.</small>") {
+ 
++      #-- stop if user already verified
++      if ($_COOKIE[CAPTCHA_COOKIE] == (int)(time()/1000000)) {
++         return "";
++      }
++
+       #-- prepare image text
+       $pw = captcha::mkpass();
+       $hash = captcha::hash($pw);

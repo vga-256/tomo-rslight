@@ -1,0 +1,1049 @@
+<?php
+
+    function interact($msgsock, $use_crypto=false)
+    {
+	global $logdir,$logfile,$installed_path,$config_path,$groupconfig,$workpath,$path, $spooldir,$nntp_group,$auth_ok,$user,$pass;
+
+	$workpath=$spooldir."/";
+	$path=$workpath."articles/";
+	$groupconfig=$spooldir."/spoolnews/groups.txt";
+
+    $logfile=$logdir.'/nntp.log'; 
+    $nntp_group="";
+/* CRYPTO */
+    stream_set_blocking($msgsock, true);
+    if($use_crypto) {
+        $cryptoSetup = stream_socket_enable_crypto($msgsock, TRUE, STREAM_CRYPTO_METHOD_TLSv1_0_SERVER | STREAM_CRYPTO_METHOD_TLSv1_1_SERVER | STREAM_CRYPTO_METHOD_TLSv1_2_SERVER);
+    }
+    stream_set_timeout($msgsock, 30);
+    /* Send instructions. */
+    $msg = "200 Rocksolid Light NNTP Server ready (no posting)\r\n";
+    fwrite($msgsock, $msg, strlen($msg)); 
+    do {   
+	$msg="";	
+set_time_limit(30);
+	$buf = fgets($msgsock, 2048);
+        if ($buf === false) {
+//            file_put_contents($logfile, "\n".format_log_date()." socket read failed: reason: " . socket_strerror(socket_last_error($msgsock)), FILE_APPEND); 
+	    break;
+        }
+set_time_limit(0);
+        $buf = trim($buf); 
+	if (strlen($buf) < 1) {
+            continue;
+        }
+	if(stripos($buf, 'AUTHINFO PASS') !== false) {
+	  file_put_contents($logfile, "\n".format_log_date()." AUTHINFO PASS (hidden)", FILE_APPEND);
+	} else {
+	  file_put_contents($logfile, "\n".format_log_date()." ".$buf, FILE_APPEND);
+	}
+	$command = explode(' ', $buf);
+	$command[0] = strtolower($command[0]);
+//echo "0:".$command[0]." 1:".$command[1]." 2:".$command[2]." 3:".$command[3]."\r\n";
+	if(isset($command[1])) {
+  	  $command[1] = strtolower($command[1]);
+	}
+	if ($command[0] == 'date') {
+          $msg = '111 '.date('YmdHis')."\r\n";
+          fwrite($msgsock, $msg, strlen($msg));
+          continue;
+        }
+	if ($command[0] == 'list') {
+	    if(isset($command[1])) {
+	        $msg = get_list($command[1]);
+            } else {
+		$msg = get_list("active");
+            } 
+            fwrite($msgsock, $msg, strlen($msg));
+	    continue;
+	}
+	if ($command[0] == 'post') {
+	    if($auth_ok == 0) {
+	        $msg = "480 Posting not permitted\r\n";	
+		fwrite($msgsock, $msg, strlen($msg));
+                continue;
+	    }
+	    $msg = "340 Send article to be posted\r\n";
+	    $tempfilename = tempnam(sys_get_temp_dir(), '');
+	    $tempfilehandle = fopen($tempfilename, 'wb');
+	    fwrite($msgsock, $msg, strlen($msg));
+	    $buf = fgets($msgsock, 2048);
+	    while (trim($buf) !== '.') {
+		fwrite($tempfilehandle, $buf);
+		$buf = fgets($msgsock, 2048);
+	    }
+	    fclose($tempfilehandle);
+	    $msg = process_post($tempfilename);
+	    fwrite($msgsock, $msg, strlen($msg));     
+	    continue;
+	}
+	if ($command[0] == 'newgroups') {
+            $msg = get_newgroups($command);
+            fwrite($msgsock, $msg, strlen($msg));
+            continue;
+        }
+	if ($command[0] == 'authinfo') {
+	  if(!isset($command[2])) {
+	    $command[2] = fgets($msgsock, 2048);
+	  } 
+          if($command[1] == 'user') {
+            $user = $command[2];
+	    if(isset($command[3])) {
+		$user = $user." ".$command[3];
+	    }
+            $msg="381 Enter password\r\n";
+	    fwrite($msgsock, $msg, strlen($msg));
+            continue;
+          } 
+	  if ($command[1] == 'pass') {
+            if($user == "") {
+              $msg="482 Authentication commands issued out of sequence\r\n";
+            } else {
+              $pass = $command[2];
+	      if (check_bbs_auth($user,$pass)) {
+	        $auth_ok = 1;
+                $msg="281 Authentication succeeded\r\n";
+	      } else {
+	        $auth_ok = 0;
+	        $msg="481 Authentication failed\r\n";
+	      }
+            }
+	    fwrite($msgsock, $msg, strlen($msg));
+            continue;
+	  }
+	  $msg="501 Syntax error\r\n";
+          fwrite($msgsock, $msg, strlen($msg));
+          continue;
+        }
+	if ($command[0] == 'mode') {
+	    $msg = "200 Rocksolid Light NNRP Server ready (no posting)\r\n";
+	    fwrite($msgsock, $msg, strlen($msg));
+	    continue;
+	}
+	if ($command[0] == 'stat') {
+            $msg = get_stat($command[1]);
+            fwrite($msgsock, $msg, strlen($msg));
+            continue;
+        }
+	if ($command[0] == 'article') {
+	    $msg = get_article($command[1], $nntp_group);
+	    fwrite($msgsock, $msg, strlen($msg));
+	    continue;
+	}
+	if ($command[0] == 'head') {
+            $msg = get_header($command[1], $nntp_group);
+            fwrite($msgsock, $msg, strlen($msg));
+            continue;
+        }
+	if ($command[0] == 'body') {
+            $msg = get_body($command[1], $nntp_group);
+            fwrite($msgsock, $msg, strlen($msg));
+            continue;
+        }
+        if ($command[0] == 'listgroup') {
+	    if(isset($command[1])) {            
+		$nntp_group=$command[1];
+	    }
+            $msg = get_listgroup($nntp_group, $msgsock);
+            fwrite($msgsock, $msg, strlen($msg));
+            continue;
+        }
+	if ($command[0] == 'group') {
+	    $nntp_group=$command[1];
+	    $msg = get_group($nntp_group);
+	    fwrite($msgsock, $msg, strlen($msg));
+	    continue;
+	}
+	if ($command[0] == 'xgtitle') {
+            if(isset($command[1])) {
+                $msg = get_title($command[1]);
+            } else {
+                $msg = get_title("active");
+            }
+            fwrite($msgsock, $msg, strlen($msg));
+            continue;
+        }	
+	if ($command[0] == 'xover') {
+	    $msg = get_xover($command[1], $msgsock);
+	    fwrite($msgsock, $msg, strlen($msg));
+	    continue;
+	}
+	if ($command[0] == 'xhdr') {
+            $msg = get_xhdr($command[1], $command[2]);
+            fwrite($msgsock, $msg, strlen($msg));
+            continue;
+        }
+	if ($command[0] == 'help') {
+	    $msg = "100 Sorry, can't help\r\n";
+	    fwrite($msgsock, $msg, strlen($msg));
+            continue;
+        }
+	if ($command[0] == 'quit') {
+	    $msg = "205 closing connection - goodbye!\r\n";
+	    fwrite($msgsock, $msg, strlen($msg));
+	    socket_close($msgsock);
+            exit(0);
+        }
+        file_put_contents($logfile, "\n".format_log_date()." Syntax error: ".$buf, FILE_APPEND);
+        $talkback = "500 Syntax error or unknown command\r\n";
+        fwrite($msgsock, $talkback, strlen($talkback));
+      } while (true);    
+      exit(0);   
+    }
+
+    /**
+      * Become a daemon by forking and closing the parent
+      */
+    function become_daemon()
+    {
+        $pid = pcntl_fork();
+       
+        if ($pid == -1)
+        {
+            /* fork failed */
+            echo "fork failure!\n";
+            exit();
+        }elseif ($pid)
+        {
+            /* close the parent */
+            exit();
+        }else
+        {
+            /* child becomes our daemon */
+            posix_setsid();
+            chdir('/');
+            umask(0);
+            return posix_getpid();
+
+        }
+    }
+
+function process_post($filename) {
+    global $logfile,$spooldir,$config_dir,$CONFIG,$nntp_group;
+    $message = file($filename, FILE_IGNORE_NEW_LINES);
+    $no_mid=1;
+    $no_date=1;
+    $no_org=1;
+    $is_header=1;
+    $ref=0;
+    $response="";
+    $bytes=0;
+    $lines=0;
+/* Process post */
+    foreach($message as $line) {
+	$bytes = $bytes + mb_strlen($line, '8bit');
+	if(trim($line) == "" || $lines > 0) {
+          $is_header=0;
+	  $lines++;
+        }
+        if($is_header == 0) {
+          $body.=$line."\n";
+        } else {
+	  if(stripos($line, "Date: ") === 0) {
+            $finddate=explode(': ', $line);
+            $article_date = strtotime($finddate[1]);
+	    $no_date=0;
+          }
+	  if(stripos($line, "Organization: ") !== false) {
+	    $no_org=0;
+          }
+	  if(stripos($line, "Subject: ") !== false) {
+            $subject=explode('Subject: ', $line, 2);
+	    $ref=0;
+          }
+	  if(stripos($line, "From: ") === 0) {
+            $from=explode(': ', $line);
+	    $ref=0;
+          }
+          if(stripos($line, "Xref: ") === 0) {
+            $xref=$line;
+            $ref=0;
+          }
+	  if(stripos($line, "Newsgroups: ") === 0) {
+            $ngroups=explode(': ', $line);
+	    $newsgroups=$ngroups[1];
+	    $ref=0;
+          }
+	  if(stripos($line, "References: ") === 0) {
+            $references_line=explode(': ', $line);
+	    $references=$references_line[1];
+	    $ref=1;
+          }
+          if((stripos($line, ':') === false) && (strpos($line, '>'))) {
+            if($ref == 1) {
+              $references=$references." ".trim($line);
+            }
+          }
+	  if(stripos($line, "Message-ID: ") !== false) {
+            $mid=explode(': ', $line);
+	    $no_mid=0;
+          }
+	}
+    }
+  rewind($message);
+/* Find section for posting */
+    $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach($menulist as $menu) {
+      if($menu[0] == '#') {
+        continue;
+      }
+      $menuitem=explode(':', $menu);
+      $glfp=fopen($config_dir.$menuitem[0]."/groups.txt", 'r');
+      $section="";
+      while($gl=fgets($glfp)) {
+	$group_name = preg_split("/( |\t)/", $gl, 2);
+	if(stripos(trim($newsgroups), trim($group_name[0])) !== false) {
+          $section=$menuitem[0];
+	  break 2;
+        }
+      } 
+    }
+    fclose($glfp);
+    @mkdir($spooldir."/".$section."/outgoing",0755,'recursive');
+    $postfilename = tempnam($spooldir.'/'.$section.'/outgoing', '');
+    $postfilehandle = fopen($postfilename, 'wb');
+    if($no_date == 1) {
+      $article_date=time();
+      $date_rep = date('D, j M Y H:i:s O', $article_date); 
+      fputs($postfilehandle, "Date: ".$date_rep."\r\n");
+    } else {
+      $date_rep = $finddate[1];
+    }
+    if($no_mid == 1) {
+      $identity = $subject[1].",".$from[1].",".$newsgroups[1].",".$references.",".$body;
+      $msgid='<'.md5($identity).'$1@'.trim($CONFIG['email_tail'],'@').'>';
+      fputs($postfilehandle, "Message-ID: ".$msgid."\r\n");
+    } else {
+      $msgid = $mid[1];
+    }
+    if($no_org == 1) {
+      fputs($postfilehandle, "Organization: ".$CONFIG['organization']."\r\n");
+    }
+    foreach($message as $line) {
+      if(stripos($line, "Newsgroups: ") === 0) {
+	fputs($postfilehandle, "Newsgroups: ".$newsgroups."\r\n");
+      } else {
+	fputs($postfilehandle, $line."\r\n");
+      }
+    }
+    fclose($postfilehandle);
+    unlink($filename);
+    if($section == "") {
+      $response="441 Posting failed (group not found)\r\n";
+    } else {
+      if($response == "") {
+	$post_group=explode(' ', str_replace(',', ' ', $newsgroups));
+
+	foreach($post_group as $onegroup) {
+// Check for duplicate msgid
+           $duplicate=0;
+           $group_overviewfp=fopen($spooldir."/".$onegroup."-overview", 'r');
+           while($group_overview=fgets($group_overviewfp, 2048)) {
+             $overview_msgid = explode("\t", $group_overview);
+             if(strpos($overview_msgid[4], $msgid) !== false) {
+	       unlink($postfilename);
+               file_put_contents($logfile, "\n".format_log_date()." ".$section." Duplicate Message-ID for: ".$msgid, FILE_APPEND);
+	       $duplicate=1;
+	       break;
+             } 
+	   }
+	   fclose($group_overviewfp);
+      }
+      if($duplicate == 0) {
+	insert_article($section,$onegroup,$postfilename,$subject[1],$from[1],$article_date,$date_rep,$msgid,$references,$bytes,$lines,$xref);	
+        $response="240 Article received OK\r\n";
+      } else {
+	$response="441 Posting failed\r\n";
+      }
+     }
+    }
+    return $response;
+}
+
+function get_xhdr($header, $articles) {
+    global $config_dir,$spooldir,$nntp_group,$workpath,$path;
+// By Message-ID
+    $tmpgroup=$nntp_group;
+    $mid=false;
+    if(!is_numeric($articles)) {
+      $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+      foreach($menulist as $menu) {
+        if(($menu[0] == '#') || (trim($menu) == "")) {
+          continue;
+        }
+        $name=explode(":", $menu);
+        $overviewdata = file($spooldir."/".$name[0]."-overview", FILE_IGNORE_NEW_LINES);
+        foreach($overviewdata as $overviewline) {
+          $articledata = preg_split("/(:#rsl#:|\t)/", $overviewline);
+          if(!strcasecmp($articledata[2], $articles)) {
+            $tmpgroup=$articledata[0];
+            $mid=$articles;
+            $articles=$articledata[1];
+            break;
+          }
+        }
+      }
+    } else {
+      if($nntp_group == '') {
+        $msg="412 no newsgroup selected\r\n";
+        return $msg;
+      }
+    }
+    $thisgroup = $path."/".preg_replace('/\./', '/', $tmpgroup);
+    $article_num = explode('-', $articles);
+    $first = $article_num[0];
+    if(isset($article_num[1]) && is_numeric($article_num[1])) {
+      $last = $article_num[1];
+    } else {
+      if(strpos($articles, "-")) {
+        $articles = scandir($thisgroup);
+        $ok_article=array();
+        foreach($articles as $article) {
+          if(!is_numeric($article)) {
+            continue;
+          }
+          $ok_article[]=$article;
+        }
+        sort($ok_article);
+        $last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
+        if(!is_numeric($last))
+          $last = 0;
+      } else {
+        $last = $first;
+      }
+    }
+    $msg="221 Header information for ".$header." follows (from articles)\r\n";
+    for($i=$first; $i<=$last; $i++) {
+      $article_full_path=$thisgroup.'/'.strval($i);
+      if(!is_file($article_full_path)) {
+        continue;
+      }
+      $data=extract_header_line($article_full_path, $header);
+      if($data !== false) {
+        if($mid !== false) {
+          $msg.=$mid." ".$data;
+        } else {
+           $msg.=strval($i)." ".$data;
+        }
+      }
+    }
+    $msg.=".\r\n";
+    return $msg;
+}
+
+function extract_header_line($article_full_path, $header) {
+  $thisarticle=file($article_full_path, FILE_IGNORE_NEW_LINES);
+  foreach($thisarticle as $thisline) {
+    if($thisline == "") {
+      $msg2.=".\r\n";
+      break;
+    }
+    if(stripos($thisline, $header) === 0) {
+        $content=preg_split("/$header: /i", $thisline);
+        return($content[1]."\r\n");
+    }
+  }
+  return(false);
+}
+
+function get_title($mode) {
+    global $nntp_group,$workpath,$spooldir,$path;
+    $mode = strtolower($mode);
+    if($mode == "active") {
+	$msg="481 descriptions unavailable\r\n";
+        return $msg;
+    }
+    if(!file_exists($spooldir."/".$mode."-title")) {
+        $msg="481 descriptions unavailable\r\n";
+        return $msg;
+    }
+    $title = file_get_contents($spooldir."/".$mode."-title", IGNORE_NEW_LINES);
+    $msg="282 list of group and description follows\r\n";
+    $msg.=$title;
+
+    $msg.=".\r\n";
+    return $msg;
+}
+
+function get_xover($articles, $msgsock) {
+    global $nntp_group,$workpath,$path;
+    if($nntp_group == '') {
+        $msg="412 no newsgroup selected\r\n";
+        return $msg;
+    }
+    $overviewfile=$workpath.$nntp_group."-overview";
+    $article_num = explode('-', $articles);
+    $first = $article_num[0];
+    if(isset($article_num[1]) && is_numeric($article_num[1]))
+        $last = $article_num[1];
+    else {
+    if(strpos($articles, "-")) {
+    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
+    $articles = scandir($thisgroup);
+    $ok_article=array();
+    foreach($articles as $article) {
+    if(!is_numeric($article)) {
+        continue;
+    }
+    $ok_article[]=$article;
+    }
+    sort($ok_article);
+    $last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
+    if(!is_numeric($last))
+        $last = 0;
+    } else {
+    $last = $first;
+    }
+   }
+    $output="224 Overview information follows for articles ".$first." through ".$last."\r\n";
+    fwrite($msgsock, $output, strlen($output));
+    $overviewfp=fopen($overviewfile, 'r');
+    while($overviewline=fgets($overviewfp)) {
+      $article=preg_split("/[\s,]+/", $overviewline);
+      for($i=$first; $i<=$last; $i++) {
+        if($article[0] === strval($i)) {
+          fwrite($msgsock, $overviewline."\r\n", strlen($overviewline));
+        }
+      }
+    }
+    fclose($overviewfp); 
+    $msg.=".\r\n";
+    return $msg;
+}
+
+function get_stat($article) {
+    global $nntp_group,$workpath,$path;
+    if($nntp_group == '') {
+        $msg="412 Not in a newsgroup\r\n";
+        return $msg;
+    }
+    if(!is_numeric($article)) {
+	$msg="423 No article number selected\r\n";
+	return $msg;
+    }
+    $overviewfile=$workpath.$nntp_group."-overview";
+    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
+    if(!file_exists($thisgroup."/".$article)) {
+	$msg="423 No such article number ".$article."\r\n";
+	return $msg;
+    }
+    $overviewfp=fopen($overviewfile, 'r');
+    while($overviewline=fgets($overviewfp)) {
+      $over=explode("\t", $overviewline);
+      if(trim($over[0]) == trim($article)) { 
+	$msg="223 ".$article." ".$over[4]." status\r\n";
+	fclose(overviewfp);
+	return $msg;
+      }
+    }
+    fclose($overviewfp);
+    $msg="423 No such article number ".$article."\r\n";
+    return $msg;
+}
+
+function get_article($article, $nntp_group) {
+    global $config_dir,$path,$groupconfig,$config_name,$spooldir;
+    $msg2="";
+// By Message-ID
+    if(!is_numeric($article)) {
+      $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+      foreach($menulist as $menu) {
+        if(($menu[0] == '#') || (trim($menu) == "")) {
+          continue;
+        }
+        $name=explode(":", $menu);
+        $overviewdata = file($spooldir."/".$name[0]."-overview", FILE_IGNORE_NEW_LINES);
+        foreach($overviewdata as $overviewline) {
+// Remove :#rsl#: in 0.6.6 and only use tab
+          $articledata = preg_split("/(:#rsl#:|\t)/", $overviewline);
+	  if(!strcasecmp($articledata[2], $article)) {
+	    $nntp_group=$articledata[0];
+	    $article=$articledata[1];
+	    break;
+	  }
+        } 
+      }
+    } else {
+// By article number
+      if($nntp_group === "") {
+        $msg.="412 no newsgroup has been selected\r\n";
+        return $msg;
+      }
+      if(!is_numeric($article)) {
+        $msg.="420 no article has been selected\r\n";
+        return $msg;
+      }
+    } 
+    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
+    if(!file_exists($thisgroup."/".$article)) {
+        $msg.="430 no such article found\r\n";
+        return $msg;
+    }
+    $thisarticle=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
+    foreach($thisarticle as $thisline) {
+        if((strpos($thisline, "Message-ID: ") === 0) && !isset($mid[1])) {
+          $mid=explode(': ', $thisline);
+        }
+        $msg2.=$thisline."\r\n";
+    }
+    $msg="220 ".$article." ".$mid[1]." article retrieved - head and body follow\r\n";
+    return $msg.$msg2;
+}
+
+function get_header($article, $nntp_group) {
+    global $config_dir,$path,$groupconfig,$config_name,$spooldir;
+    $msg2="";
+// By Message-ID
+    if(!is_numeric($article)) {
+      $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+      foreach($menulist as $menu) {
+        if(($menu[0] == '#') || (trim($menu) == "")) {
+          continue;
+        }
+        $name=explode(":", $menu);
+        $overviewdata = file($spooldir."/".$name[0]."-overview", FILE_IGNORE_NEW_LINES);
+        foreach($overviewdata as $overviewline) {
+// Remove :#rsl#: in 0.6.6 and only use tab
+          $articledata = preg_split("/(:#rsl#:|\t)/", $overviewline);
+          if(!strcasecmp($articledata[2], $article)) {
+            $nntp_group=$articledata[0];
+            $article=$articledata[1];
+            break;
+          }
+        }
+      }
+    } else {
+// By article number
+      if($nntp_group === "") {
+        $msg.="412 no newsgroup has been selected\r\n";
+        return $msg;
+      }
+      if(!is_numeric($article)) {
+        $msg.="420 no article has been selected\r\n";
+        return $msg;
+      }
+    }
+    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
+    if(!file_exists($thisgroup."/".$article)) {
+        $msg.="430 no such article found\r\n";
+        return $msg;
+    }
+    $thisarticle=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
+    foreach($thisarticle as $thisline) {
+	if($thisline == "") {
+	  $msg2.=".\r\n";
+	  break;
+	}
+        if((strpos($thisline, "Message-ID: ") === 0) && !isset($mid[1])) {
+            $mid=explode(': ', $thisline);
+        }
+        $msg2.=$thisline."\r\n";
+    }
+    $msg="221 ".$article." ".$mid[1]." article retrieved - header follows\r\n";
+    return $msg.$msg2;
+}
+
+function get_body($article, $nntp_group) {
+    global $config_dir,$path,$groupconfig,$config_name,$spooldir;
+    $msg2="";
+// By Message-ID
+    if(!is_numeric($article)) {
+      $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+      foreach($menulist as $menu) {
+        if(($menu[0] == '#') || (trim($menu) == "")) {
+          continue;
+        }
+        $name=explode(":", $menu);
+        $overviewdata = file($spooldir."/".$name[0]."-overview", FILE_IGNORE_NEW_LINES);
+        foreach($overviewdata as $overviewline) {
+// Remove :#rsl#: in 0.6.6 and only use tab
+          $articledata = preg_split("/(:#rsl#:|\t)/", $overviewline);
+          if(!strcasecmp($articledata[2], $article)) {
+            $nntp_group=$articledata[0];
+            $article=$articledata[1];
+            break;
+          }
+        }
+      }
+    } else {
+// By article number
+      if($nntp_group === "") {
+        $msg.="412 no newsgroup has been selected\r\n";
+        return $msg;
+      }
+      if(!is_numeric($article)) {
+        $msg.="420 no article has been selected\r\n";
+        return $msg;
+      }
+    }
+    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
+    if(!file_exists($thisgroup."/".$article)) {
+        $msg.="430 no such article found\r\n";
+        return $msg;
+    }
+    $thisarticle=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
+    $body=0;
+    foreach($thisarticle as $thisline) {
+        if(($thisline == "") && ($body == 0)) {
+	  $body=1;
+          continue;
+        }
+        if((strpos($thisline, "Message-ID: ") === 0) && !isset($mid[1])) {
+            $mid=explode(': ', $thisline);
+        }
+	if($body == 1) {
+          $msg2.=$thisline."\r\n";
+	}
+    }
+    $msg="222 ".$article." ".$mid[1]." article retrieved - body follows\r\n";
+    return $msg.$msg2;
+}
+
+function get_listgroup($nntp_group, $msgsock) {
+    global $path,$nntp_group,$groupconfig;
+    $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $ok_group=false;
+    $count=0;
+    foreach($grouplist as $findgroup) {
+        $name = preg_split("/( |\t)/", $findgroup, 2);
+        $name[0]=strtolower($name[0]);
+        $nntp_group=strtolower($nntp_group);
+        if(!strcmp($name[0], $nntp_group)) {
+            $ok_group=true;
+            break;
+        }
+    }
+    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
+    if(!is_dir($thisgroup) || $ok_group === false) {
+        $msg.="411 no such news group\r\n";
+        $nntp_group="";
+        return $msg;
+    }
+    $articles = scandir($thisgroup);
+    $ok_article=array();
+    foreach($articles as $article) {
+        if(!is_numeric($article)) {
+            continue;
+        }
+        $ok_article[]=$article;
+        $count++;
+    }
+    sort($ok_article);
+    $last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
+    $first = $ok_article[0];
+    if(!is_numeric($last))
+        $last = 0;
+    if(!is_numeric($first))
+        $first = 0;
+    $output="211 ".$count." ".$first." ".$last." ".$nntp_group."\r\n";
+    fwrite($msgsock, $output, strlen($output));
+    foreach($ok_article as $art) {
+	$output=$art."\r\n";
+	fwrite($msgsock, $output, strlen($output));
+    }
+    $msg=".\r\n";
+    return $msg;
+}
+
+function get_group($nntp_group) {
+    global $path,$nntp_group,$groupconfig;
+    $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $ok_group=false;
+    $count=0;
+    foreach($grouplist as $findgroup) {
+	$name = preg_split("/( |\t)/", $findgroup, 2);
+	$name[0]=strtolower($name[0]);
+	$nntp_group=strtolower($nntp_group);
+	if(!strcmp($name[0], $nntp_group)) {
+	    $ok_group=true;
+	    break;
+	}
+    }
+    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
+    if(!is_dir($thisgroup) || $ok_group === false) {
+        $msg.="411 no such news group\r\n";
+        $nntp_group="";
+        return $msg;
+    }
+    $articles = scandir($thisgroup);
+    $ok_article=array();
+    foreach($articles as $article) {
+	if(!is_numeric($article)) {
+	    continue;
+	}
+	$ok_article[]=$article;
+	$count++;
+    }
+    sort($ok_article);
+    $last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
+    $first = $ok_article[0];
+    if(!is_numeric($last))
+        $last = 0;
+    if(!is_numeric($first))
+        $first = 0;
+    $msg="211 ".$count." ".$first." ".$last." ".$nntp_group."\r\n";
+    return $msg;    
+}
+
+function get_newgroups($mode) {
+    global $path,$groupconfig;
+    $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $mode = strtolower($mode);
+  $mode = "active";
+  if($mode == "active") {
+    $msg = '231 list of newsgroups follows'."\r\n";
+    foreach($grouplist as $findgroup) {
+	$name = preg_split("/( |\t)/", $findgroup, 2);
+        if($name[0][0] === ':')
+            continue;
+        $thisgroup = $path."/".preg_replace('/\./', '/', $name[0]);
+        $articles = scandir($thisgroup);
+        $ok_article=array();
+        foreach($articles as $article) {
+            if(!is_numeric($article)) {
+                continue;
+            }
+            $ok_article[]=$article;
+        }
+        sort($ok_article);
+        $last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
+        $first = $ok_article[0];
+        if(!is_numeric($last))
+            $last = 0;
+        if(!is_numeric($first))
+            $first = 0;
+        $msg.=$name[0]." ".$last." ".$first." n\r\n";
+    }
+  }
+  if($mode == "newsgroups") {
+    $msg = '215 list of newsgroups and descriptions follows'."\r\n";
+    foreach($grouplist as $findgroup) {
+      if($findgroup[0] === ':')
+        continue;
+      $msg.=$findgroup."\r\n";
+    }
+  }
+  if($mode == "overview.fmt") {
+    $msg="215 Order of fields in overview database.\r\n";
+    $msg.="Subject:\r\n";
+    $msg.="From:\r\n";
+    $msg.="Date:\r\n";
+    $msg.="Message-ID:\r\n";
+    $msg.="References:\r\n";
+    $msg.="Bytes:\r\n";
+    $msg.="Lines:\r\n";
+    $msg.="Xref:full\r\n";
+  }
+  if(isset($msg)) {
+    return $msg.".\r\n";
+  } else {
+    $msg="501 Syntax error or unknown command\r\n";
+    return $msg.".\r\n";
+  }
+}
+
+function get_list($mode) {
+    global $path,$spooldir,$groupconfig;
+    $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+  $mode = strtolower($mode);
+  if($mode == "active") {  
+    $msg = '215 list of newsgroups follows'."\r\n";
+    foreach($grouplist as $findgroup) {
+	$name = preg_split("/( |\t)/", $findgroup, 2);
+	if($name[0][0] === ':')
+	    continue;
+	$thisgroup = $path."/".preg_replace('/\./', '/', $name[0]);
+	$articles = scandir($thisgroup);
+	$ok_article=array();
+	foreach($articles as $article) {
+	    if(!is_numeric($article)) {
+	        continue;
+	    }
+	    $ok_article[]=$article;
+	}
+	sort($ok_article);
+	$last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
+	$first = $ok_article[0];
+	if(!is_numeric($last))
+	    $last = 0;
+	if(!is_numeric($first))
+	    $first = 0;
+        $msg.=$name[0]." ".$last." ".$first." y\r\n";
+    }
+  }
+  if($mode == "newsgroups") {
+    $msg = '215 list of newsgroups and descriptions follows'."\r\n";
+    foreach($grouplist as $findgroup) {
+      if($findgroup[0] === ':')
+        continue;
+      $name = preg_split("/( |\t)/", $findgroup, 2);
+      if(trim($name[1]) !== "") {
+        $msg.=$findgroup."\r\n";
+      } elseif(file_exists($spooldir."/".$name[0]."-title")) {
+        $msg.=file_get_contents($spooldir."/".$name[0]."-title", IGNORE_NEW_LINES);
+      } else {
+        $msg.=$findgroup."\r\n";
+      }
+    }
+  }
+  if($mode == "overview.fmt") {
+    $msg="215 Order of fields in overview database.\r\n";
+    $msg.="Subject:\r\n";
+    $msg.="From:\r\n";
+    $msg.="Date:\r\n";
+    $msg.="Message-ID:\r\n";
+    $msg.="References:\r\n";
+    $msg.="Bytes:\r\n";
+    $msg.="Lines:\r\n";
+    $msg.="Xref:full\r\n";
+  }
+  if(isset($msg)) {
+    return $msg.".\r\n";
+  } else {
+    $msg="501 Syntax error or unknown command\r\n";
+    return $msg.".\r\n";
+  }
+}
+function encode_subject($line) {
+        $newstring=mb_encode_mimeheader(quoted_printable_decode($line));
+        return $newstring;
+}
+
+function insert_article($section,$nntp_group,$filename,$subject_i,$from_i,$article_date,
+$date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
+  global $enable_rslight,$spooldir,$CONFIG,$logdir,$logfile;
+
+  $sn_lockfile = sys_get_temp_dir() . '/'.$section.'-spoolnews.lock';
+  $sn_pid = file_get_contents($sn_lockfile);
+  if (posix_getsid($sn_pid) === false || !is_file($sn_lockfile)) {
+    file_put_contents($sn_lockfile, getmypid()); // create lockfile
+} else {
+    file_put_contents($logfile, "\n".format_log_date()." ".$section." Queuing local post: ".$nntp_group, FILE_APPEND); 
+   return(1);
+}
+  $local_groupfile=$spooldir."/".$section."/local_groups.txt";
+  $path=$spooldir."/articles/";
+  $grouppath = $path.preg_replace('/\./', '/', $nntp_group);
+  $nocem_check="@@NCM";
+  $article_date=strtotime($date_i); 
+  # Check if group exists. Open it if it does
+  fputs($ns, "group ".$nntp_group."\r\n");
+  $response = line_read($ns);
+  if (strcmp(substr($response,0,3),"411") == 0) {
+    unlink($sn_lockfile);
+    return(1);
+  }
+  $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+  foreach($grouplist as $findgroup) {
+    $name = explode(':', $findgroup);
+    if (strcmp($name[0], $nntp_group) == 0) {
+      if (is_numeric($name[1]))
+        $local = $name[1];
+      else {
+	$thisgroup = $grouppath;
+        $articles = scandir($thisgroup);
+        $ok_article=array();
+        foreach($articles as $this_article) {
+        if(!is_numeric($this_article)) {
+          continue;
+        }
+        $ok_article[]=$this_article;
+        }
+        sort($ok_article);
+        $local = $ok_article[key(array_slice($ok_article, -1, 1, true))];
+	if(!is_numeric($local))
+          $local = 0;
+      }
+      break;
+    }
+  }
+  if($local < 1)
+    $local = 1;
+      if($article_date > time())
+        $article_date = time();
+      $in_file=fopen($filename, 'r');
+      while(is_file($grouppath."/".$local)) {
+        $local++;
+      }
+      $out_file=fopen($grouppath."/".$local, 'w+');
+      $header=1;
+      while($buf=fgets($in_file)) {
+	if((trim($buf) == "") && ($header == 1)) {
+	  $buf="Xref: ".$CONFIG['pathhost']." ".$nntp_group.":".$local;
+	  fputs($out_file, rtrim($buf, "\n\r").PHP_EOL);
+	  $xref_i=$buf;
+	  $buf="";
+	  $header=0;
+	}
+	fputs($out_file, rtrim($buf, "\n\r").PHP_EOL);
+      }
+      fputs($out_file, "\n.\n");
+      fclose($out_file);
+      fclose($in_file);
+      touch($grouppath."/".$local, $article_date);
+      file_put_contents($logfile, "\n".format_log_date()." ".$section." Inserting local post: ".$nntp_group.":".$local, FILE_APPEND);
+// Overview
+      $overviewHandle = fopen($spooldir."/".$nntp_group."-overview", 'a');
+      fputs($overviewHandle, $local."\t".$subject_i."\t".$from_i."\t".$date_i."\t".$mid_i."\t".$references_i."\t".$bytes_i."\t".$lines_i."\t".$xref_i."\n");
+      fclose($overviewHandle);
+      $references="";
+// overview for search (eventually this will not be used)
+        $overview_file=$spooldir."/".$section."-overview";
+        file_put_contents($overview_file, 
+$nntp_group."\t".$local."\t".$mid_i."\t".$article_date."\t".$from_i
+."\t".$subject_i."\n", FILE_APPEND);
+// End Overview
+  reset($grouplist);
+  $saveconfig = fopen($local_groupfile, 'w+');
+  $local++;
+  foreach($grouplist as $savegroup) {
+    $name = explode(':', $savegroup);
+    if (strcmp($name[0], $nntp_group) == 0) {
+      fwrite($saveconfig, $nntp_group.":".$local."\n");
+    } else {
+      fwrite($saveconfig, $savegroup."\n");
+    }
+  }
+  fclose($saveconfig);
+  unlink($sn_lockfile);
+}
+
+function nntp2_open($nserver=0,$nport=0) {
+  global $text_error,$CONFIG,$logfile;
+  // echo "<br>NNTP OPEN<br>";
+  $authorize=((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
+              ($CONFIG['remote_auth_user'] != ""));
+  if ($nserver==0) $nserver=$CONFIG['remote_server'];
+  if ($nport==0) $nport=$CONFIG['remote_port'];
+  if($CONFIG['remote_ssl']) {
+    $ns=@fsockopen('ssl://'.$nserver.":".$nport);
+  } else {
+    $ns=@fsockopen('tcp://'.$nserver.":".$nport);
+  }
+  $weg=line_read($ns);  // kill the first line
+  if (substr($weg,0,2) != "20") {
+    fclose($ns);
+    $ns=false;
+    file_put_contents($logfile, "\n".format_log_date()." Failed to connect to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
+  } else {
+    file_put_contents($logfile, "\n".format_log_date()." Connected to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
+    if ($ns != false) {
+      fputs($ns,"MODE reader\r\n");
+      $weg=line_read($ns);  // and once more
+      if ((substr($weg,0,2) != "20") &&
+          ((!$authorize) || ((substr($weg,0,3) != "480") && ($authorize)))) {
+        fclose($ns);
+        $ns=false;
+      }
+    }
+    if ((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
+        ($CONFIG['remote_auth_user'] != "")) {
+      fputs($ns,"AUTHINFO USER ".$CONFIG['remote_auth_user']."\r\n");
+      $weg=line_read($ns);
+      fputs($ns,"AUTHINFO PASS ".$CONFIG['remote_auth_pass']."\r\n");
+      $weg=line_read($ns);
+    }
+  }
+  return $ns;
+}
+?>

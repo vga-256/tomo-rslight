@@ -1,0 +1,140 @@
+<?php
+/*  spoolnews NNTP news spool creator
+ *  Version: 0.3.0
+ *  Download: https://news.novabbs.com/getrslight
+ *
+ *  E-Mail: retroguy@novabbs.com
+ *  Web: https://news.novabbs.com
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
+set_time_limit (900);
+
+include "config.inc.php";
+include ("$file_newsportal");
+ 
+$logfile=$logdir.'/spoolnews.log';
+
+@mkdir($spooldir."/".$config_name,0755,'recursive');
+
+$lockfile = sys_get_temp_dir() . '/rslight-send.lock';
+$pid = file_get_contents($lockfile);
+if (posix_getsid($pid) === false || !is_file($lockfile)) {
+   print "Starting Send...\n";
+   file_put_contents($lockfile, getmypid()); // create lockfile
+} else {
+   print "Send currently running\n";
+   exit;
+}
+$ns=nntp2_open($CONFIG['remote_server'], $CONFIG['remote_port']);
+if($ns == false) {
+  file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Failed to connect to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
+  exit();
+}
+echo "\nPosting articles\r\n";
+post_articles($ns, $spooldir);
+nntp_close($ns);
+unlink($lockfile);
+echo "\nSend Done\r\n";
+
+function post_articles($ns, $spooldir) {
+  global $logfile,$config_name;
+  if(!is_dir($spooldir."/".$config_name."/outgoing/")) {
+    return "No messages to send\r\n";
+  }
+  $outgoing_dir = $spooldir."/".$config_name."/outgoing/";
+  $messages = scandir($outgoing_dir);
+  foreach($messages as $message) {
+    if(!is_file($outgoing_dir.$message)) {
+      continue;
+    }
+    echo "Sending: ".$outgoing_dir.$message."\r\n";
+    fputs($ns, "MODE READER\r\n");
+    $response = line_read($ns);
+    if (strcmp(substr($response,0,3),"200") != 0) {
+	file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Unexpected response to MODE command: ".$response, FILE_APPEND);
+      return $response;
+    }
+    fputs($ns, "POST\r\n");
+    $response = line_read($ns);
+    if (strcmp(substr($response,0,3),"340") != 0) {
+      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Unexpected response to POST command: ".$response, FILE_APPEND);
+      return $response;
+    } 
+    $message_fp = fopen($outgoing_dir.$message, "rb");
+    while (($msgline = fgets($message_fp, 4096)) !== false) {
+      fputs($ns, $msgline);
+    }
+    fputs($ns, ".\r\n");
+    fclose($message_fp);
+    $response = line_read($ns);
+    if (strcmp(substr($response,0,3),"240") == 0) {
+      unlink($outgoing_dir.$message);
+      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Posted: ".$message.": ".$response, FILE_APPEND);
+    } else {
+      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Failed to POST: ".$message.": ".$response, FILE_APPEND);
+      continue;
+    }
+  }
+  return "Messages sent\r\n";
+}
+
+function nntp2_open($nserver=0,$nport=0) {
+  global $text_error,$CONFIG;
+  // echo "<br>NNTP OPEN<br>";
+  $authorize=((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
+              ($CONFIG['remote_auth_user'] != ""));
+  if ($nserver==0) $nserver=$CONFIG['remote_server'];
+  if ($nport==0) $nport=$CONFIG['remote_port'];
+  if($CONFIG['remote_ssl']) {
+    $ns=@fsockopen('ssl://'.$nserver.":".$nport);
+  } else {
+    $ns=@fsockopen('tcp://'.$nserver.":".$nport);
+  }
+//  $ns=@fsockopen($nserver,$nport);
+  $weg=line_read($ns);  // kill the first line
+  if (substr($weg,0,2) != "20") {
+    echo "<p>".$text_error["error:"].$weg."</p>";
+    fclose($ns);
+    $ns=false;
+  } else {
+    if ($ns != false) {
+      fputs($ns,"MODE reader\r\n");
+      $weg=line_read($ns);  // and once more
+      if ((substr($weg,0,2) != "20") &&
+          ((!$authorize) || ((substr($weg,0,3) != "480") && ($authorize)))) {
+        echo "<p>".$text_error["error:"].$weg."</p>";
+        fclose($ns);
+        $ns=false;
+      }
+    }
+    if ((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
+        ($CONFIG['remote_auth_user'] != "")) {
+      fputs($ns,"AUTHINFO USER ".$CONFIG['remote_auth_user']."\r\n");
+      $weg=line_read($ns);
+      fputs($ns,"AUTHINFO PASS ".$CONFIG['remote_auth_pass']."\r\n");
+      $weg=line_read($ns);
+/* Only check auth if reading and posting same server */
+      if (substr($weg,0,3) != "281" && !(isset($post_server)) && ($post_server!="")) {
+        echo "<p>".$text_error["error:"]."</p>";
+        echo "<p>".$text_error["auth_error"]."</p>";
+      }
+    }
+  }
+  if ($ns==false) echo "<p>".$text_error["connection_failed"]."</p>";
+  return $ns;
+}
+?>

@@ -1,0 +1,2 @@
+rocksolid.shared.encryption
+rocksolid.shared.test

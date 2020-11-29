@@ -1,0 +1,20 @@
+:root {
+  --color-dark: #232334;
+  --color-medium: #3E4147;
+  --color-light: #343444;
+  --color-bg-alt: #333545;
+  --color-text-alt: #4488BB;
+  --color-text-quote: teal;
+  --color-title: #BBAAAA;
+  --color-link: #00BFDF;
+  --color-visited: #6688BB;
+  --color-border: #828282;
+  --color-row-border: black;
+
+/* overboard title */
+  --color-ob-title: #9966CC;
+
+/* overboard date line */
+  --color-ob-date: #9966CC;
+}
+
