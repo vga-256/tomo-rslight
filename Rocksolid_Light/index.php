@@ -2,7 +2,8 @@
 session_start();
 $_SESSION['isframed'] = 1;
 
-$CONFIG = include('/etc/rslight/rslight.inc.php');
+include "common/config.inc.php";
+$CONFIG = include($config_dir.'/rslight.inc.php');
 
 if (isset($_REQUEST['content'])) { 
     $CONFIG['default_content']=$_REQUEST['content'];
