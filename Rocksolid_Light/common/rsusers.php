@@ -23,7 +23,7 @@ include "head.inc";
 $CONFIG = include($config_file);
 
 # $hostname: '{POPaddress:port/pop3}INBOX'
-$hostname = '{rocksolidbbs:110/pop3}INBOX';
+$hostname = '{mail.example.com:110/pop3}INBOX';
 # $external: Using external POP auth?
 $external = 0;
 # $workpath: Where to cache users (must be writable by calling program)
@@ -163,7 +163,7 @@ $mail->Username   = $mailer['username'];
 $mail->Password   = $mailer['password'];;
 $mail->SMTPSecure = 'tls';
 
-$mail->setFrom('no-reply@rocksolidbbs.com', 'no-reply');
+$mail->setFrom('no-reply@'.$mailer['host'], 'no-reply');
 $mail->addAddress($user_email);
 
 $mail->Subject = "Confirmation code for ".$_SERVER['HTTP_HOST']; 

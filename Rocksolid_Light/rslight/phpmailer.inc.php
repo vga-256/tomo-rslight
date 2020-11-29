@@ -23,7 +23,4 @@ $mailer['password'] = "password";
 
 require $phpmailer['phpmailer'];
 require $phpmailer['smtp'];
-
-# Comment out the following line if PHPMailer < 6.0
-#use PHPMailer\PHPMailer\PHPMailer;
 ?>
