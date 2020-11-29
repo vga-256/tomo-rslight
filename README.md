@@ -1,5 +1,7 @@
 Installing Rocksolid Light (rslight) - a web based news client
 
+Visit https://www.novabbs.com to try Rocksolid Light
+
 rslight is based on NewsPortal, which discontinued development in 2008, and was 
 developed by Florian Amrhein https://florian-amrhein.de/newsportal/
 
