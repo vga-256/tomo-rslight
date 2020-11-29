@@ -41,7 +41,7 @@ if(($_POST['configure'] == "Save Configuration") && ($_POST['configkey'] == $adm
   exit(0);
 }
 
-if (isset($_POST["password"]) && ($_POST["password"]==$admin["password"])) { 
+if ((isset($_POST["password"]) && ($_POST["password"]==$admin["password"])) && ($_POST['configkey'] == $admin['key'])) { 
   include($config_dir.'/scripts/setup.inc.php');
   exit(0);
 } else{ 
@@ -56,6 +56,7 @@ if (isset($_POST["password"]) && ($_POST["password"]==$admin["password"])) {
   echo '<p align="left">';
   echo '<form id ="myForm" method="post"><p align="left">';
   echo 'Enter password to access configuration: ';
+  echo '<input type="hidden" name="configkey" value="'.$admin['key'].'">';
   echo '<input name="password" type="password" size="25" maxlength="20"><input value="Submit" type="submit"></p>';
   echo '</form>';
  } 
