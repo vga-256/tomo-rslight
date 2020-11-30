@@ -1,13 +1,13 @@
-Installing Rocksolid Light (rslight) - a web based news client
+Rocksolid Light (rslight) - a web based Usenet news client
 
 Visit https://www.novabbs.com to try Rocksolid Light
 
 ![ScreenShot](https://www.novabbs.com/images/rslight-480.png)
 
-rslight is based on NewsPortal, which discontinued development in 2008, and was 
+Rocksolid Light is based on NewsPortal, which discontinued development in 2008, and was 
 developed by Florian Amrhein https://florian-amrhein.de/newsportal/
 
-rslight contains some major code and feature changes, but would not exist 
+Rocksolid Light contains some major code and feature changes, but would not exist 
 without NewsPortal as a basis for development.
 
 Requirements:
@@ -25,14 +25,8 @@ also provide these in some way.
 
 If you get errors, check your log files to see what packages I've failed to mention.
 
-For FreeBSD:
-pkg install php72
-pkg install php72-extensions
-pkg install sharutils
-pkg install php72-pcntl
-pkg install php72-sockets
-pkg install php72-mbstring
-pkg install php72-openssl
+For FreeBSD12: php72, php72-extensions, sharutils, php72-pcntl, php72-sockets, php72-mbstring, php72-openssl
+Optional: phpmailer, gnupg
 
 Installation: 
 
