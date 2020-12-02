@@ -21,7 +21,7 @@
       $CONFIG['verify_email'] = false;
     }
   }
- if($CONFIG['verify_email'] === true) {
+ if($CONFIG['verify_email'] == true) {
   $saved_code = file_get_contents(sys_get_temp_dir()."/".$username);
   if((strcmp(trim($code), trim($saved_code))) !== 0) {
     echo "Code does not match. Try again.<br />";

@@ -178,7 +178,7 @@ $mail->send();
     echo 'Please enter the code from the email below:<br />'; 
   }    
     echo '<form name="create1" method="post" action="create.php">';
-  if($CONFIG['verify_email'] === true) {
+  if($CONFIG['verify_email'] == true) {
       echo '<input name="code" type="text" id="code">&nbsp;';
   }
     echo '<input name="username" type="hidden" id="username" value="'.$username.'" readonly="readonly">';
