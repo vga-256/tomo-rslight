@@ -2,7 +2,7 @@
 return [
   'remote_server' => 'news.example.com',
   'remote_port' => '119',
-  'remote_ssl' => '0',
+  'remote_ssl' => '',
   'remote_auth_user' => 'username',
   'remote_auth_pass' => 'password',
   'enable_nntp' => '1',
