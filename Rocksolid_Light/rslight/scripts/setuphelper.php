@@ -35,6 +35,7 @@ return [
 'organization' => 'What to add to outgoing message headers for Organization',
 'postfooter' => 'What to add to the bottom of posted messages (blank for nothing)',
 'synchronet' => 'Enable if your remote server is a Synchronet server (1=true, blank=false)',
+'rate_limit' => 'Limit each user to xx posts per hour (number or blank to disable)',
 'auto_create' => 'Auto create accounts when first used to post (1=true, blank=false)',
 'verify_email' => 'Require new users to verify by email, requires phpmailer (1=true, blank=false)',
 'no_verify' => 'Domains that do not require email verification (space separated)',

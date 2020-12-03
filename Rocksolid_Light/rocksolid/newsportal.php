@@ -1012,6 +1012,30 @@ function check_encryption_groups($request) {
   }
 }
 
+function set_user_config($username,$request,$newval) {
+  global $config_dir;
+  $userconfigpath = $config_dir."userconfig/";
+  $username = strtolower($username);
+  $userFilename = $userconfigpath.$username;
+  $userData = file($userFilename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+  $userFileHandle = fopen($userFilename, 'w');
+
+  $found=0;
+  foreach($userData as $data) {
+    if(strpos($data, $request.':') !== FALSE) {
+      fputs($userFileHandle, $request.':'.$newval."\r\n");
+      $found=1;
+    } else {
+      fputs($userFileHandle, $data."\r\n");
+    }
+  }
+  if($found == 0) {
+    fputs($userFileHandle, $request.':'.$newval."\r\n");
+  }
+  fclose($userFileHandle);
+  return;  
+}
+
 function get_user_config($username,$request) {
   global $config_dir;
   $userconfigpath = $config_dir."userconfig/";

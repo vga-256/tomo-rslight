@@ -25,6 +25,7 @@
 
 session_start();
 include "config.inc.php";
+$CONFIG = include($config_file);
 
 @$fieldnamedecrypt=$_REQUEST['fielddecrypt'];
 //@$newsgroups=$_REQUEST["newsgroups"];
@@ -178,6 +179,16 @@ if ($type=="post") {
         $nemail=$anonym_address;
       else
         $nemail=$email;
+	if($CONFIG['rate_limit'] == true && strcmp($name, $CONFIG['anonusername'])) {
+            $postsremaining = check_rate_limit($name);
+	    if($postsremaining < 1) {
+	      $wait = check_rate_limit($name,0,1);
+	      echo 'You have reached the limit of '.$CONFIG['rate_limit'].' posts per hour.<br />Please wait '.round($wait).' minutes before posting again.';
+	      $returngroup=explode(',',$newsgroups);
+	      echo '<p><a href="'.$file_thread.'?group='.urlencode($returngroup[0]).'">'.$text_post["button_back"].'</a> '.$text_post["button_back2"].' '.group_display_name($returngroup[0]).'</p>';
+	      return;	
+	    }
+        }
 	if(isset($_FILES["photo"]) && $_FILES["photo"]["error"] == 0) { 
 // There is an attachment to handle 
 		$message=message_post_with_attachment(quoted_printable_encode($subject),
@@ -191,23 +202,23 @@ if ($type=="post") {
 	  // Article sent without errors, or duplicate?
       if ((substr($message,0,3)=="240") ||
           (substr($message,0,7)=="441 435")) {
-?>
-
-<h1 class="np_post_headline"><?php echo $text_post["message_posted"];?></h1>
-
-<p><?php echo $text_post["message_posted2"];?></p>
-
-<?php
+	  echo '<h1 class="np_post_headline"><'.$text_post["message_posted"].'></h1>';
+	  echo '<p>'.$text_post["message_posted2"].'</p>';
 // This returns to multiple groups if crossposting, which does not work. FIXME
 // Try to return to just the first group in the list
      $returngroup=explode(',',$newsgroups); 
      if(isset($CONFIG['auto_return']) && ($CONFIG['auto_return'] == true)) {
   	echo '<meta http-equiv="refresh" content="0;url='.$file_thread.'?group='.urlencode($returngroup[0]).'"';
      }
-?>
-<p><a href="<?php echo $file_thread.'?group='.urlencode($returngroup[0]).'">'.$text_post["button_back"].'</a> '
-     .$text_post["button_back2"].' '.group_display_name($returngroup[0]) ?></p>
-<?php
+     if($CONFIG['rate_limit'] == true && strcmp($name, $CONFIG['anonusername'])) {
+       $postsremaining = check_rate_limit($name,1);
+       echo 'You have '.$postsremaining.' posts remaining of '.$CONFIG['rate_limit'].' posts per hour.<br />';
+       if($postsremaining < 1) {
+	 $wait = check_rate_limit($name,0,1);
+         echo 'Please wait '.round($wait).' minutes before posting again.<br />';
+       }
+     }
+     echo '<p><a href="'.$file_thread.'?group='.urlencode($returngroup[0]).'">'.$text_post["button_back"].'</a> '.$text_post["button_back2"].' '.group_display_name($returngroup[0]).'</p>';
       } else {
         // article not accepted by the newsserver
         $type="retry";

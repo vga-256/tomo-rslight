@@ -25,6 +25,7 @@ return [
   'organization' => 'Unconfigured rslight site',
   'postfooter' => 'Unconfigured rslight site',
   'synchronet' => '',
+  'rate_limit' => '12',
   'auto_create' => '',
   'verify_email' => '1',
   'no_verify' => '.i2p .onion',
