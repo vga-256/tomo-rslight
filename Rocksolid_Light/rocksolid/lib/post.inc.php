@@ -132,6 +132,48 @@ function generate_msgid($identity) {
   }
 }
 
+function check_rate_limit($name,$set=0,$gettime=0) {
+	    global $CONFIG,$spooldir;
+	    $ratefile=$spooldir.'/'.strtolower($name).'-rate.dat';
+            $postqty=0;
+	    $first=0;
+            $newrate=array();
+            if(is_file($ratefile)) {
+              $ratedata='';
+              $ratefp=fopen($ratefile,'r');
+              while(!feof($ratefp)) {
+                $ratedata.=fgets($ratefp,1000);
+              }
+              fclose($ratefp);
+              $rate=unserialize($ratedata);
+	      sort($rate);
+              foreach($rate as $ratepost) {
+                if($ratepost > (time() - 3600)) {
+                  $postqty=$postqty+1;
+                  $newrate[]=$ratepost;
+	          if($first == 0) {
+		    $oldest = $ratepost;
+		    $first=1;
+		  }
+                }
+              }
+            }
+            $newrate[]=time();
+	    if($set) {
+              $ratefp=fopen($ratefile,'w');
+              fputs($ratefp,serialize($newrate));
+              fclose($ratefp);
+              $postqty=$postqty+1;
+	    }
+	    $postsremaining = $CONFIG['rate_limit']-$postqty;
+	    if($gettime) {
+	      $wait=(3600-(time()-$oldest))/60;
+	      return($wait);
+	    } else {
+	      return($postsremaining);
+	    }
+}
+
 /*
  * Post an article to a newsgroup
  *
