@@ -30,7 +30,7 @@ return [
   'verify_email' => '1',
   'no_verify' => '.i2p .onion',
   'auto_return' => '',
-  'overboard_noshow' => 'rocksolid.test',
+  'overboard_noshow' => 'rocksolid.shared.test',
   'spamassassin' => '',
   'spamc' => 'spamc',
   'spamgroup' => 'rocksolid.spam',
