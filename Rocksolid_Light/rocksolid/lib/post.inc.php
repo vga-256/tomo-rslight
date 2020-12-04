@@ -165,10 +165,6 @@ function check_rate_limit($name,$set=0,$gettime=0) {
               fclose($ratefp);
               $postqty=$postqty+1;
 	    }
-	    $rate_limit = get_user_config($name, 'rate_limit');
-            if(($rate_limit !== FALSE) && ($rate_limit > 0)) {
-              $CONFIG['rate_limit'] = $rate_limit;
-            }
 	    $postsremaining = $CONFIG['rate_limit']-$postqty;
 	    if($gettime) {
 	      $wait=(3600-(time()-$oldest))/60;
