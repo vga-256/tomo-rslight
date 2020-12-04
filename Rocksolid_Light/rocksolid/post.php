@@ -179,10 +179,6 @@ if ($type=="post") {
         $nemail=$anonym_address;
       else
         $nemail=$email;
-        $rate_limit = get_user_config($name, 'rate_limit');
-        if(($rate_limit !== FALSE) && ($rate_limit > 0)) {
-          $CONFIG['rate_limit'] = $rate_limit;
-        }
 	if($CONFIG['rate_limit'] == true && strcmp($name, $CONFIG['anonusername'])) {
             $postsremaining = check_rate_limit($name);
 	    if($postsremaining < 1) {
