@@ -41,6 +41,16 @@ This will start the nntp server, then drop privileges to your web user and begin
 articles from the remote server to create your spool. You won't see articles immediately
 in rslight, please wait 15-30 minutes to begin to see articles appear.
 
+Upgrading:
+
+1. Disable cron job and kill any running nntp servers (ps aux | grep nntp)
+
+2. Run upgrade script and answer promts
+
+3. Compare upgrade config files in config dir /upgrade and change your exsiting config as necessary
+
+4. Enable cron job and check that everything works after it runs the first time
+
 If you have trouble, post to rocksolid.nodes.help and we'll try to help.
 
 Retro Guy
