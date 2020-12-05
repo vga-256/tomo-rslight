@@ -1,9 +1,9 @@
-#!/usr/local/bin/bash
+#!/bin/bash
 
-webroot="/usr/local/www/html"
+webroot="/var/www/html"
 spoolpath="/var/spool/rslight"
 configpath="/etc/rslight"
-username="www"
+username="www-data"
 
 randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9{} | head -c${1:-16};echo;}
 site_key=$(randpw)
@@ -81,7 +81,10 @@ cp index.php $webroot
 cp -a common $webroot
 cp -a rocksolid $webroot
 cp -a spoolnews $webroot
-cp -a rslight/* $configpath
+cp rslight/scripts/*.php $configpath/scripts
+mkdir $configpath/upgrade
+cp rslight/*.php $configpath/upgrade
+cp rslight/*.conf $configpath/upgrade
 echo "done"
 echo
 echo -n "Setting permissions..."
@@ -101,31 +104,22 @@ echo
 echo -n "Applying configuration..."
 sed -i '' -e "s|<spooldir>|$spoolpath/|" $webroot/common/config.inc.php
 sed -i '' -e "s|<config_dir>|$configpath/|" $webroot/common/config.inc.php
-sed -i '' -e "s|<webserver_user>|$username|" $configpath/rslight.inc.php
-sed -i '' -e "s|<site_key>|$site_key|" $configpath/rslight.inc.php
-sed -i '' -e "s|<anonymous_password>|$anonymous_password|" $configpath/rslight.inc.php
-sed -i '' -e "s|<local_password>|$local_password|" $configpath/rslight.inc.php
-sed -i '' -e "s|<admin_password>|$admin_password|" $configpath/admin.inc.php
-sed -i '' -e "s|<admin_key>|$admin_key|" $configpath/admin.inc.php
+sed -i '' -e "s|<webserver_user>|$username|" $configpath/upgrade/rslight.inc.php
+sed -i '' -e "s|<site_key>|$site_key|" $configpath/upgrade/rslight.inc.php
+sed -i '' -e "s|<anonymous_password>|$anonymous_password|" $configpath/upgrade/rslight.inc.php
+sed -i '' -e "s|<local_password>|$local_password|" $configpath/upgrade/rslight.inc.php
+sed -i '' -e "s|<admin_password>|$admin_password|" $configpath/upgrade/admin.inc.php 
+sed -i '' -e "s|<admin_key>|$admin_key|" $configpath/upgrade/admin.inc.php
 echo "done"
 echo
 echo "***************************************************"
 echo "******** YOUR ADMIN PASSWORD IS: '$admin_password'"
 echo "***************************************************"
 echo
-echo "Admin password can be changed in $configpath/admin.inc.php"
+echo "Admin password can be changed in $configpath/upgrade/admin.inc.php"
 echo
-echo "Next step is to visit your site in your browser: /common/setup.php"
-echo "to complete configuration"
+echo "All new configuration files have been placed in $configpath/upgrade."
 echo
-echo Add this to crontab for root to link with your remote server, start local
-echo server and manage other tasks:
-echo "*/5 * * * * cd $webroot/spoolnews ; bash -lc \"php $configpath/scripts/cron.php\""
+echo "Please review these files and make changes to existing files as may be necessary"
 echo
-echo "Once your web server is configured to point to $webroot and serve .php files"
-echo "give it a try. If you have trouble, feel free to ask for help in rocksolid.nodes.help"
-echo
-echo "Note that it may take 10-20 minutes before groups appear on your main page"
-echo "If you see files starting to appear in $spoolpath, it should be working"
-echo
-echo "Installation complete"
+echo "Upgrade complete"
