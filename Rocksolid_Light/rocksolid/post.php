@@ -59,6 +59,8 @@ if ((isset($post_port)) && ($post_port!=""))
 include "head.inc";
 include $file_newsportal;
 
+global $synchro_user,$synchro_pass;
+
 // check to which groups the user is allowed to post to
 $thisgroup=_rawurldecode($_REQUEST['group']);
 if($testgroup) {
@@ -109,8 +111,8 @@ if(!strcmp($name, $CONFIG['anonusername']) && (isset($CONFIG['anonuser']))) {
 }
 
 if (isset($CONFIG['synchronet']) && ($CONFIG['synchronet'] == true)) {
-  $CONFIG['server_auth_user']=$name;
-  $CONFIG['server_auth_pass']=$userpass;
+  $synchro_user=$name;
+  $synchro_pass=$userpass;
 } 
 
 if($name=="")
