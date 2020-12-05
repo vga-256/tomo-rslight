@@ -35,7 +35,7 @@ return [
   'spamc' => 'spamc',
   'spamgroup' => 'rocksolid.spam',
   'php_exec' => 'php',
-  'tac' => 'tail -r',
+  'tac' => 'tac',
   'webserver_user' => '<webserver_user>',
   'enable_nocem' => '1',
   'nocem_groups' => 'rocksolid.spam',
