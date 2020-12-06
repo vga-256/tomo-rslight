@@ -32,4 +32,26 @@ See INSTALL.md for installation instructions.
 
 If you have trouble, post to rocksolid.nodes.help (www.novabbs.com) and we'll try to help.
 
+Features added in 0.6.5x
+
+* NoCeM support
+* Spamassassin support
+* Message expiration
+* Ability to ban incoming messages by user
+* Display first image attachment inline
+
+Features added in 0.6.6x
+
+* SSL encryption as a client and as a server
+* New account created may be authenticated by email if configured to do so
+* Display last poster per thread
+* Link to display full headers of any message
+* More commands supported in nntp server
+* Config option to enable/disable displaying only partial poster email address
+* Log rotation
+* Main config file can now be modified using a browser
+* Header links configured through a config file, not hard coded
+* Added motd (message of the day) feature that can also display Unix fortunes
+* Config option to limit a user to 'X' posts/hour. May also be different for individual users
+
 Retro Guy retroguy@novabbs.com
