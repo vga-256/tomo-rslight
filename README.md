@@ -15,18 +15,16 @@ Forums can be Usenet newsgroups, or any groups you wish to create. Forums can be
 synchronized with other rslight installs, or other nntp servers.
 
 * Does not require Javascript
-* Synchronizes via nntp, but does not require Usenet specifically
-  * rslight is a nntp server, and can connect to other rslight sites
-* Built in nntp server compatible with some news clients
-  * Read and Post using a news client
+* Built in nntp server
+  * Synchronize with inn or another rslight site
+  * Read and post using a news client
   * Tested with Claws Mail, Thunderbird, Knews, tin and some others
-* Synchronizes and works well in slow networks (tested in tor and i2p)
 * No database required
 
 * Interface works reasonably well on small devices
 * Colors in CSS are in a separate file for easy testing and modification
 * Groups can be renamed for cleaner display
-* Configuration and options can be different per 'section'
+* Configuration options may be set for each individual 'section'
 
 See INSTALL.md for installation instructions.
 
