@@ -1,10 +1,11 @@
-<html>
-<head>
-<title><?php echo htmlspecialchars($title); ?></title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=<?=$www_charset?>">
 <?php
+echo '<html><head>';
+echo '<title>'.htmlspecialchars($title).'</title>';
+echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+echo '<META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=<?=$www_charset?>">';
+
 include "config.inc.php";
+
 if(isset($frames_on) && $frames_on === false) { 
   if (file_exists('../common/mods/header.php')) {
     include "../common/mods/header.php";
@@ -17,7 +18,6 @@ if (file_exists('../common/mods/'.$style_css)) {
 } else {
     echo '<link rel="stylesheet" type="text/css" href="../common/'.$style_css.'">';
 }
+echo '<hr></head>';
+echo '<body textcolor="black" bgcolor="white">';
 ?>
-<hr>
-</head>
-<body textcolor="black" bgcolor="white">
