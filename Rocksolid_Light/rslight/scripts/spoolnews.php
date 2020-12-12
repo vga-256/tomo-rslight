@@ -111,6 +111,13 @@ echo "\nSpoolnews Done\r\n";
 function get_articles($ns, $group) {
   global $enable_rslight, $spooldir, $CONFIG, $maxarticles_per_run, $maxfirstrequest, $workpath, $path, $remote_groupfile, $local_groupfile, $overview_file, $local, $logdir, $config_name, $logfile;
 
+  # Prepare search database (this is only for testing atm)
+  $database = $spooldir.'/'.$config_name.'-overview.db3';
+  $table = 'overview';
+  $dbh = rslight_db_open($database, $table);
+  $sql = "INSERT INTO overview(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)";
+  $stmt = $dbh->prepare($sql);
+
   if($ns == false) {
     file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Lost connection to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
     exit();
@@ -120,7 +127,7 @@ function get_articles($ns, $group) {
   $banned_names = file("/etc/rslight/banned_names.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
  
   $nocem_check="@@NCM";
- 
+
   # Check if group exists. Open it if it does
   fputs($ns, "group ".$group."\r\n");
   $response = line_read($ns);
@@ -323,6 +330,8 @@ function get_articles($ns, $group) {
       $references="";
 // overview for entire section
 	file_put_contents($overview_file, $group."\t".$local."\t".$mid[1]."\t".$article_date."\t".$from[1]."\t".$subject[1]."\n", FILE_APPEND);
+// add to search database
+	$stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1]]);
 // End Overview
 
       if($article_date > time())
@@ -377,6 +386,7 @@ function get_articles($ns, $group) {
     }
   }
   fclose($saveconfig);
+  $dbh = null;
 }
 
 function create_spool_groups($in_groups, $out_groups) {

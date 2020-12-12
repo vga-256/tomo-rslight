@@ -93,9 +93,13 @@ if(is_file($cachefile)) {
 ob_start();
 # Iterate through groups
 
+$database = $spooldir.'/'.$config_name.'-overview.db3';
+$table = 'overview';
+$dbh = rslight_db_open($database, $table);
+$query = $dbh->prepare('SELECT * FROM overview WHERE newsgroup=:findgroup ORDER BY date DESC LIMIT '.$maxdisplay);
 $articles = array();
 foreach($grouplist as $findgroup) {
-	$groups = explode(" ", $findgroup);
+	$groups = preg_split("/(\ |\t)/", $findgroup, 2);
 	$findgroup = $groups[0];
 
 	$none=0;
@@ -115,16 +119,21 @@ foreach($grouplist as $findgroup) {
 	}
 	$stats = stat($spoolpath.$thisgroup);
 	if($stats[9] > $oldest) {
-		$newarticles = scandir($spoolpath.$thisgroup); 
-		foreach($newarticles as $newarticle) {
-$newarticle = $spoolpath.$thisgroup."/".$newarticle;
-			$stats = stat($newarticle);
-			if($stats[9] > $oldest && $stats[7] > 0) {
-				$articles[] = $newarticle;
-			}
+	  if($dbh) {
+      		$query->execute(['findgroup' => $findgroup]);
+		while (($overviewline = $query->fetch()) !== false) {
+		  if($overviewline['date'] < $oldest) {
+		    continue 2;
+	          }
+		  if(stripos($overviewline['newsgroup'], $findgroup) !== false) {
+		    $articles[] = $spoolpath.$thisgroup.'/'.$overviewline['number'];
+		  }
+		
 		}
+	  }	  
 	}
 }
+$dbh = null;
 
 if (isset($_GET['thisgroup'])) {
     echo '<h1 class="np_thread_headline">';
@@ -266,7 +275,7 @@ foreach($files as $article) {
       $poster_name = $fromoutput[0]; 
     }
     $poster_name = trim($poster_name, "\"");
-    echo '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.create_name_link($poster_name).'</p>';
+    echo '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.create_name_link(mb_decode_mimeheader($poster_name)).'</p>';
 //    echo '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.mb_decode_mimeheader($fromoutput[0]).'</p>';
     # Try to display useful snippet
 	if($stop=strpos($body, "begin 644 "))

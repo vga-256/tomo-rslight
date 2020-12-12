@@ -42,16 +42,12 @@ $CONFIG = include($config_file);
  */
 function nntp_open($nserver=0,$nport=0) {
   global $text_error,$CONFIG;
-  global $server,$port,$synchro_user,$synchro_pass;
+  global $server,$port;
   // echo "<br>NNTP OPEN<br>";
   if(!isset($CONFIG['enable_nntp']) || $CONFIG['enable_nntp'] != true) {
     $CONFIG['server_auth_user'] = $CONFIG['remote_auth_user'];
     $CONFIG['server_auth_pass'] = $CONFIG['remote_auth_pass'];
   } 
-  if(isset($synchro_user)) {
-    $CONFIG['server_auth_user'] = $synchro_user;
-    $CONFIG['server_auth_pass'] = $synchro_pass;
-  }
   $authorize=((isset($CONFIG['server_auth_user'])) && (isset($CONFIG['server_auth_pass'])) &&
               ($CONFIG['server_auth_user'] != ""));
   if ($nserver==0) $nserver=$server;
@@ -87,8 +83,6 @@ function nntp_open($nserver=0,$nport=0) {
     }
   }
   if ($ns==false) echo "<p>".$text_error["connection_failed"]."</p>";
-  unset($synchro_user);
-  unset($synchro_pass);
   return $ns;
 }
 
@@ -1202,5 +1196,23 @@ function get_date_interval($value) {
 	$variance = " now";
     }
     return $variance;
+}
+
+function rslight_db_open($database, $table) {
+  try {
+    $dbh = new PDO('sqlite:'.$database);
+  } catch (PDOExeption $e) {
+    echo 'Connection failed: '.$e->getMessage();
+    exit;
+  }
+  $dbh->exec("CREATE TABLE IF NOT EXISTS $table(
+     id INTEGER PRIMARY KEY,
+     newsgroup TEXT,
+     number TEXT,
+     msgid TEXT,
+     date TEXT,
+     name TEXT,
+     subject TEXT)");
+  return($dbh);
 }
 ?>
