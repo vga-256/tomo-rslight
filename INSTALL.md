@@ -9,13 +9,14 @@ php is required, and your web server must be configured to serve .php.
 
 php-mbstring (to support other character sets), sharutils (for uudecode) and 
 openssl are required. 
+php7.x-sqlite3 (php must support PDO, probably 5.1+ but all testing is on 7.x).
 phpmailer is required if email confirmation is to be used.
 These are the names for Debian packages. Other distributions should 
 also provide these in some way.
 
 If you get errors, check your log files to see what packages I've failed to mention.
 
-For FreeBSD12: php72, php72-extensions, sharutils, php72-pcntl, php72-sockets, php72-mbstring, php72-openssl
+For FreeBSD12: php72, php72-extensions, php72-pdo_sqlite-7.2, sharutils, php72-pcntl, php72-sockets, php72-mbstring, php72-openssl
 Optional: phpmailer, gnupg
 
 Installation: 
