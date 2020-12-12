@@ -19,7 +19,6 @@ synchronized with other rslight installs, or other nntp servers.
   * Synchronize with inn or another rslight site
   * Read and post using a news client
   * Tested with Claws Mail, Thunderbird, Knews, tin and some others
-* No database required
 
 * Interface works reasonably well on small devices
 * Colors in CSS are in a separate file for easy testing and modification
