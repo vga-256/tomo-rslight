@@ -1,5 +1,4 @@
 <?php
-
     function interact($msgsock, $use_crypto=false)
     {
 	global $logdir,$logfile,$installed_path,$config_path,$groupconfig,$workpath,$path, $spooldir,$nntp_group,$auth_ok,$user,$pass;
@@ -984,6 +983,19 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
       file_put_contents($logfile, "\n".format_log_date()." ".$section." Inserting local post: ".$nntp_group.":".$local, FILE_APPEND);
 // Overview
       $overviewHandle = fopen($spooldir."/".$nntp_group."-overview", 'a');
+  # Prepare overview database
+  $database = $spooldir.'/'.$section.'-overview.db3';
+  $table = 'overview';
+  $dbh = rslight_db_open($database, $table);
+  if(!$dbh) {
+    file_put_contents($logfile, "\n".format_log_date()." ".$section." Failed to connect to database: ".$database, FILE_APPEND);
+  } else {
+    file_put_contents($logfile, "\n".format_log_date()." ".$section." Connected to database: ".$database, FILE_APPEND);
+    $sql = "INSERT INTO overview(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)";
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute([$nntp_group, $local, $mid_i, $article_date, $from_i, $subject_i]);
+    $dbh = null;
+  }
       fputs($overviewHandle, $local."\t".$subject_i."\t".$from_i."\t".$date_i."\t".$mid_i."\t".$references_i."\t".$bytes_i."\t".$lines_i."\t".$xref_i."\n");
       fclose($overviewHandle);
       $references="";
