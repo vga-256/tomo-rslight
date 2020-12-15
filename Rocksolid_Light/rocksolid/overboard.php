@@ -96,7 +96,7 @@ ob_start();
 $database = $spooldir.'/'.$config_name.'-overview.db3';
 $table = 'overview';
 $dbh = rslight_db_open($database, $table);
-$query = $dbh->prepare('SELECT * FROM overview WHERE newsgroup=:findgroup ORDER BY date DESC LIMIT '.$maxdisplay);
+$query = $dbh->prepare('SELECT * FROM '.$table.' WHERE newsgroup=:findgroup ORDER BY date DESC LIMIT '.$maxdisplay);
 $articles = array();
 foreach($grouplist as $findgroup) {
 	$groups = preg_split("/(\ |\t)/", $findgroup, 2);

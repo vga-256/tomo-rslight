@@ -77,8 +77,35 @@ function verify_signature($signed_text) {
 }
 
 function delete_message($messageid, $group) {
-  global $logfile,$spooldir, $CONFIG, $webserver_group;
-  
+  global $logfile,$config_dir,$spooldir, $CONFIG, $webserver_group;
+
+/* Find section */
+    $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach($menulist as $menu) {
+      if($menu[0] == '#') {
+        continue;
+      }
+      $menuitem=explode(':', $menu);
+      $glfp=fopen($config_dir.$menuitem[0]."/groups.txt", 'r');
+      $section="";
+      while($gl=fgets($glfp)) {
+        $group_name = preg_split("/( |\t)/", $gl, 2);
+        if(stripos(trim($group_name[0]), $group) !== false) {
+          $config_name=$menuitem[0];
+	  file_put_contents($logfile, "\n".format_log_date()." ".$config_name." FOUND: ".$messageid." IN: ".$config_name.'/'.$group, FILE_APPEND);
+          break 2;
+        }
+      }
+    }
+ if($config_name) {
+  $database = $spooldir.'/'.$config_name.'-overview.db3';
+  $table = 'overview';
+  $dbh = rslight_db_open($database, $table);
+  $query = $dbh->prepare('DELETE FROM '.$table.' WHERE msgid=:messageid');
+  $query->execute(['messageid' => $messageid]);
+  $dbh = null; 
+ }
+
   $this_overview=$spooldir.'/'.$group.'-overview';
   if(false === (is_file($this_overview))) {
     return;
@@ -90,7 +117,7 @@ function delete_message($messageid, $group) {
     $break=explode("\t", $line);
     if($break[4] == $messageid) {
       echo "DELETING: ".$messageid." IN: ".$group." #".$break[0]."\r\n";
-      file_put_contents($logfile, "\n".format_log_date()." ".$config_name."DELETING: ".$messageid." IN: ".$group." #".$break[0], FILE_APPEND);
+      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DELETING: ".$messageid." IN: ".$group." #".$break[0], FILE_APPEND);
       $grouppath = preg_replace('/\./', '/', $group);
       unlink($spooldir.'/articles/'.$grouppath.'/'.$break[0]);
       continue; 

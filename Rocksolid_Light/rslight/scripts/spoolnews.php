@@ -115,7 +115,7 @@ function get_articles($ns, $group) {
   $database = $spooldir.'/'.$config_name.'-overview.db3';
   $table = 'overview';
   $dbh = rslight_db_open($database, $table);
-  $sql = "INSERT INTO overview(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)";
+  $sql = 'INSERT INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';
   $stmt = $dbh->prepare($sql);
 
   if($ns == false) {

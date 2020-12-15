@@ -122,8 +122,8 @@ $results=0;
   	$table = 'overview';
   	$dbh = rslight_db_open($database, $table);
 	if($dbh) {
-//	$stmt = $dbh->prepare("SELECT * FROM overview WHERE ".$_POST['searchpoint']." like '%".$_POST['terms']."%' ORDER BY date DESC");
-	  $stmt = $dbh->prepare("SELECT * FROM overview WHERE ".$_POST['searchpoint']." like :terms ORDER BY date DESC");
+//	$stmt = $dbh->prepare("SELECT * FROM $table WHERE ".$_POST['searchpoint']." like '%".$_POST['terms']."%' ORDER BY date DESC");
+	  $stmt = $dbh->prepare("SELECT * FROM $table WHERE ".$_POST['searchpoint']." like :terms ORDER BY date DESC");
 	  $stmt->bindParam(':terms', $searchterms);
 	  $stmt->execute();
 	  while($overviewline = $stmt->fetch()) {

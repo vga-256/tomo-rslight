@@ -991,7 +991,7 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
     file_put_contents($logfile, "\n".format_log_date()." ".$section." Failed to connect to database: ".$database, FILE_APPEND);
   } else {
     file_put_contents($logfile, "\n".format_log_date()." ".$section." Connected to database: ".$database, FILE_APPEND);
-    $sql = "INSERT INTO overview(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)";
+    $sql = 'INSERT INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';
     $stmt = $dbh->prepare($sql);
     $stmt->execute([$nntp_group, $local, $mid_i, $article_date, $from_i, $subject_i]);
     $dbh = null;
