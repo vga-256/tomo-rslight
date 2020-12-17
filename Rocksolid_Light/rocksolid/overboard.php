@@ -102,16 +102,11 @@ foreach($grouplist as $findgroup) {
 	$groups = preg_split("/(\ |\t)/", $findgroup, 2);
 	$findgroup = $groups[0];
 
-	$none=0;
 	$overboard_noshow = explode(' ', $CONFIG['overboard_noshow']);
 	foreach($overboard_noshow as $noshow) {
 	  if ((strpos($findgroup, $noshow) !== false) && !isset($_GET['thisgroup'])) {
-	    $none=1;
-	    break;
+	    continue 2;
 	  }
-	}
-	if($none == 1) {
-	  continue;
 	}
 	$thisgroup = preg_replace('/\./', '/', $findgroup);
 	if (!is_dir($spoolpath.$thisgroup)) {
@@ -122,13 +117,7 @@ foreach($grouplist as $findgroup) {
 	  if($dbh) {
       		$query->execute(['findgroup' => $findgroup]);
 		while (($overviewline = $query->fetch()) !== false) {
-		  if($overviewline['date'] < $oldest) {
-		    continue 2;
-	          }
-		  if(stripos($overviewline['newsgroup'], $findgroup) !== false) {
 		    $articles[] = $spoolpath.$thisgroup.'/'.$overviewline['number'];
-		  }
-		
 		}
 	  }	  
 	}
