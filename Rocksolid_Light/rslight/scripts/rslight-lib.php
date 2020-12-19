@@ -699,7 +699,7 @@ function get_body($article, $nntp_group) {
 }
 
 function get_listgroup($nntp_group, $msgsock) {
-    global $path,$nntp_group,$groupconfig;
+    global $spooldir,$path,$nntp_group,$groupconfig;
     $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     $ok_group=false;
     $count=0;
@@ -712,21 +712,14 @@ function get_listgroup($nntp_group, $msgsock) {
             break;
         }
     }
-    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
-    if(!is_dir($thisgroup) || $ok_group === false) {
-        $msg.="411 no such news group\r\n";
-        $nntp_group="";
-        return $msg;
-    }
-    $articles = scandir($thisgroup);
+    $group_overviewfp=fopen($spooldir."/".$nntp_group."-overview", 'r');
     $ok_article=array();
-    foreach($articles as $article) {
-        if(!is_numeric($article)) {
-            continue;
-        }
-        $ok_article[]=$article;
+    while($line = fgets($group_overviewfp)) {
+        $art=explode("\t", $line);
+        $ok_article[] = $art[0];
         $count++;
     }
+    fclose($group_overviewfp);
     sort($ok_article);
     $last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
     $first = $ok_article[0];
@@ -745,7 +738,7 @@ function get_listgroup($nntp_group, $msgsock) {
 }
 
 function get_group($nntp_group) {
-    global $path,$nntp_group,$groupconfig;
+    global $spooldir,$path,$nntp_group,$groupconfig;
     $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     $ok_group=false;
     $count=0;
@@ -758,21 +751,14 @@ function get_group($nntp_group) {
 	    break;
 	}
     }
-    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
-    if(!is_dir($thisgroup) || $ok_group === false) {
-        $msg.="411 no such news group\r\n";
-        $nntp_group="";
-        return $msg;
-    }
-    $articles = scandir($thisgroup);
+    $group_overviewfp=fopen($spooldir."/".$nntp_group."-overview", 'r');
     $ok_article=array();
-    foreach($articles as $article) {
-	if(!is_numeric($article)) {
-	    continue;
-	}
-	$ok_article[]=$article;
+    while($line = fgets($group_overviewfp)) {
+	$art=explode("\t", $line);
+	$ok_article[] = $art[0];
 	$count++;
     }
+    fclose($group_overviewfp);
     sort($ok_article);
     $last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
     $first = $ok_article[0];
@@ -999,11 +985,6 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
       fputs($overviewHandle, $local."\t".$subject_i."\t".$from_i."\t".$date_i."\t".$mid_i."\t".$references_i."\t".$bytes_i."\t".$lines_i."\t".$xref_i."\n");
       fclose($overviewHandle);
       $references="";
-// overview for search (eventually this will not be used)
-        $overview_file=$spooldir."/".$section."-overview";
-        file_put_contents($overview_file, 
-$nntp_group."\t".$local."\t".$mid_i."\t".$article_date."\t".$from_i
-."\t".$subject_i."\n", FILE_APPEND);
 // End Overview
   reset($grouplist);
   $saveconfig = fopen($local_groupfile, 'w+');
