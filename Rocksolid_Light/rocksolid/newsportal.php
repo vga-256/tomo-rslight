@@ -1215,4 +1215,25 @@ function rslight_db_open($database, $table) {
      subject TEXT)");
   return($dbh);
 }
+function get_config_value($configfile,$request) {
+  global $config_dir;
+    
+  if ($configFileHandle = @fopen($config_dir.'/'.$configfile, 'r'))
+  {
+    while (!feof($configFileHandle))
+    {
+      $buffer = fgets($configFileHandle);
+      if(strpos($buffer, $request.':') !== FALSE) {
+        $dataline=$buffer;
+        fclose($configFileHandle);
+        $datafound = explode(':',$dataline);
+        return $datafound[1];
+      }
+    }
+    fclose($configFileHandle);
+    return FALSE;
+  } else {
+    return FALSE;
+  }
+}
 ?>
