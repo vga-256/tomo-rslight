@@ -20,12 +20,17 @@ include "head.inc";
 <tr>
 <td width="78"><strong>Search Terms</strong></td>
 <td width="6">:</td>
-<td width="294"><input name="terms" type="text" id="terms"></td>
-</tr>
-<tr></tr>
-<tr>
-<td><input type="radio" name="searchpoint" value="subject" checked="checked"/>Subject</td>
-<td><input type="radio" name="searchpoint" value="name"/>Poster</td>
+<?php
+echo '<td width="294"><input name="terms" type="text" id="terms" value="'.$_GET['terms'].'"></td>';
+echo '</tr><tr></tr><tr>';
+if ($_GET['searchpoint'] == 'Poster') {
+  echo '<td><input type="radio" name="searchpoint" value="subject"/>Subject</td>';
+  echo '<td><input type="radio" name="searchpoint" value="name" checked="checked"/>Poster</td>';
+} else {
+  echo '<td><input type="radio" name="searchpoint" value="subject" checked="checked"/>Subject</td>'; 
+  echo '<td><input type="radio" name="searchpoint" value="name"/>Poster</td>';
+}
+?>
 <td><input type="radio" name="searchpoint" value="msgid"/>Message-ID</td>
 </tr>
 <tr>

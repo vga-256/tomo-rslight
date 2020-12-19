@@ -1118,7 +1118,7 @@ function create_name_link($name) {
     if(strpos($name, '...@') !== false && (isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true)) {
 	$return = '<span class="visited">'.substr(htmlspecialchars($name),0,20).'</span>';
     } else {
-    	$return = '<a href="result.php?command=search&searchpoint=Poster&terms='.$name.'"><span class="visited">'.substr(htmlspecialchars($name),0,20).'</span></a>';
+    	$return = '<a href="search.php?command=search&searchpoint=Poster&terms='.$name.'"><span class="visited">'.substr(htmlspecialchars($name),0,20).'</span></a>';
     }
     return($return);
 }
