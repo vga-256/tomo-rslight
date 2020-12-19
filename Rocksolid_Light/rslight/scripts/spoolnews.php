@@ -46,7 +46,6 @@ if(!isset($CONFIG['enable_nntp']) || $CONFIG['enable_nntp'] != true) {
 
 $workpath=$spooldir."/";
 $path=$workpath."articles/";
-$overview_file=$workpath.$config_name."-overview";
 
 $lockfile = sys_get_temp_dir() . '/'.$config_name.'-spoolnews.lock';
 $pid = file_get_contents($lockfile);
@@ -109,7 +108,7 @@ unlink($lockfile);
 echo "\nSpoolnews Done\r\n";
 
 function get_articles($ns, $group) {
-  global $enable_rslight, $spooldir, $CONFIG, $maxarticles_per_run, $maxfirstrequest, $workpath, $path, $remote_groupfile, $local_groupfile, $overview_file, $local, $logdir, $config_name, $logfile;
+  global $enable_rslight, $spooldir, $CONFIG, $maxarticles_per_run, $maxfirstrequest, $workpath, $path, $remote_groupfile, $local_groupfile, $local, $logdir, $config_name, $logfile;
 
   # Prepare search database (this is only for testing atm)
   $database = $spooldir.'/'.$config_name.'-overview.db3';
@@ -328,8 +327,6 @@ function get_articles($ns, $group) {
       fputs($overviewHandle, $local."\t".$subject[1]."\t".$from[1]."\t".$finddate[1]."\t".$mid[1]."\t".$references."\t".$bytes."\t".$lines."\t".$xref."\n");
       fclose($overviewHandle);
       $references="";
-// overview for entire section
-	file_put_contents($overview_file, $group."\t".$local."\t".$mid[1]."\t".$article_date."\t".$from[1]."\t".$subject[1]."\n", FILE_APPEND);
 // add to search database
 	$stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1]]);
 // End Overview
