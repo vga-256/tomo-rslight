@@ -715,9 +715,11 @@ function get_listgroup($nntp_group, $msgsock) {
     $group_overviewfp=fopen($spooldir."/".$nntp_group."-overview", 'r');
     $ok_article=array();
     while($line = fgets($group_overviewfp)) {
-        $art=explode("\t", $line);
+      $art=explode("\t", $line);
+      if(is_numeric($art[0])) {
         $ok_article[] = $art[0];
         $count++;
+      }
     }
     fclose($group_overviewfp);
     sort($ok_article);
@@ -754,9 +756,11 @@ function get_group($nntp_group) {
     $group_overviewfp=fopen($spooldir."/".$nntp_group."-overview", 'r');
     $ok_article=array();
     while($line = fgets($group_overviewfp)) {
-	$art=explode("\t", $line);
-	$ok_article[] = $art[0];
-	$count++;
+      $art=explode("\t", $line);
+	  if(is_numeric($art[0])) {
+	    $ok_article[] = $art[0];
+	    $count++;
+	  }
     }
     fclose($group_overviewfp);
     sort($ok_article);
@@ -766,6 +770,7 @@ function get_group($nntp_group) {
         $last = 0;
     if(!is_numeric($first))
         $first = 0;
+//    $count = ($last - $first) + 1; 
     $msg="211 ".$count." ".$first." ".$last." ".$nntp_group."\r\n";
     return $msg;    
 }
