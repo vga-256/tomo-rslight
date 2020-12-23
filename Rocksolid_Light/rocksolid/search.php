@@ -126,12 +126,25 @@ $results=0;
   	$database = $spooldir.'/'.$config_name.'-overview.db3';
   	$table = 'overview';
   	$dbh = rslight_db_open($database, $table);
+	$overview = array();
 	if($dbh) {
-//	$stmt = $dbh->prepare("SELECT * FROM $table WHERE ".$_POST['searchpoint']." like '%".$_POST['terms']."%' ORDER BY date DESC");
-	  $stmt = $dbh->prepare("SELECT * FROM $table WHERE ".$_POST['searchpoint']." like :terms ORDER BY date DESC");
-	  $stmt->bindParam(':terms', $searchterms);
-	  $stmt->execute();
-	  while($overviewline = $stmt->fetch()) {
+	  if(is_multibyte($_POST['terms'])) {
+	    $stmt = $dbh->query("SELECT * FROM $table");
+	    while($row = $stmt->fetch()) {
+	      if(stripos(quoted_printable_decode(mb_decode_mimeheader($row[$_POST['searchpoint']])), $_POST['terms']) !== false) {
+		$overview[] = $row;
+	      }
+	    } 
+	  } else {
+	    $stmt = $dbh->prepare("SELECT * FROM $table WHERE ".$_POST['searchpoint']." like :terms ORDER BY date DESC");
+	    $stmt->bindParam(':terms', $searchterms);
+	    $stmt->execute();
+	    while($found = $stmt->fetch()) {
+	      $overview[] = $found;
+	    }
+          }
+          $dbh = null;
+	  foreach($overview as $overviewline) {
 		    # Generate link
 		    $url = $thissite."/article-flat.php?id=".$overviewline['number']."&group="._rawurlencode($overviewline['newsgroup'])."#".$overviewline['number'];
 		    $groupurl = $thissite."/thread.php?group="._rawurlencode($overviewline['newsgroup']);
@@ -164,12 +177,11 @@ $results=0;
 		    echo '<a href="'.$groupurl.'">'.$overviewline['newsgroup'].'</a>';
 		    echo '</p>';
   
-	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.mb_decode_mimeheader($lastname).'</p>';
+	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.mb_decode_mimeheader($overviewline['name']).'</p>';
 		    echo '</td></tr>';
 		    if($results++ > ($maxdisplay - 2))
                         break;
 	  }
-	  $dbh = null;
 }
 
 echo '</table>';
