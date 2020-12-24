@@ -14,7 +14,7 @@ include "head.inc";
 <td>
 <table width="100%" border="0" cellpadding="3" cellspacing="1">
 <tr>
-<td colspan="3"><strong>Search recent messages in <?php echo $config_name; ?></strong><br />(searches last <?php echo $maxarticles; ?> articles per group)</td>
+<td colspan="3"><strong>Search recent messages</strong><br />(searches last <?php echo $maxarticles; ?> articles per group)</td>
 </tr>
 <tr></tr>
 <tr>
