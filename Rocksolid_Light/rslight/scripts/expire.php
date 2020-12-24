@@ -16,7 +16,7 @@
   $webserver_group=$CONFIG['webserver_user'];
   $logfile=$logdir.'/expire.log';
 
-  $database = $spooldir.'/'.$config_name.'-overview.db3';
+  $database = $spooldir.'/articles-overview.db3';
   $table = 'overview';
   $dbh = rslight_db_open($database, $table);
   $query = $dbh->prepare('DELETE FROM '.$table.' WHERE newsgroup=:newsgroup AND number=:number');

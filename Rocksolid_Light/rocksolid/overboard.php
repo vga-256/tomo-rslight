@@ -93,7 +93,7 @@ if(is_file($cachefile)) {
 ob_start();
 # Iterate through groups
 
-$database = $spooldir.'/'.$config_name.'-overview.db3';
+$database = $spooldir.'/articles-overview.db3';
 $table = 'overview';
 $dbh = rslight_db_open($database, $table);
 $query = $dbh->prepare('SELECT * FROM '.$table.' WHERE newsgroup=:findgroup AND date >= '.$oldest.' ORDER BY date DESC LIMIT '.$maxdisplay);

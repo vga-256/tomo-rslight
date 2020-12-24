@@ -98,7 +98,7 @@ function delete_message($messageid, $group) {
       }
     }
  if($config_name) {
-  $database = $spooldir.'/'.$config_name.'-overview.db3';
+  $database = $spooldir.'/articles-overview.db3';
   $table = 'overview';
   $dbh = rslight_db_open($database, $table);
   $query = $dbh->prepare('DELETE FROM '.$table.' WHERE msgid=:messageid');

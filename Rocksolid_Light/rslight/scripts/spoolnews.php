@@ -111,7 +111,7 @@ function get_articles($ns, $group) {
   global $enable_rslight, $spooldir, $CONFIG, $maxarticles_per_run, $maxfirstrequest, $workpath, $path, $remote_groupfile, $local_groupfile, $local, $logdir, $config_name, $logfile;
 
   # Prepare search database (this is only for testing atm)
-  $database = $spooldir.'/'.$config_name.'-overview.db3';
+  $database = $spooldir.'/articles-overview.db3';
   $table = 'overview';
   $dbh = rslight_db_open($database, $table);
   $sql = 'INSERT INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';

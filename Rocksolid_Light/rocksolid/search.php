@@ -123,7 +123,7 @@ $results=0;
   }
 	$searchterms = "%".$_POST['terms']."%";
 	# Prepare search database
-  	$database = $spooldir.'/'.$config_name.'-overview.db3';
+  	$database = $spooldir.'/articles-overview.db3';
   	$table = 'overview';
   	$dbh = rslight_db_open($database, $table);
 	$overview = array();
@@ -145,9 +145,26 @@ $results=0;
           }
           $dbh = null;
 	  foreach($overview as $overviewline) {
+/* Find section for links */
+    $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach($menulist as $menu) {
+      if($menu[0] == '#') {
+        continue;
+      }
+      $menuitem=explode(':', $menu);
+      $glfp=fopen($config_dir.$menuitem[0]."/groups.txt", 'r');
+      $section="";
+      while($gl=fgets($glfp)) {
+        $group_name = preg_split("/( |\t)/", $gl, 2);
+        if(stripos(trim($overviewline['newsgroup']), trim($group_name[0])) !== false) {
+          $section=$menuitem[0];
+          break 2;
+        }
+      }
+    }
 		    # Generate link
-		    $url = $thissite."/article-flat.php?id=".$overviewline['number']."&group="._rawurlencode($overviewline['newsgroup'])."#".$overviewline['number'];
-		    $groupurl = $thissite."/thread.php?group="._rawurlencode($overviewline['newsgroup']);
+		    $url = "../".$section."/article-flat.php?id=".$overviewline['number']."&group="._rawurlencode($overviewline['newsgroup'])."#".$overviewline['number'];
+		    $groupurl = "../".$section."/thread.php?group="._rawurlencode($overviewline['newsgroup']);
 		    $fromoutput = explode("<", html_entity_decode($overviewline['name']));
 
 		// Use local timezone if possible

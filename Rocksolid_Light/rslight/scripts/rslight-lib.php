@@ -975,7 +975,7 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
 // Overview
       $overviewHandle = fopen($spooldir."/".$nntp_group."-overview", 'a');
   # Prepare overview database
-  $database = $spooldir.'/'.$section.'-overview.db3';
+  $database = $spooldir.'/articles-overview.db3';
   $table = 'overview';
   $dbh = rslight_db_open($database, $table);
   if(!$dbh) {
