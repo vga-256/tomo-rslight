@@ -46,11 +46,17 @@ Upgrading:
 
 1. Disable cron job and kill any running nntp servers (ps aux | grep nntp)
 
-2. Run upgrade script and answer promts
+2. BACKUP spool dir. Default example: 'cd /var/spool' then 'tar zcvf rslight.tgz rslight/*'
 
-3. Compare upgrade config files in config dir /upgrade and change your exsiting config as necessary
+3. Run upgrade script and answer prompts
 
-4. Enable cron job and check that everything works after it runs the first time
+4. Compare upgrade config files in config dir /upgrade and change your exsiting config as necessary
+
+5. If upgrading from a version prior to 0.6.7 it is REQUIRED to run the provided
+script 'build-overview-db.php' at this point. Read the script for instructions.
+NOTE: If upgrading and your spool dir does not include any files ending in .db3, you need to do this.
+
+6. Enable cron job and check that everything works after it runs the first time
 
 If you have trouble, post to rocksolid.nodes.help and we'll try to help.
 
