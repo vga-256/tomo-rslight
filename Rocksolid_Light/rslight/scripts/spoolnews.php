@@ -94,12 +94,12 @@ foreach($grouplist as $findgroup) {
   file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Retrieving articles for: ".$name[0]."...", FILE_APPEND);
   echo "\nRetrieving articles for: ".$name[0]."...  \r\n";
   get_articles($ns, $name[0]);
-/*
+
   if($enable_rslight == 1) {
     file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Updating threads for: ".$name[0]."...", FILE_APPEND);
-//    thread_load_newsserver($ns2,$name[0],0);
+    thread_load_newsserver($ns2,$name[0],0);
   }
-*/
+
 }
 nntp_close($ns2);
 nntp_close($ns);
