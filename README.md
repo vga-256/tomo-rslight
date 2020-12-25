@@ -29,7 +29,7 @@ See INSTALL.md for installation instructions.
 
 If you have trouble, post to rocksolid.nodes.help (www.novabbs.com) and we'll try to help.
 
-Features added in 0.6.5x
+Features added in 0.6.5
 
 * NoCeM support
 * Spamassassin support
@@ -37,7 +37,7 @@ Features added in 0.6.5x
 * Ability to ban incoming messages by user
 * Display first image attachment inline
 
-Features added in 0.6.6x
+Features added in 0.6.6
 
 * SSL encryption as a client and as a server
 * New account created may be authenticated by email if configured to do so
@@ -50,5 +50,12 @@ Features added in 0.6.6x
 * Header links configured through a config file, not hard coded
 * Added motd (message of the day) feature that can also display Unix fortunes
 * Config option to limit a user to 'X' posts/hour. May also be different for individual users
+
+Features added in 0.6.7
+
+* Handle main article overview in sqlite db for easier management and speed
+* Allow configuration of expire per group
+* Search now searches across all sections
+* Moving a group from one section to another doesn't break overview 
 
 Retro Guy retroguy@novabbs.com
