@@ -1,4 +1,7 @@
 <?php
+session_cache_limiter('public');
+session_start();
+
 include "config.inc.php";
 include "newsportal.php";
 include $config_dir.'/admin.inc.php';
