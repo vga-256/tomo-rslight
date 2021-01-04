@@ -1,7 +1,5 @@
 <?php header("Expires: ".gmdate("D, d M Y H:i:s",time()+7200)." GMT");
 session_start();
-$_SESSION['starttime'] = time();
-$_SESSION['views'] = 0;
 $_SESSION['isframed'] = 1;
 
    include "config.inc.php";
