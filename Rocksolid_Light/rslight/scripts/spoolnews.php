@@ -146,30 +146,25 @@ function get_articles($ns, $group) {
     }
   }
  if(isset($CONFIG['enable_nntp']) && $CONFIG['enable_nntp'] == true) {
-  $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-  foreach($grouplist as $findgroup) {
-    $name = explode(':', $findgroup);
-    if (strcmp($name[0], $group) == 0) {
-      if (is_numeric($name[1]))
-        $local = $name[1];
-      else {
-	$thisgroup = $path."/".preg_replace('/\./', '/', $group);
-        $articles = scandir($thisgroup);
-        $ok_article=array();
-        foreach($articles as $this_article) {
-        if(!is_numeric($this_article)) {
-          continue;
-        }
-        $ok_article[]=$this_article;
-        }
-        sort($ok_article);
-        $local = $ok_article[key(array_slice($ok_article, -1, 1, true))];
-	if(!is_numeric($local))
-          $local = 0;
+
+// Try to find last article number in local_groupfile
+  $local = get_config_value($local_groupfile, $group);
+  if(!is_numeric($local)) {
+    $thisgroup = $path."/".preg_replace('/\./', '/', $group);
+    $articles = scandir($thisgroup);
+    $ok_article=array();
+    foreach($articles as $this_article) {
+      if(!is_numeric($this_article)) {
+        continue;
       }
-      break;
+      $ok_article[]=$this_article;
     }
-  } 
+    sort($ok_article);
+    $local = $ok_article[key(array_slice($ok_article, -1, 1, true))];
+    if(!is_numeric($local)) {
+      $local = 0;
+    }
+  }
   if($local < 1)
     $local = 1;
  } 
