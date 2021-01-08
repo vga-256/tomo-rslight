@@ -26,7 +26,7 @@
   if (($rate > .15) && ($_SESSION['views'] > 5)) {
     header("HTTP/1.0 429 Too Many Requests");
     if(!isset($_SESSION['throttled'])) {
-      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Too many requests from ".$_SERVER['REMOTE_ADDR']." requesting: ".$group, FILE_APPEND);
+      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Too many requests from ".$_SERVER['REMOTE_ADDR']." throttling", FILE_APPEND);
 	  $_SESSION['throttled'] = true;
     }
     exit(0);
