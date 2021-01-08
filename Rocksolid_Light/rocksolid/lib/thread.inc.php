@@ -114,6 +114,8 @@ function thread_cache_save($headers,$group) {
  * the article.
  */
 function thread_cache_removearticle($group,$id) {
+  global $logdir, $config_name;
+  $logfile=$logdir.'/newsportal.log';
   $thread=thread_cache_load($group);
   if(!$thread) return false;
   $changed=false;
@@ -133,6 +135,7 @@ function thread_cache_removearticle($group,$id) {
               unset($thread[$reference]->answers[$search]);
           }
         }
+	  file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Trimming: ".$id." from ".$group, FILE_APPEND);
       unset($thread[$value->id]);
       $changed=true;
       break;
@@ -286,6 +289,7 @@ function thread_load_newsserver(&$ns,$groupname,$poll) {
     // w: complete rebuild of the group-info file
     // a: add new articles to the group-info file
     // n: there are no new articles, no rebuild or actualisation
+    // t: low watermark increased, remove expired articles
     $spoolopenmodus="n";
     // if the group-info file doesn't exist: create it
     if (!((file_exists($infofilename)) && (file_exists($spoolfilename)) &&
@@ -297,21 +301,21 @@ function thread_load_newsserver(&$ns,$groupname,$poll) {
       $oldid=fgets($infofile,100);
       if (trim($oldid) != $idstring) {
         echo "<!-- Database Error, rebuilding Database...-->\n";
-	file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Database Error, Rebuilding ".$groupname, FILE_APPEND);
+	file_put_contents($logfile, "\n".format_log_date()." ".$config_name." config changed, Rebuilding ".$groupname, FILE_APPEND);
         $spoolopenmodus="w";
       }
       $oldgroupinfo=explode(" ",trim(fgets($infofile,200)));
       fclose($infofile);
       if ($groupinfo[3] < $oldgroupinfo[1]) {
-        file_put_contents($logfile, "\n".format_log_date()." ".$config_name." groupinfo[3] has changed. Rebuilding ".$groupname, FILE_APPEND);
+        file_put_contents($logfile, "\n".format_log_date()." ".$config_name." high watermark reduced. Rebuilding ".$groupname, FILE_APPEND);
         $spoolopenmodus="w";
       }
       if ($maxarticles == 0) {
         if ($groupinfo[2] != $oldgroupinfo[0]) $spoolopenmodus="w";
       } else {
         if ($groupinfo[2] > $oldgroupinfo[0]) {
-	  file_put_contents($logfile, "\n".format_log_date()." ".$config_name." groupinfo[2] has changed. Rebuilding ".$groupname, FILE_APPEND);
-          $spoolopenmodus="w";
+	  file_put_contents($logfile, "\n".format_log_date()." ".$config_name." low watermark increased. Trimming ".$groupname, FILE_APPEND);
+          $spoolopenmodus="t";
 	}
       }
       // if the high watermark increased, add articles to the existing spool
@@ -352,7 +356,24 @@ function thread_load_newsserver(&$ns,$groupname,$poll) {
     }
     echo "<!--openmodus: ".$spoolopenmodus."-->\n";
     // load the old spool-file, if we do not have a complete rebuild
-    if ($spoolopenmodus != "w") $headers=thread_cache_load($groupname);
+    if (($spoolopenmodus != "w") && ($spoolopenmodus != "t")) {
+	 $headers=thread_cache_load($groupname);
+    }
+    if ($spoolopenmodus == 't') {
+	$count = 0;
+	for($i=$oldgroupinfo[0]; $i<$groupinfo[2]; $i++) {
+	  thread_cache_removearticle($groupname,$i);
+	  $count++;
+	}
+        // Save the info-file
+        $oldinfo=file($infofilename);
+        $oldstring=explode(" ", $oldinfo[1]);
+        $infofile=fopen($infofilename,"w");
+        fputs($infofile,$idstring."\n");
+        fputs($infofile,$groupinfo[2]." ".$oldstring[1]." ".($oldgroupinfo[2] - $count)."\r\n");
+        fclose($infofile);
+	$spoolopenmodus = "n";
+    }
     // read articles from the newsserver
     if ($spoolopenmodus != "n") {
       // order the article overviews from the newsserver
