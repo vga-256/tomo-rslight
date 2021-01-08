@@ -148,7 +148,7 @@ function get_articles($ns, $group) {
  if(isset($CONFIG['enable_nntp']) && $CONFIG['enable_nntp'] == true) {
 
 // Try to find last article number in local_groupfile
-  $local = get_config_value($local_groupfile, $group);
+  $local = get_high_watermark($group);
   if(!is_numeric($local)) {
     $thisgroup = $path."/".preg_replace('/\./', '/', $group);
     $articles = scandir($thisgroup);
@@ -168,7 +168,7 @@ function get_articles($ns, $group) {
   if($local < 1)
     $local = 1;
  } 
-  # Split group config line to get last article number
+  # Split group response line to get last article number
   $detail = explode(" ", $response);
   if (!isset($article)) {
     $article = $detail[2];
@@ -451,4 +451,27 @@ function nntp2_open($nserver=0,$nport=0) {
   if ($ns==false) echo "<p>".$text_error["connection_failed"]."</p>";
   return $ns;
 }
+
+function get_high_watermark($group) {
+  global $local_groupfile;
+   
+  if ($configFileHandle = @fopen($local_groupfile, 'r'))
+  {
+    while (!feof($configFileHandle))
+    {
+      $buffer = fgets($configFileHandle);
+      if(strpos($buffer, $group.':') !== FALSE) {
+        $dataline=$buffer;
+        fclose($configFileHandle);
+        $datafound = explode(':',$dataline);
+        return trim($datafound[1]);
+      }
+    }
+    fclose($configFileHandle);
+    return FALSE;
+  } else {
+    return FALSE;
+  }
+}
+
 ?>
