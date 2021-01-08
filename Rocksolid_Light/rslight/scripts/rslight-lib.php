@@ -1035,45 +1035,6 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
   unlink($sn_lockfile);
 }
 
-function nntp2_open($nserver=0,$nport=0) {
-  global $text_error,$CONFIG,$logfile;
-  // echo "<br>NNTP OPEN<br>";
-  $authorize=((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
-              ($CONFIG['remote_auth_user'] != ""));
-  if ($nserver==0) $nserver=$CONFIG['remote_server'];
-  if ($nport==0) $nport=$CONFIG['remote_port'];
-  if($CONFIG['remote_ssl']) {
-    $ns=@fsockopen('ssl://'.$nserver.":".$nport);
-  } else {
-    $ns=@fsockopen('tcp://'.$nserver.":".$nport);
-  }
-  $weg=line_read($ns);  // kill the first line
-  if (substr($weg,0,2) != "20") {
-    fclose($ns);
-    $ns=false;
-    file_put_contents($logfile, "\n".format_log_date()." Failed to connect to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
-  } else {
-    file_put_contents($logfile, "\n".format_log_date()." Connected to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
-    if ($ns != false) {
-      fputs($ns,"MODE reader\r\n");
-      $weg=line_read($ns);  // and once more
-      if ((substr($weg,0,2) != "20") &&
-          ((!$authorize) || ((substr($weg,0,3) != "480") && ($authorize)))) {
-        fclose($ns);
-        $ns=false;
-      }
-    }
-    if ((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
-        ($CONFIG['remote_auth_user'] != "")) {
-      fputs($ns,"AUTHINFO USER ".$CONFIG['remote_auth_user']."\r\n");
-      $weg=line_read($ns);
-      fputs($ns,"AUTHINFO PASS ".$CONFIG['remote_auth_pass']."\r\n");
-      $weg=line_read($ns);
-    }
-  }
-  return $ns;
-}
-
 function get_article_list($thisgroup) {
   	global $spooldir;
         $group_overviewfp=fopen($spooldir."/".$thisgroup."-overview", 'r');
