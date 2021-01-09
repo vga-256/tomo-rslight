@@ -64,6 +64,13 @@ if(is_file($sem)) {
   $maxfirstrequest = 20;
 }
 
+if(filemtime($spooldir.'/'.$config_name.'-thread-timer')+600 < time()) {
+  $timer=true;
+  touch($spooldir.'/'.$config_name.'-thread-timer');
+} else {
+  $timer=false;
+}
+
 # Check for groups file, create if necessary
 create_spool_groups($file_groups, $remote_groupfile);
 create_spool_groups($file_groups, $local_groupfile);
@@ -96,10 +103,11 @@ foreach($grouplist as $findgroup) {
   get_articles($ns, $name[0]);
 
   if($enable_rslight == 1) {
-    file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Updating threads for: ".$name[0]."...", FILE_APPEND);
-    thread_load_newsserver($ns2,$name[0],0);
+    if($timer) {
+      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Updating threads for: ".$name[0]."...", FILE_APPEND);
+      thread_load_newsserver($ns2,$name[0],0);
+    }
   }
-
 }
 nntp_close($ns2);
 nntp_close($ns);
