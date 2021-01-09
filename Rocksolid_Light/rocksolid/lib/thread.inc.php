@@ -72,11 +72,15 @@ function thread_cache_load($group) {
   if (!file_exists($filename)) return false;
   if ($compress_spoolfiles) {
     $file=gzopen("$spooldir/$group-data.dat","r");
+    flock($file, LOCK_SH);
     $headers=unserialize(gzread($file,1000000));
+    flock($file, LOCK_UN);
     gzclose($file);
   } else {
     $file=fopen($filename,"r");
+    flock($file, LOCK_SH);
     $headers=unserialize(fread($file,filesize($filename)));
+    flock($file, LOCK_UN);
     fclose($file);
   }
   return($headers);
@@ -90,10 +94,13 @@ function thread_cache_load($group) {
  * $group: name of the newsgroup, is needed to create the filename
  */
 function thread_cache_save($headers,$group) {
-  global $spooldir,$compress_spoolfiles;
+  global $spooldir,$compress_spoolfiles,$logdir,$config_name;
+  $logfile=$logdir.'/newsportal.log';
   if ($compress_spoolfiles) {
     $file=gzopen("$spooldir/$group-data.dat","w");
+    $islock = flock($file, LOCK_EX);
     gzputs($file,serialize($headers));
+    flock($file, LOCK_UN);
     gzclose($file);
   } else {
     $file=fopen("$spooldir/$group-data.dat","w");
@@ -101,8 +108,11 @@ function thread_cache_save($headers,$group) {
       die('The spool-directory is not writeable. Please change the user '.
           'permissions to give the webserver write-access to it.');
     }
+    $islock = flock($file, LOCK_EX);
     fputs($file,serialize($headers));
+    flock($file, LOCK_UN);
     fclose($file);
+    file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Locking status: ".$islock." for ".$group, FILE_APPEND);
   }
 }
 
