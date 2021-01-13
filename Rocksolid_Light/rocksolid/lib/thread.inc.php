@@ -302,9 +302,8 @@ function thread_load_newsserver(&$ns,$groupname,$poll) {
     // t: low watermark increased, remove expired articles
     $spoolopenmodus="n";
     // if the group-info file doesn't exist: create it
-    if (!((file_exists($infofilename)) && (file_exists($spoolfilename)) &&
-          (filesize($infofilename)>0) && (filesize($spoolfilename)>0))) {
-      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." ".$infofilename." does not exist. Rebuilding ".$groupname, FILE_APPEND);
+    if (!((file_exists($infofilename)) && (file_exists($spoolfilename)))) {
+      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." ".$infofilename." or ".$spoolfilename." does not exist. Rebuilding ".$groupname, FILE_APPEND);
       $spoolopenmodus="w";
     } else {
       $infofile=fopen($infofilename,"r");
