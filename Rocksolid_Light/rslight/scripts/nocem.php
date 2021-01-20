@@ -99,13 +99,18 @@ function delete_message($messageid, $group) {
     }
  if($config_name) {
   $database = $spooldir.'/articles-overview.db3';
-  $table = 'overview';
-  $dbh = rslight_db_open($database, $table);
-  $query = $dbh->prepare('DELETE FROM '.$table.' WHERE msgid=:messageid');
+  $dbh = rslight_db_open($database);
+  $query = $dbh->prepare('DELETE FROM overview WHERE msgid=:messageid');
   $query->execute(['messageid' => $messageid]);
   $dbh = null; 
  }
-
+  if($CONFIG['article_database'] == '1') {
+    $database = $spooldir.'/'.$group.'-articles.db3';
+    $articles_dbh = article_db_open($database);
+    $articles_query = $articles_dbh->prepare('DELETE FROM articles WHERE msgid=:messageid');
+    $articles_query->execute(['messageid' => $messageid]);
+    $articles_dbh = null;
+  }
   $this_overview=$spooldir.'/'.$group.'-overview';
   if(false === (is_file($this_overview))) {
     return;

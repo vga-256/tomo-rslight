@@ -98,6 +98,7 @@ $table = 'overview';
 $dbh = rslight_db_open($database, $table);
 $query = $dbh->prepare('SELECT * FROM '.$table.' WHERE newsgroup=:findgroup AND date >= '.$oldest.' ORDER BY date DESC LIMIT '.$maxdisplay);
 $articles = array();
+$db_articles = array();
 foreach($grouplist as $findgroup) {
 	$groups = preg_split("/(\ |\t)/", $findgroup, 2);
 	$findgroup = $groups[0];
@@ -108,16 +109,20 @@ foreach($grouplist as $findgroup) {
 	    continue 2;
 	  }
 	}
+/*
 	$thisgroup = preg_replace('/\./', '/', $findgroup);
 	if (!is_dir($spoolpath.$thisgroup)) {
 		continue;
 	}
 	$stats = stat($spoolpath.$thisgroup);
 	if($stats[9] > $oldest) {
+*/
+if(1) {
 	  if($dbh) {
       		$query->execute(['findgroup' => $findgroup]);
 		while (($overviewline = $query->fetch()) !== false) {
 		    $articles[] = $spoolpath.$thisgroup.'/'.$overviewline['number'];
+		    $db_articles[] = $findgroup.':'.$overviewline['number'].':'.$overviewline['date'];
 		}
 	  }	  
 	}
@@ -177,17 +182,29 @@ if (isset($_GET['thisgroup'])) {
 
 $results=0;
 $files = array();
-foreach($articles as $article) {
+if($CONFIG['article_database'] == '1') {
+  foreach($db_articles as $article) {
+    $order=explode(':', $article);
+    $files[$order[2]] = $article;
+  }
+} else {
+  foreach($articles as $article) {
     if(is_dir($article)) {
 		continue;
     }
     $files[filemtime($article)] = $article;
+  }
 }
 krsort($files);
 echo '<table cellspacing="0" width="100%" class="np_results_table">';
 //date_default_timezone_set(timezone_name_from_abbr("", $CONFIG['timezone'] * 3600, 0));
 foreach($files as $article) {
-    $articledata = file_get_contents($article);
+    if($CONFIG['article_database'] == '1') {
+      $data = explode(':', $article);
+      $articledata = np_get_db_article($data[1], $data[0], 0);
+    } else {
+      $articledata = file_get_contents($article);
+    }
     $bodystart = strpos($articledata, $localeol);
 
     $header = substr($articledata, 0, $bodystart);
@@ -201,12 +218,17 @@ foreach($files as $article) {
 	}
 
     # Find group name and article number
-    $group = preg_replace($spoolpath_regexp, '', $article);
-    $group = preg_replace('/\//', '.', $group);
-    $findme = strrpos($group, '.');
-    $groupname = substr($group, 0, $findme);
-    $articlenumber = substr($group, $findme+1);
-
+    if($CONFIG['article_database'] == '1') {
+      $group = $data[0];
+      $articlenumber = $data[1];
+      $groupname = $group;
+    } else {
+      $group = preg_replace($spoolpath_regexp, '', $article);
+      $group = preg_replace('/\//', '.', $group);
+      $findme = strrpos($group, '.');
+      $groupname = substr($group, 0, $findme);
+      $articlenumber = substr($group, $findme+1);
+    }
     # Generate link
     $url = $thissite."/article-flat.php?id=".$articlenumber."&group="._rawurlencode($groupname)."#".$articlenumber;
     $groupurl = $thissite."/thread.php?group="._rawurlencode($groupname);

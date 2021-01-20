@@ -36,7 +36,7 @@ if(!isset($maxarticles_per_run)) {
   $maxarticles_per_run = 100;
 }
 if(!isset($maxfirstrequest)) {
-  $maxfirstrequest = 1000;
+  $maxfirstrequest = 50000;
 }
 
 if(!isset($CONFIG['enable_nntp']) || $CONFIG['enable_nntp'] != true) {
@@ -118,13 +118,17 @@ echo "\nSpoolnews Done\r\n";
 function get_articles($ns, $group) {
   global $enable_rslight, $spooldir, $CONFIG, $maxarticles_per_run, $maxfirstrequest, $workpath, $path, $remote_groupfile, $local_groupfile, $local, $logdir, $config_name, $logfile;
 
-  # Prepare search database (this is only for testing atm)
+  # Prepare databases
   $database = $spooldir.'/articles-overview.db3';
   $table = 'overview';
   $dbh = rslight_db_open($database, $table);
   $sql = 'INSERT INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';
   $stmt = $dbh->prepare($sql);
-
+  if($CONFIG['article_database'] == '1') {
+    $article_dbh = article_db_open($spooldir.'/'.$group.'-articles.db3');
+    $article_sql = 'INSERT INTO articles(newsgroup, number, msgid, date, name, subject, article) VALUES(?,?,?,?,?,?,?)';
+    $article_stmt = $article_dbh->prepare($article_sql);
+  }
   if($ns == false) {
     file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Lost connection to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
     exit();
@@ -158,15 +162,7 @@ function get_articles($ns, $group) {
 // Try to find last article number in local_groupfile
   $local = get_high_watermark($group);
   if(!is_numeric($local)) {
-    $thisgroup = $path."/".preg_replace('/\./', '/', $group);
-    $articles = scandir($thisgroup);
-    $ok_article=array();
-    foreach($articles as $this_article) {
-      if(!is_numeric($this_article)) {
-        continue;
-      }
-      $ok_article[]=$this_article;
-    }
+    $ok_article = get_article_list($group);
     sort($ok_article);
     $local = $ok_article[key(array_slice($ok_article, -1, 1, true))];
     if(!is_numeric($local)) {
@@ -330,13 +326,17 @@ function get_articles($ns, $group) {
       fputs($overviewHandle, $local."\t".$subject[1]."\t".$from[1]."\t".$finddate[1]."\t".$mid[1]."\t".$references."\t".$bytes."\t".$lines."\t".$xref."\n");
       fclose($overviewHandle);
       $references="";
-// add to search database
+// add to database
 	$stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1]]);
-// End Overview
-
-      if($article_date > time())
-        $article_date = time();
-      touch($grouppath."/".$local, $article_date);
+	if($CONFIG['article_database'] == '1') {
+	  $this_article = file_get_contents($grouppath."/".$local);
+	  $article_stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1], $this_article]);
+	  unlink($grouppath."/".$local);
+        } else {
+          if($article_date > time())
+            $article_date = time();
+          touch($grouppath."/".$local, $article_date);
+        }
       echo "\nRetrieved: ".$group." ".$article."\n";
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Wrote to spool: ".$CONFIG['remote_server']." ".$group.":".$article, FILE_APPEND);
       $i++;
@@ -386,6 +386,9 @@ function get_articles($ns, $group) {
     }
   }
   fclose($saveconfig);
+  if($CONFIG['article_database'] == '1') {
+    $article_dbh = null;
+  }
   $dbh = null;
 }
 
@@ -480,6 +483,20 @@ function get_high_watermark($group) {
   } else {
     return FALSE;
   }
+}
+
+function get_article_list($thisgroup) {
+        global $spooldir;
+        $group_overviewfp=fopen($spooldir."/".$thisgroup."-overview", 'r');
+        $ok_article=array();
+        while($line = fgets($group_overviewfp)) {
+          $art=explode("\t", $line);
+          if(is_numeric($art[0])) {
+            $ok_article[] = $art[0];
+          }
+        }
+        fclose($group_overviewfp);
+        return($ok_article);
 }
 
 ?>

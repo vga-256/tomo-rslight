@@ -261,6 +261,7 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
     }
     if (isset($CONFIG['organization']))
       fputs($ns,'Organization: '.quoted_printable_encode($CONFIG['organization'])."\r\n");
+    $body=trim($body);
     if ((isset($CONFIG['postfooter'])) && ($CONFIG['postfooter']!="")) {
       $body.="\n-- \n".$CONFIG['postfooter']."\n".$_SERVER['HTTP_HOST']; 
     }

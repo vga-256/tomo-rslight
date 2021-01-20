@@ -1,7 +1,7 @@
 <?php
     function interact($msgsock, $use_crypto=false)
     {
-	global $logdir,$logfile,$installed_path,$config_path,$groupconfig,$workpath,$path, $spooldir,$nntp_group,$nntp_article,$auth_ok,$user,$pass;
+	global $CONFIG,$logdir,$logfile,$installed_path,$config_path,$groupconfig,$workpath,$path, $spooldir,$nntp_group,$nntp_article,$auth_ok,$user,$pass;
 
 	$workpath=$spooldir."/";
 	$path=$workpath."articles/";
@@ -474,10 +474,7 @@ function get_xhdr($header, $articles) {
     $msg="221 Header information for ".$header." follows (from articles)\r\n";
     for($i=$first; $i<=$last; $i++) {
       $article_full_path=$thisgroup.'/'.strval($i);
-      if(!is_file($article_full_path)) {
-        continue;
-      }
-      $data=extract_header_line($article_full_path, $header);
+      $data=extract_header_line($article_full_path, $header, $thisgroup, $i);
       if($data !== false) {
         if($mid !== false) {
           $msg.=$mid." ".$data;
@@ -490,8 +487,13 @@ function get_xhdr($header, $articles) {
     return $msg;
 }
 
-function extract_header_line($article_full_path, $header) {
-  $thisarticle=file($article_full_path, FILE_IGNORE_NEW_LINES);
+function extract_header_line($article_full_path, $header, $thisgroup, $article) {
+  global $CONFIG;
+  if($CONFIG['article_database'] == '1') {
+    $thisarticle=get_db_article($article, $thisgroup);
+  } else {
+    $thisarticle=file($article_full_path, FILE_IGNORE_NEW_LINES);
+  }
   foreach($thisarticle as $thisline) {
     if($thisline == "") {
       $msg2.=".\r\n";
@@ -585,11 +587,6 @@ function get_stat($article) {
 	return $msg;
     }
     $overviewfile=$workpath.$nntp_group."-overview";
-    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
-    if(!file_exists($thisgroup."/".$article)) {
-	$msg="423 No such article number ".$article."\r\n";
-	return $msg;
-    }
     $overviewfp=fopen($overviewfile, 'r');
     while($overviewline=fgets($overviewfp)) {
       $over=explode("\t", $overviewline);
@@ -605,13 +602,13 @@ function get_stat($article) {
 }
 
 function get_article($article, $nntp_group) {
-    global $config_dir,$path,$groupconfig,$config_name,$spooldir,$nntp_article;
+    global $CONFIG,$config_dir,$path,$groupconfig,$config_name,$spooldir,$nntp_article;
     $msg2="";
-// By Message-ID
 // Use article pointer
     if(!isset($article) && is_numeric($nntp_article)) {
       $article = $nntp_article;
     }
+// By Message-ID
     if(!is_numeric($article)) {
       $database = $spooldir.'/articles-overview.db3';
       $table = 'overview';
@@ -622,6 +619,7 @@ function get_article($article, $nntp_group) {
       while($found = $stmt->fetch()) {
 	$nntp_group = $found['newsgroup'];
 	$article = $found['number'];
+	$this_id = $found['msgid'];
 	break;
       }
       $dbh = null; 
@@ -636,13 +634,17 @@ function get_article($article, $nntp_group) {
         return $msg;
       }
     } 
+  if($CONFIG['article_database'] == '1') {
+      $thisarticle=get_db_article($article, $nntp_group);
+  } else {
     $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
     if(!file_exists($thisgroup."/".$article)) {
         $msg.="430 no such article found\r\n";
         return $msg;
     }
     $thisarticle=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
-    foreach($thisarticle as $thisline) {
+  }
+  foreach($thisarticle as $thisline) {
         if((strpos($thisline, "Message-ID: ") === 0) && !isset($mid[1])) {
           $mid=explode(': ', $thisline);
         }
@@ -653,45 +655,82 @@ function get_article($article, $nntp_group) {
     return $msg.$msg2;
 }
 
-function get_header($article, $nntp_group) {
-    global $nntp_article,$config_dir,$path,$groupconfig,$config_name,$spooldir;
+function get_db_article($article, $group) {
+    global $nntp_article,$nntp_group,$config_dir,$path,$groupconfig,$config_name,$spooldir;
     $msg2="";
+    $database = $spooldir.'/'.$nntp_group.'-articles.db3';
+    $dbh = article_db_open($database);
 // Use article pointer
     if(!isset($article) && is_numeric($nntp_article)) {
       $article = $nntp_article;
     }
 // By Message-ID
     if(!is_numeric($article)) {
-      $database = $spooldir.'/articles-overview.db3';
-      $table = 'overview';
-      $dbh = rslight_db_open($database, $table);
-      $stmt = $dbh->prepare("SELECT * FROM $table WHERE msgid like :terms");
+      $stmt = $dbh->prepare("SELECT * FROM articles WHERE msgid like :terms");
       $stmt->bindParam(':terms', $article);
       $stmt->execute();
       while($found = $stmt->fetch()) {
-        $nntp_group = $found['newsgroup'];
-        $article = $found['number'];
+	$msg2 = $found['article'];
         break;
       }
-      $dbh = null;
     } else {
-// By article number
-      if($nntp_group === "") {
-        $msg.="412 no newsgroup has been selected\r\n";
-        return $msg;
-      }
-      if(!is_numeric($article)) {
-        $msg.="420 no article has been selected\r\n";
-        return $msg;
+      $stmt = $dbh->prepare("SELECT * FROM articles WHERE number = :terms");
+      $stmt->bindParam(':terms', $article);
+      $stmt->execute();
+      while($found = $stmt->fetch()) {
+        $msg2 = $found['article'];
+        break;
       }
     }
-    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
-    if(!file_exists($thisgroup."/".$article)) {
+    $dbh = null;
+
+    $thisarticle = preg_split("/\r\n|\n|\r/", trim($msg2));
+    return $thisarticle;
+}
+
+function get_header($article, $nntp_group) {
+    global $CONFIG,$nntp_article,$config_dir,$path,$groupconfig,$config_name,$spooldir;
+    $msg2="";
+// Use article pointer
+    if(!isset($article) && is_numeric($nntp_article)) {
+      $article = $nntp_article;
+    }
+    if($CONFIG['article_database'] == '1') {
+      $thisarticle=get_db_article($article, $nntp_group);
+    } else {
+// By Message-ID
+      if(!is_numeric($article)) {
+        $database = $spooldir.'/articles-overview.db3';
+        $table = 'overview';
+        $dbh = rslight_db_open($database, $table);
+        $stmt = $dbh->prepare("SELECT * FROM $table WHERE msgid like :terms");
+        $stmt->bindParam(':terms', $article);
+        $stmt->execute();
+        while($found = $stmt->fetch()) {
+          $nntp_group = $found['newsgroup'];
+          $article = $found['number'];
+          break;
+        }
+        $dbh = null;
+      } else {
+// By article number
+        if($nntp_group === "") {
+          $msg.="412 no newsgroup has been selected\r\n";
+          return $msg;
+        }
+        if(!is_numeric($article)) {
+          $msg.="420 no article has been selected\r\n";
+          return $msg;
+        }
+      }
+      $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
+      if(!file_exists($thisgroup."/".$article)) {
         $msg.="430 no such article found\r\n";
         return $msg;
+      }
+      $thisarticle=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
     }
-    $thisarticle=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
-    foreach($thisarticle as $thisline) {
+     foreach($thisarticle as $thisline) {
 	if($thisline == "") {
 	  $msg2.=".\r\n";
 	  break;
@@ -706,8 +745,15 @@ function get_header($article, $nntp_group) {
 }
 
 function get_body($article, $nntp_group) {
-    global $config_dir,$path,$groupconfig,$config_name,$spooldir;
+    global $CONFIG,$nntp_article,$config_dir,$path,$groupconfig,$config_name,$spooldir;
     $msg2="";
+// Use article pointer
+    if(!isset($article) && is_numeric($nntp_article)) {
+      $article = $nntp_article;
+    }
+    if($CONFIG['article_database'] == '1') {
+      $thisarticle=get_db_article($article, $nntp_group);
+    } else {
 // By Message-ID
     if(!is_numeric($article)) {
       $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -744,6 +790,7 @@ function get_body($article, $nntp_group) {
         return $msg;
     }
     $thisarticle=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
+   }
     $body=0;
     foreach($thisarticle as $thisline) {
         if(($thisline == "") && ($body == 0)) {
@@ -1015,6 +1062,15 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
     $stmt = $dbh->prepare($sql);
     $stmt->execute([$nntp_group, $local, $mid_i, $article_date, $from_i, $subject_i]);
     $dbh = null;
+  }
+  if($CONFIG['article_database'] == '1') {
+    $article_dbh = article_db_open($spooldir.'/'.$nntp_group.'-articles.db3');
+    $article_sql = 'INSERT INTO articles(newsgroup, number, msgid, date, name, subject, article) VALUES(?,?,?,?,?,?,?)';
+    $article_stmt = $article_dbh->prepare($article_sql);
+    $this_article = file_get_contents($grouppath."/".$local);
+    $article_stmt->execute([$nntp_group, $local, $mid_i, $article_date, $from_i, $subject_i, trim($this_article)]);
+    unlink($grouppath."/".$local);
+    $article_dbh = null;
   }
       fputs($overviewHandle, $local."\t".$subject_i."\t".$from_i."\t".$date_i."\t".$mid_i."\t".$references_i."\t".$bytes_i."\t".$lines_i."\t".$xref_i."\n");
       fclose($overviewHandle);

@@ -467,10 +467,35 @@ function show_header($head,$group,$local_poster=false) {
 
 function display_full_headers($id,$group,$name,$from) {
   global $spoolpath, $CONFIG;
-  $thisgroup = preg_replace('/\./', '/', $group);  
+  if($CONFIG['article_database'] == '1') {
+    $message = np_get_db_article($id, $group, 1);
+   foreach($message as $line) {
+    if(trim($line) == '') {
+      break;
+    }
+    if(stripos($line, 'Xref: ') === 0) {
+      continue;
+    }
+    if(stripos($line, 'From: ') === 0) {
+      $return.='From: ';
+      if(isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) {
+        $return.=truncate_email($from);
+      } else {
+        $return.=htmlspecialchars($from);
+      }
+      if ($name != "") {
+        $return.=' ('.htmlspecialchars($name).')';
+      }
+      $return.='<br />';
+      continue;
+     }
+     $return.=mb_decode_mimeheader(htmlspecialchars($line)).'<br />';
+   }
+  } else {
+    $thisgroup = preg_replace('/\./', '/', $group);  
+    $message=fopen($spoolpath.$thisgroup.'/'.$id, 'r');
 
-  $message=fopen($spoolpath.$thisgroup.'/'.$id, 'r');
-  while($line=fgets($message)) {
+   while($line=fgets($message)) {
     if(trim($line) == '') { 
       break;
     }
@@ -489,13 +514,11 @@ function display_full_headers($id,$group,$name,$from) {
       }
       $return.='<br />';
       continue;
-    }
-
-
-    $return.=mb_decode_mimeheader(htmlspecialchars($line)).'<br />';
+     }
+     $return.=mb_decode_mimeheader(htmlspecialchars($line)).'<br />';
+   }
+   fclose($message);
   }
-  fclose($message);
-
   return($return);
 }
 

@@ -19,11 +19,6 @@
   $webserver_group=$CONFIG['webserver_user'];
   $logfile=$logdir.'/expire.log';
 
-  $database = $spooldir.'/articles-overview.db3';
-  $table = 'overview';
-  $dbh = rslight_db_open($database, $table);
-  $query = $dbh->prepare('DELETE FROM '.$table.' WHERE newsgroup=:newsgroup AND number=:number');
-  
   $grouplist = file($config_dir.'/'.$config_name.'/groups.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
   foreach($grouplist as $groupline) {
     $expireme = 0;
@@ -40,6 +35,18 @@
     if($expireme < 1) {
 	continue;
     }
+  $database = $spooldir.'/articles-overview.db3';
+  $dbh = rslight_db_open($database);
+  $query = $dbh->prepare('DELETE FROM overview WHERE newsgroup=:newsgroup AND date<:expireme');
+  $query->execute([':newsgroup' => $group, ':expireme' => $expireme]);
+  $dbh = null;
+  if($CONFIG['article_database'] == '1') {
+    $database = $spooldir.'/'.$group.'-articles.db3';
+    $articles_dbh = article_db_open($database);
+    $articles_query = $articles_dbh->prepare('DELETE FROM articles WHERE newsgroup=:newsgroup AND date<:expireme');
+    $articles_query->execute([':newsgroup' => $group, ':expireme' => $expireme]);
+    $articles_dbh = null;
+  }
     $grouppath = preg_replace('/\./', '/', $group); 
 
     $this_overview=$spooldir.'/'.$group.'-overview';
@@ -54,7 +61,6 @@
         echo "Expiring: ".$break[4]." IN: ".$group." #".$break[0]."\r\n";
         file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Expiring: ".$break[4]." IN: ".$group." #".$break[0], FILE_APPEND);
         unlink($spooldir.'/articles/'.$grouppath.'/'.$break[0]);
-        $query->execute([':newsgroup' => $group, ':number' => $break[0]]);
         continue;
       } else {
         fputs($out_overviewfp, $line);
@@ -66,7 +72,6 @@
     chown($this_overview, $CONFIG['webserver_user']);
     chgrp($this_overview, $webserver_group);
   }
-  $dbh = null;
   unlink($lockfile);
   touch($spooldir.'/'.$config_name.'-expire-timer');
 ?>

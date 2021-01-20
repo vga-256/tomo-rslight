@@ -1198,14 +1198,14 @@ function get_date_interval($value) {
     return $variance;
 }
 
-function rslight_db_open($database, $table) {
+function rslight_db_open($database, $table='overview') {
   try {
     $dbh = new PDO('sqlite:'.$database);
   } catch (PDOExeption $e) {
     echo 'Connection failed: '.$e->getMessage();
     exit;
   }
-  $dbh->exec("CREATE TABLE IF NOT EXISTS $table(
+  $dbh->exec("CREATE TABLE IF NOT EXISTS overview(
      id INTEGER PRIMARY KEY,
      newsgroup TEXT,
      number TEXT,
@@ -1213,8 +1213,76 @@ function rslight_db_open($database, $table) {
      date TEXT,
      name TEXT,
      subject TEXT)");
+  $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_date on overview(date)');
+  $stmt->execute();
+  $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_newsgroup on overview(newsgroup)');
+  $stmt->execute();
+  $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_newsgroup_number on overview(newsgroup,number)');
+  $stmt->execute();
   return($dbh);
 }
+
+function article_db_open($database) {
+  try {
+    $dbh = new PDO('sqlite:'.$database);
+  } catch (PDOExeption $e) {
+    echo 'Connection failed: '.$e->getMessage();
+    exit;
+  }
+  $dbh->exec("CREATE TABLE IF NOT EXISTS articles(
+     id INTEGER PRIMARY KEY,
+     newsgroup TEXT,
+     number TEXT,
+     msgid TEXT,
+     date TEXT,
+     name TEXT,
+     subject TEXT,
+     article TEXT)");
+  $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS db_number on articles(number)');
+  $stmt->execute();
+return($dbh);
+}
+
+function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
+    global $config_dir,$path,$groupconfig,$config_name,$logdir,$spooldir;
+    $logfile=$logdir.'/newsportal.log';
+    $msg2="";
+	$closeme = 0;
+    $database = $spooldir.'/'.$group.'-articles.db3';
+    if(!$dbh) {
+	  $dbh = article_db_open($database);
+	  $closeme = 1;
+    }
+// By Message-ID
+    if(!is_numeric($article)) {
+      $stmt = $dbh->prepare("SELECT * FROM articles WHERE msgid like :terms");
+      $stmt->bindParam(':terms', $article);
+      $stmt->execute();
+      while($found = $stmt->fetch()) {
+        $msg2 = $found['article'];
+        break;
+      }
+    } else {
+      $stmt = $dbh->prepare("SELECT * FROM articles WHERE number = :terms");
+      $stmt->bindParam(':terms', $article);
+      $stmt->execute();
+      while($found = $stmt->fetch()) {
+        $msg2 = $found['article'];
+        break;
+      }
+    }
+    if($closeme == 1) {
+	  $dbh = null;
+    }
+    file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: fetched: ".$article." from ".$group, FILE_APPEND);
+    if($makearray == 1) {
+	$thisarticle = preg_split("/\r\n|\n|\r/", trim($msg2));
+	return $thisarticle;
+    } else {
+	return trim($msg2);
+    }
+}
+
 function get_config_value($configfile,$request) {
   global $config_dir;
     
