@@ -1219,6 +1219,8 @@ function rslight_db_open($database, $table='overview') {
   $stmt->execute();
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_newsgroup_number on overview(newsgroup,number)');
   $stmt->execute();
+  $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_name on overview(name)');
+  $stmt->execute();
   return($dbh);
 }
 
