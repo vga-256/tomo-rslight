@@ -57,6 +57,7 @@ return [
 'nocem_groups' => 'The list of groups to monitor for nocem messages (space separated)',
 
 # Misc
+'article_database' => 'Enable storing articles in database files (1=database, blank=tradspool)',
 'expire_days' => 'Posts should be expired after how many days (zero for never)',
 'pathhost' => 'The pathhost to use in your XRef header. (maybe a one word name for your site)',
 'thissitekey' => 'An approximately 16 character random key (numbers, letters, else) specific for your site'

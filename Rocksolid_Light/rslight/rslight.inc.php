@@ -41,6 +41,7 @@ return [
   'nocem_groups' => 'rocksolid.spam',
   'expire_days' => '0',
   'pathhost' => 'unconfigured',
+  'article_database' => '1',
   'thissitekey' => '<site_key>'
 ];
 ?>
