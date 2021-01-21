@@ -36,7 +36,7 @@ if(!isset($maxarticles_per_run)) {
   $maxarticles_per_run = 100;
 }
 if(!isset($maxfirstrequest)) {
-  $maxfirstrequest = 50000;
+  $maxfirstrequest = 1000;
 }
 
 if(!isset($CONFIG['enable_nntp']) || $CONFIG['enable_nntp'] != true) {
