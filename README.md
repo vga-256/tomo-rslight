@@ -58,4 +58,11 @@ Features added in 0.6.7
 * Search now searches across all sections
 * Moving a group from one section to another doesn't break overview 
 
+Features added in 0.6.8
+
+* Store articles in sqlite .db3 instead of tradspool
+* Simple config option to choose database or tradspool
+* Search now searches across all sections
+* Faster search and overboard 
+
 Retro Guy retroguy@novabbs.com
