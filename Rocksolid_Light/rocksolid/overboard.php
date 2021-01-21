@@ -109,21 +109,18 @@ foreach($grouplist as $findgroup) {
 	    continue 2;
 	  }
 	}
-/*
 	$thisgroup = preg_replace('/\./', '/', $findgroup);
-	if (!is_dir($spoolpath.$thisgroup)) {
-		continue;
-	}
+        if (!is_dir($spoolpath.$thisgroup)) {
+                continue;
+        }
 	$stats = stat($spoolpath.$thisgroup);
 	if($stats[9] > $oldest) {
-*/
-if(1) {
-	  if($dbh) {
-      		$query->execute(['findgroup' => $findgroup]);
-		while (($overviewline = $query->fetch()) !== false) {
-		    $articles[] = $spoolpath.$thisgroup.'/'.$overviewline['number'];
-		    $db_articles[] = $findgroup.':'.$overviewline['number'].':'.$overviewline['date'];
-		}
+          if($dbh) {
+            $query->execute(['findgroup' => $findgroup]);
+	    while (($overviewline = $query->fetch()) !== false) {
+	      $articles[] = $spoolpath.$thisgroup.'/'.$overviewline['number'];
+	      $db_articles[] = $findgroup.':'.$overviewline['number'].':'.$overviewline['date'];
+	    }
 	  }	  
 	}
 }
