@@ -8,6 +8,21 @@ include $config_dir.'/admin.inc.php';
 
 if(!isset($_POST['key']) || $_POST['key'] !== hash('md5', $admin['key'])) {
 include "head.inc"; 
+
+  echo '<h1 class="np_thread_headline">';
+  echo '<a href="'.$file_index.'" target='.$frame['menu'].'>'.basename(getcwd()).'</a> / ';
+  echo 'search</h1>';
+echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
+// View Latest button
+  if (isset($overboard) && ($overboard == true)) {
+    echo '<td>';
+    echo '<form target="'.$frame['content'].'" action="overboard.php">';
+    echo '<button class="np_button_link" type="submit">'.$text_thread["button_overboard"].'</button>';
+    echo '</form>';
+    echo '</td>';
+  } else {
+//    echo htmlspecialchars($CONFIG['title_full']);
+  }
 ?>
 
 <body>
@@ -15,34 +30,32 @@ include "head.inc";
 <tr>
 <form name="form1" method="post" action="search.php">
 <td>
-<table width="100%" border="0" cellpadding="3" cellspacing="1">
+<table width="100%" align="center" border="0" cellpadding="3" cellspacing="1">
 <tr>
 <td colspan="3"><strong>Search recent messages</strong><br />(searches last <?php echo $maxarticles; ?> articles per group)</td>
 </tr>
 <tr></tr>
 <tr>
-<td width="78"><strong>Search Terms</strong></td>
-<td width="6">:</td>
+<td><strong>Search Terms:</strong>&nbsp;
 <?php
-echo '<td width="294"><input name="terms" type="text" id="terms" value="'.$_GET['terms'].'"></td>';
+echo '<input name="terms" type="text" id="terms" value="'.$_GET['terms'].'"></td>';
 echo '</tr><tr></tr><tr>';
 if ($_GET['searchpoint'] == 'Poster') {
-  echo '<td><input type="radio" name="searchpoint" value="subject"/>Subject</td>';
-  echo '<td><input type="radio" name="searchpoint" value="name" checked="checked"/>Poster</td>';
+  echo '<td><input type="radio" name="searchpoint" value="subject"/>Subject&nbsp;';
+  echo '<input type="radio" name="searchpoint" value="name" checked="checked"/>Poster&nbsp;';
 } else {
-  echo '<td><input type="radio" name="searchpoint" value="subject" checked="checked"/>Subject</td>'; 
-  echo '<td><input type="radio" name="searchpoint" value="name"/>Poster</td>';
+  echo '<td><input type="radio" name="searchpoint" value="subject" checked="checked"/>Subject&nbsp;'; 
+  echo '<input type="radio" name="searchpoint" value="name"/>Poster&nbsp;';
 }
 ?>
-<td><input type="radio" name="searchpoint" value="msgid"/>Message-ID</td>
+<input type="radio" name="searchpoint" value="msgid"/>Message-ID</td>
 </tr>
 <tr>
 <td><input name="command" type="hidden" id="command" value="Search" readonly="readonly"></td>
 <?php echo '<input type="hidden" name="key" value="'.hash('md5', $admin['key']).'">';?>
 </tr>
+<tr></tr>
 <tr>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
 <td><input type="submit" name="Submit" value="Search"></td>
 </tr>
 <tr><td>
