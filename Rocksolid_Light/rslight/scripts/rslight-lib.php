@@ -16,6 +16,11 @@
         $cryptoSetup = stream_socket_enable_crypto($msgsock, TRUE, STREAM_CRYPTO_METHOD_TLSv1_0_SERVER | STREAM_CRYPTO_METHOD_TLSv1_1_SERVER | STREAM_CRYPTO_METHOD_TLSv1_2_SERVER);
     }
     stream_set_timeout($msgsock, 300);
+    $client = stream_socket_get_name($msgsock, 1);
+    $client_ip = explode(':', $client);
+    if(strpos($CONFIG['open_clients'], $client_ip[0]) !== false) {
+	$auth_ok = 1;
+    }
     /* Send instructions. */
     $msg = "200 Rocksolid Light NNTP Server ready (no posting)\r\n";
     fwrite($msgsock, $msg, strlen($msg)); 
@@ -35,7 +40,7 @@ set_time_limit(0);
 	if(stripos($buf, 'AUTHINFO PASS') !== false) {
 	  file_put_contents($logfile, "\n".format_log_date()." AUTHINFO PASS (hidden)", FILE_APPEND);
 	} else {
-	  file_put_contents($logfile, "\n".format_log_date()." ".$buf, FILE_APPEND);
+	  file_put_contents($logfile, "\n".format_log_date()." ".$client." ".$buf, FILE_APPEND);
 	}
 	$command = explode(' ', $buf);
 	$command[0] = strtolower($command[0]);
@@ -563,7 +568,8 @@ function get_xover($articles, $msgsock) {
       $article=preg_split("/[\s,]+/", $overviewline);
       for($i=$first; $i<=$last; $i++) {
         if($article[0] === strval($i)) {
-          fwrite($msgsock, $overviewline."\r\n", strlen($overviewline));
+	  $overviewline = trim($overviewline)."\r\n";
+          fwrite($msgsock, $overviewline, strlen($overviewline));
         }
       }
     }
@@ -934,7 +940,7 @@ function get_list($mode) {
 	$name = preg_split("/( |\t)/", $findgroup, 2);
 	if($name[0][0] === ':')
 	    continue;
-	$ok_article = get_article_list($nntp_group);
+	$ok_article = get_article_list($findgroup);
 	sort($ok_article);
 	$last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
 	$first = $ok_article[0];

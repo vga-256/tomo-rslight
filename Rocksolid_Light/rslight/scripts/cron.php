@@ -19,10 +19,8 @@
 	  if(($ok_group[0] == ':') || (trim($ok_group) == "")) {
 	    continue;
 	  }
-	  if(strpos($ok_group, "\t") == false) {
-	    $ok_group=preg_replace('/ /', "\t", $ok_group, 1);
-	  }
-	  fputs($fp1, $ok_group);
+	  $ok_group = preg_split("/( |\t)/", trim($ok_group), 2);
+	  fputs($fp1, $ok_group[0]."\r\n");
 	}
       }
     }

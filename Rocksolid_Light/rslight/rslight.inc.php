@@ -42,6 +42,7 @@ return [
   'expire_days' => '0',
   'pathhost' => 'unconfigured',
   'article_database' => '1',
+  'open_clients' => ''
   'thissitekey' => '<site_key>'
 ];
 ?>
