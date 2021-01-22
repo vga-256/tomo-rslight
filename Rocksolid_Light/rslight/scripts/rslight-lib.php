@@ -15,7 +15,7 @@
     if($use_crypto) {
         $cryptoSetup = stream_socket_enable_crypto($msgsock, TRUE, STREAM_CRYPTO_METHOD_TLSv1_0_SERVER | STREAM_CRYPTO_METHOD_TLSv1_1_SERVER | STREAM_CRYPTO_METHOD_TLSv1_2_SERVER);
     }
-    stream_set_timeout($msgsock, 30);
+    stream_set_timeout($msgsock, 300);
     /* Send instructions. */
     $msg = "200 Rocksolid Light NNTP Server ready (no posting)\r\n";
     fwrite($msgsock, $msg, strlen($msg)); 
