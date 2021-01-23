@@ -180,7 +180,8 @@ function message_parse($rawmessage) {
  * attachment.
  */
 function message_read($id,$bodynum=0,$group="") {
-  global $cache_articles,$spooldir,$spoolpath,$text_error,$ns;
+  global $CONFIG,$config_name,$cache_articles,$spooldir,$spoolpath,$logdir,$text_error,$ns;
+  $logfile = $logdir.'/newsportal.log';
   if (!testGroup($group)) {
     echo $text_error["read_access_denied"];
     return;
@@ -218,20 +219,27 @@ function message_read($id,$bodynum=0,$group="") {
       ((!isset($message->body[$bodynum])) &&
        ($bodynum != -1))) {
 // Pull article from spool if exists, else from server
-   $articlepath = $spoolpath.preg_replace('/\./', '/', $group)."/".$id;
-   if (file_exists($articlepath)) {
-    $rawmessage_fh = fopen($articlepath, "r");
-     $rawmessage=array();
-     $line=rtrim(fgets($rawmessage_fh), PHP_EOL);
-     while(!feof($rawmessage_fh)) {
-       if(strcmp($line,".") == 0) {
-         break;
+    unset($rawmessage);
+    if($CONFIG['article_database'] == '1') {
+      $rawmessage = np_get_db_article($id, $group, 1);
+    } else {
+     $articlepath = $spoolpath.preg_replace('/\./', '/', $group)."/".$id;
+     if (file_exists($articlepath)) {
+       $rawmessage_fh = fopen($articlepath, "r");
+       $rawmessage=array();
+       $line=rtrim(fgets($rawmessage_fh), PHP_EOL);
+       while(!feof($rawmessage_fh)) {
+         if(strcmp($line,".") == 0) {
+           break;
+         }
+         $rawmessage[]=$line;
+         $line=rtrim(fgets($rawmessage_fh), PHP_EOL); 
        }
-       $rawmessage[]=$line;
-       $line=rtrim(fgets($rawmessage_fh), PHP_EOL); 
-     }
-    fclose($rawmessage_fh);
-   } else {
+      fclose($rawmessage_fh);
+    }
+  } 
+  if(!isset($rawmessage)) {
+    file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: Requesting: ".$group.":".$id." from server", FILE_APPEND);
     if (!isset($ns)) {
       $ns=nntp_open();
     }
