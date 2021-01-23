@@ -1279,6 +1279,7 @@ function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
     file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: fetched: ".$article." from ".$group, FILE_APPEND);
     if($makearray == 1) {
 	$thisarticle = preg_split("/\r\n|\n|\r/", trim($msg2));
+	array_pop($thisarticle);
 	return $thisarticle;
     } else {
 	return trim($msg2);

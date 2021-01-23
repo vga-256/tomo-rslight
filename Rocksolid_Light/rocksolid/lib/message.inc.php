@@ -186,6 +186,9 @@ function message_read($id,$bodynum=0,$group="") {
     echo $text_error["read_access_denied"];
     return;
   }
+  if(!is_numeric($id)) {
+    return false;
+  }
   $message = new messageType;
   if ((isset($cache_articles)) && ($cache_articles == true)) {
     // Try to load a cached article
@@ -219,6 +222,9 @@ function message_read($id,$bodynum=0,$group="") {
       ((!isset($message->body[$bodynum])) &&
        ($bodynum != -1))) {
 // Pull article from spool if exists, else from server
+    if(trim($group) == '') {
+      return false;
+    }
     unset($rawmessage);
     if($CONFIG['article_database'] == '1') {
       $rawmessage = np_get_db_article($id, $group, 1);
