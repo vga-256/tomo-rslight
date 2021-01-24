@@ -52,9 +52,9 @@ Upgrading:
 
 4. Compare upgrade config files in config dir /upgrade and change your exsiting config as necessary
 
-5. If upgrading from a version prior to 0.6.7 it is REQUIRED to run the provided
-script 'build-overview-db.php' at this point. Read the script for instructions.
-NOTE: If upgrading and your spool dir does not include any files ending in .db3, you need to do this.
+5. If your current version is pre-0.6.8, you must pull articles again from your upstream server to set up.
+Please post in a rocksolid.* group (rocksolid.nodes.help) and we can walk you through this. It's pretty
+simple.
 
 6. Enable cron job and check that everything works after it runs the first time
 
