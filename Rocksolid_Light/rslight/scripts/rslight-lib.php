@@ -642,6 +642,10 @@ function get_article($article, $nntp_group) {
     } 
   if($CONFIG['article_database'] == '1') {
       $thisarticle=get_db_article($article, $nntp_group);
+      if($thisarticle === FALSE) {
+	$msg.="430 no such article found\r\n";
+        return $msg;
+      }
   } else {
     $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
     if(!file_exists($thisgroup."/".$article)) {
@@ -664,6 +668,7 @@ function get_article($article, $nntp_group) {
 function get_db_article($article, $group) {
     global $nntp_article,$nntp_group,$config_dir,$path,$groupconfig,$config_name,$spooldir;
     $msg2="";
+    $ok_article = 0;
     $database = $spooldir.'/'.$nntp_group.'-articles.db3';
     $dbh = article_db_open($database);
 // Use article pointer
@@ -677,6 +682,7 @@ function get_db_article($article, $group) {
       $stmt->execute();
       while($found = $stmt->fetch()) {
 	$msg2 = $found['article'];
+	$ok_article = 1;
         break;
       }
     } else {
@@ -685,13 +691,17 @@ function get_db_article($article, $group) {
       $stmt->execute();
       while($found = $stmt->fetch()) {
         $msg2 = $found['article'];
+	$ok_article = 1;
         break;
       }
     }
     $dbh = null;
-
-    $thisarticle = preg_split("/\r\n|\n|\r/", trim($msg2));
-    return $thisarticle;
+    if($ok_article !== 1) {
+	return FALSE;
+    } else {
+    	$thisarticle = preg_split("/\r\n|\n|\r/", trim($msg2));
+    	return $thisarticle;
+    }
 }
 
 function get_header($article, $nntp_group) {
@@ -703,6 +713,10 @@ function get_header($article, $nntp_group) {
     }
     if($CONFIG['article_database'] == '1') {
       $thisarticle=get_db_article($article, $nntp_group);
+      if($thisarticle === FALSE) {
+        $msg.="430 no such article found\r\n";
+        return $msg;
+      }
     } else {
 // By Message-ID
       if(!is_numeric($article)) {
@@ -759,6 +773,10 @@ function get_body($article, $nntp_group) {
     }
     if($CONFIG['article_database'] == '1') {
       $thisarticle=get_db_article($article, $nntp_group);
+      if($thisarticle === FALSE) {
+        $msg.="430 no such article found\r\n";
+        return $msg;
+      }
     } else {
 // By Message-ID
     if(!is_numeric($article)) {
