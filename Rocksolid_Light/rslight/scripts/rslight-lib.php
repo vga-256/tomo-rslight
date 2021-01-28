@@ -296,6 +296,20 @@ function process_post($filename) {
 	}
     }
   rewind($message);
+/*
+ * SPAM CHECK
+ */         
+  if (isset($CONFIG['spamassassin']) && ($CONFIG['spamassassin'] == true)) {
+          $spam_result_array = check_spam($subject[1],$from[1],$newsgroups,$references,$body,$msgid);
+          $res = $spam_result_array['res'];
+          $spamresult = $spam_result_array['spamresult'];
+          $spamcheckerversion = $spam_result_array['spamcheckerversion'];
+          $spamlevel = $spam_result_array['spamlevel'];
+  }
+  if($res === 1) {
+    $orig_newsgroups = $newsgroups;
+    $newsgroups=$CONFIG['spamgroup'];
+  }
 /* Find section for posting */
     $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach($menulist as $menu) {
@@ -333,6 +347,9 @@ function process_post($filename) {
     }
     if($no_org == 1) {
       fputs($postfilehandle, "Organization: ".$CONFIG['organization']."\r\n");
+    }
+    if($res === 1) {
+      fputs($postfilehandle,"X-Rslight-Original-Group: ".$orig_newsgroups."\r\n");
     }
     foreach($message as $line) {
       if(stripos($line, "Newsgroups: ") === 0) {

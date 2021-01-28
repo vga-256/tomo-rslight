@@ -1133,9 +1133,9 @@ function is_multibyte($s) {
 
 function check_spam($subject,$from,$newsgroups,$ref,$body,$msgid)
 {
-  global $msgid_generate,$msgid_fqdn;
+  global $msgid_generate,$msgid_fqdn,$spooldir;
   global $CONFIG;
-  $spamfile = tempnam('./spool', 'spam-');
+  $spamfile = tempnam($spooldir, 'spam-');
 
   $tmpheader='From: '.$from."\r\n";
   if(strpos($from, $CONFIG['anonusername'])) {
@@ -1345,6 +1345,7 @@ function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
     file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: fetched: ".$article." from ".$group, FILE_APPEND);
     if($makearray == 1) {
 	$thisarticle = preg_split("/\r\n|\n|\r/", trim($msg2));
+	array_pop($thisarticle);
 	return $thisarticle;
     } else {
 	return trim($msg2);
