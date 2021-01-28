@@ -244,7 +244,7 @@ function message_read($id,$bodynum=0,$group="") {
       fclose($rawmessage_fh);
     }
   } 
-  if(!isset($rawmessage)) {
+  if(!isset($rawmessage) || $rawmessage === FALSE) {
     file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: Requesting: ".$group.":".$id." from server", FILE_APPEND);
     if (!isset($ns)) {
       $ns=nntp_open();

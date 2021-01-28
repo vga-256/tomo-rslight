@@ -1321,6 +1321,7 @@ function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
 	  $dbh = article_db_open($database);
 	  $closeme = 1;
     }
+    $ok_article = 0;
 // By Message-ID
     if(!is_numeric($article)) {
       $stmt = $dbh->prepare("SELECT * FROM articles WHERE msgid like :terms");
@@ -1328,6 +1329,7 @@ function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
       $stmt->execute();
       while($found = $stmt->fetch()) {
         $msg2 = $found['article'];
+	$ok_article = 1;
         break;
       }
     } else {
@@ -1336,11 +1338,16 @@ function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
       $stmt->execute();
       while($found = $stmt->fetch()) {
         $msg2 = $found['article'];
+	$ok_article = 1;
         break;
       }
     }
     if($closeme == 1) {
 	  $dbh = null;
+    }
+    if($ok_article !== 1) {
+	file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: ".$article." from ".$group." not found in database", FILE_APPEND);
+	return FALSE;
     }
     file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: fetched: ".$article." from ".$group, FILE_APPEND);
     if($makearray == 1) {
