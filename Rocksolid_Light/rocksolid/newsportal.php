@@ -86,6 +86,72 @@ function nntp_open($nserver=0,$nport=0) {
   return $ns;
 }
 
+function nntp2_open($nserver=0,$nport=0) {
+  global $text_error,$CONFIG;
+  // echo "<br>NNTP OPEN<br>";
+  $authorize=((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
+              ($CONFIG['remote_auth_user'] != ""));
+  if ($nserver==0) $nserver=$CONFIG['remote_server'];
+  if ($nport==0) $nport=$CONFIG['remote_port'];
+  if($CONFIG['remote_ssl']) {
+    $ns=@fsockopen('ssl://'.$nserver.":".$nport);
+  } else {
+    if($CONFIG['socks_host'] !== '') {
+        $ns=fsocks4asockopen($CONFIG['socks_host'], $CONFIG['socks_port'], $nserver, $nport);
+    } else {
+        $ns=@fsockopen('tcp://'.$nserver.":".$nport);
+    }
+  }
+//  $ns=@fsockopen($nserver,$nport);
+  $weg=line_read($ns);  // kill the first line
+  if (substr($weg,0,2) != "20") {
+    echo "<p>".$text_error["error:"].$weg."</p>";
+    fclose($ns);
+    $ns=false;
+  } else {
+    if ($ns != false) {
+      fputs($ns,"MODE reader\r\n");
+      $weg=line_read($ns);  // and once more
+      if ((substr($weg,0,2) != "20") &&
+          ((!$authorize) || ((substr($weg,0,3) != "480") && ($authorize)))) {
+        echo "<p>".$text_error["error:"].$weg."</p>";
+        fclose($ns);
+        $ns=false;
+      }
+    }
+    if ((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
+        ($CONFIG['remote_auth_user'] != "")) {
+      fputs($ns,"AUTHINFO USER ".$CONFIG['remote_auth_user']."\r\n");
+      $weg=line_read($ns);
+      fputs($ns,"AUTHINFO PASS ".$CONFIG['remote_auth_pass']."\r\n");
+      $weg=line_read($ns);
+/* Only check auth if reading and posting same server */
+      if (substr($weg,0,3) != "281" && !(isset($post_server)) && ($post_server!="")) {
+        echo "<p>".$text_error["error:"]."</p>";
+        echo "<p>".$text_error["auth_error"]."</p>";
+      }
+    }
+  }
+  if ($ns==false) echo "<p>".$text_error["connection_failed"]."</p>";
+  return $ns;
+}
+
+function fsocks4asockopen($proxyHostname, $proxyPort, $targetHostname, $targetPort)
+{
+    $sock = fsockopen($proxyHostname, $proxyPort);
+    if($sock === false)
+        return false;
+    fwrite($sock, pack("CCnCCCCC", 0x04, 0x01, $targetPort, 0x00, 0x00, 0x00, 0x01, 0x00).$targetHostname.pack("C", 0x00));
+    $response = fread($sock, 16);
+    $values = unpack("xnull/Cret/nport/Nip", $response);
+    if($values["ret"] == 0x5a) return $sock;
+    else
+    {
+        fclose(sock);
+        return false;
+    }
+}
+
 /*
  * Close a NNTP connection
  *
@@ -1279,7 +1345,6 @@ function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
     file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: fetched: ".$article." from ".$group, FILE_APPEND);
     if($makearray == 1) {
 	$thisarticle = preg_split("/\r\n|\n|\r/", trim($msg2));
-	array_pop($thisarticle);
 	return $thisarticle;
     } else {
 	return trim($msg2);

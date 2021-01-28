@@ -11,6 +11,8 @@ return [
 'remote_ssl' => 'Enable if connecting to remote server using ssl (1=true, blank=false)', 
 'remote_auth_user' => 'Username to authenticate to remote server',
 'remote_auth_pass' => 'Password to authenticate to remote server', 
+'socks_host' => 'ip address of your socks4a server (use this for tor)',
+'socks_port' => 'port for your socks4a server',
 
 # LOCAL server configuration
 'enable_nntp' => 'Enable local nntp server (1=true, blank=false)', 

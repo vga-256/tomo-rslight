@@ -417,52 +417,6 @@ function create_spool_groups($in_groups, $out_groups) {
   return;
 }
 
-function nntp2_open($nserver=0,$nport=0) {
-  global $text_error,$CONFIG;
-  // echo "<br>NNTP OPEN<br>";
-  $authorize=((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
-              ($CONFIG['remote_auth_user'] != ""));
-  if ($nserver==0) $nserver=$CONFIG['remote_server'];
-  if ($nport==0) $nport=$CONFIG['remote_port'];
-  if($CONFIG['remote_ssl']) {
-    $ns=@fsockopen('ssl://'.$nserver.":".$nport);
-  } else {
-    $ns=@fsockopen('tcp://'.$nserver.":".$nport);
-  }
-//  $ns=@fsockopen($nserver,$nport);
-  $weg=line_read($ns);  // kill the first line
-  if (substr($weg,0,2) != "20") {
-    echo "<p>".$text_error["error:"].$weg."</p>";
-    fclose($ns);
-    $ns=false;
-  } else {
-    if ($ns != false) {
-      fputs($ns,"MODE reader\r\n");
-      $weg=line_read($ns);  // and once more
-      if ((substr($weg,0,2) != "20") &&
-          ((!$authorize) || ((substr($weg,0,3) != "480") && ($authorize)))) {
-        echo "<p>".$text_error["error:"].$weg."</p>";
-        fclose($ns);
-        $ns=false;
-      }
-    }
-    if ((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
-        ($CONFIG['remote_auth_user'] != "")) {
-      fputs($ns,"AUTHINFO USER ".$CONFIG['remote_auth_user']."\r\n");
-      $weg=line_read($ns);
-      fputs($ns,"AUTHINFO PASS ".$CONFIG['remote_auth_pass']."\r\n");
-      $weg=line_read($ns);
-/* Only check auth if reading and posting same server */
-      if (substr($weg,0,3) != "281" && !(isset($post_server)) && ($post_server!="")) {
-        echo "<p>".$text_error["error:"]."</p>";
-        echo "<p>".$text_error["auth_error"]."</p>";
-      }
-    }
-  }
-  if ($ns==false) echo "<p>".$text_error["connection_failed"]."</p>";
-  return $ns;
-}
-
 function get_high_watermark($group) {
   global $local_groupfile;
    
