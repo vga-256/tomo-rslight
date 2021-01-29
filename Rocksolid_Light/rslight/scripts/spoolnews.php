@@ -246,18 +246,19 @@ function get_articles($ns, $group) {
 	  $lines++;
 	}
        if($is_header == 1) {
+	$response = str_replace("\t", " ", $response);
 	// Find article date
 	if(stripos($response, "Date: ") === 0) {
-	  $finddate=explode(': ', $response);
+	  $finddate=explode(': ', $response, 2);
 	  $article_date = strtotime($finddate[1]);
 	}
 	// Get overview data
         if(stripos($response, "Message-ID: ") === 0) {
-          $mid=explode(': ', $response);
+          $mid=explode(': ', $response, 2);
 	  $ref=0;
         }
         if(stripos($response, "From: ") === 0) {
-          $from=explode(': ', $response);
+          $from=explode(': ', $response, 2);
 	  if(isset($CONFIG['enable_nntp']) && $CONFIG['enable_nntp'] == true) { 
 	    foreach($banned_names as $banned_name) {
 	      if(stripos($from[1], $banned_name) !== false) {
