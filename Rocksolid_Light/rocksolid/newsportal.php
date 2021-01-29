@@ -96,7 +96,7 @@ function nntp2_open($nserver=0,$nport=0) {
   if($CONFIG['remote_ssl']) {
     $ns=@fsockopen('ssl://'.$nserver.":".$nport);
   } else {
-    if($CONFIG['socks_host'] !== '') {
+    if(isset($CONFIG['socks_host']) && $CONFIG['socks_host'] !== '') {
         $ns=fsocks4asockopen($CONFIG['socks_host'], $CONFIG['socks_port'], $nserver, $nport);
     } else {
         $ns=@fsockopen('tcp://'.$nserver.":".$nport);
