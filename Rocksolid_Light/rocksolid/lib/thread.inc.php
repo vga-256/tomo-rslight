@@ -906,7 +906,8 @@ function thread_show_recursive(&$headers,&$liste,$depth,$tree,$group,$article_fi
     // read the first article
     $c=$headers[$liste[$i]]; 
 // Avoid listing if error (fixme)  
-    if (preg_match('/\D/', $c->number)) {
+//    if (preg_match('/\D/', $c->number)) {
+    if(!is_numeric($c->number) || !isset($c->id) || $c->date < 1) {
 	continue;
     }
     $article_count++; 
