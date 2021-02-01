@@ -16,8 +16,12 @@ if (file_exists('../common/mods/style.css')) {
 include "config.inc.php";
 include($config_dir.'/phpmailer.inc.php');
 
-# The following line is required for phpmailer 6.0 or above
-#use PHPMailer\PHPMailer\PHPMailer;
+// Setup mailer
+if(class_exists('PHPMailer')) {
+  $mail = new PHPMailer();
+} else {
+  $mail = new PHPMailer\PHPMailer\PHPMailer();
+}
 
 include "head.inc";
 $CONFIG = include($config_file);
@@ -142,8 +146,6 @@ if ($ok || ($command == "Create") )
     }
   }
   if($CONFIG['verify_email']) {
-// Setup mailer
-$mail = new PHPMailer();
 
 $mail->SMTPOptions = array(
     'ssl' => array(
