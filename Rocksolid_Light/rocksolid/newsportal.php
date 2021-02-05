@@ -98,11 +98,15 @@ function nntp2_open($nserver=0,$nport=0) {
   } else {
     if(isset($CONFIG['socks_host']) && $CONFIG['socks_host'] !== '') {
         $ns=fsocks4asockopen($CONFIG['socks_host'], $CONFIG['socks_port'], $nserver, $nport);
+    } elseif(isset($CONFIG['http_host']) && $CONFIG['http_host'] !== '') {
+	$ns=fhttpsockopen($CONFIG['http_host'], $CONFIG['http_port'], $nserver, $nport);
     } else {
         $ns=@fsockopen('tcp://'.$nserver.":".$nport);
     }
   }
-//  $ns=@fsockopen($nserver,$nport);
+  if(isset($CONFIG['http_host']) && $CONFIG['http_host'] !== '') {
+    fputs($ns, "MODE reader\r\n");
+  }
   $weg=line_read($ns);  // kill the first line
   if (substr($weg,0,2) != "20") {
     echo "<p>".$text_error["error:"].$weg."</p>";
@@ -147,9 +151,25 @@ function fsocks4asockopen($proxyHostname, $proxyPort, $targetHostname, $targetPo
     if($values["ret"] == 0x5a) return $sock;
     else
     {
-        fclose(sock);
+        fclose($sock);
         return false;
     }
+}
+
+function fhttpsockopen($proxyHostname, $proxyPort, $targetHostname, $targetPort)
+{
+    $sock = fsockopen($proxyHostname, $proxyPort);
+    if($sock === false)
+        return false;
+    fwrite($sock, 'CONNECT '.$targetHostname.':'.$targetPort.' HTTP/1.0');
+    fwrite($sock, "\r\n");
+    fwrite($sock, "\r\n");
+    $weg=line_read($sock);
+    while (substr($weg,0,2) != "20") {
+	echo $weg."\r\n";
+	$weg=line_read($sock);
+    }
+    return $sock;
 }
 
 /*

@@ -13,6 +13,8 @@ return [
 'remote_auth_pass' => 'Password to authenticate to remote server', 
 'socks_host' => 'ip address of your socks4a server (use this for tor)',
 'socks_port' => 'port for your socks4a server',
+'http_host' => 'ip address of your http proxy server (use this for i2p or create client tunnel)',
+'http_port' => 'port for your http proxy server',
 
 # LOCAL server configuration
 'enable_nntp' => 'Enable local nntp server (1=true, blank=false)', 

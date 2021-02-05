@@ -138,7 +138,6 @@ function get_articles($ns, $group) {
   $banned_names = file("/etc/rslight/banned_names.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
  
   $nocem_check="@@NCM";
-
   # Check if group exists. Open it if it does
   fputs($ns, "group ".$group."\r\n");
   $response = line_read($ns);
@@ -223,6 +222,10 @@ function get_articles($ns, $group) {
       if (strcmp(substr($response,0,3),"220") != 0) {
 	echo "\n".$response."\n";
         file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Unexpected response to ARTICLE command: ".$response, FILE_APPEND);
+	if(trim($response) == '') {
+	  fclose($ns);
+	  break;
+        }
 	$article++;
 	continue;
       }
