@@ -5,8 +5,6 @@ return [
   'remote_ssl' => '',
   'socks_host' => '',
   'socks_port' => '',
-  'http_host' => '',
-  'http_port' => '',
   'remote_auth_user' => 'username',
   'remote_auth_pass' => 'password',
   'enable_nntp' => '1',
