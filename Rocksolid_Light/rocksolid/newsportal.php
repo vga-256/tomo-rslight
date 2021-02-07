@@ -147,7 +147,7 @@ function fsocks4asockopen($proxyHostname, $proxyPort, $targetHostname, $targetPo
     if($values["ret"] == 0x5a) return $sock;
     else
     {
-        fclose(sock);
+        fclose($sock);
         return false;
     }
 }
