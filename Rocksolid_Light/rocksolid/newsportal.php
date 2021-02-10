@@ -1022,6 +1022,10 @@ function check_bbs_auth($username, $password) {
     }
   }
 
+  if(trim($username) == strtolower($CONFIG['anonusername']) && $CONFIG['anonuser'] != true) {
+	return FALSE;
+  }
+
   if ($userFileHandle = @fopen($userFilename, 'r'))
   {
         $userFileInfo = fread($userFileHandle, filesize($userFilename));
