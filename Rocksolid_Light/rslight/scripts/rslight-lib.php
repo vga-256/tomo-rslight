@@ -1039,6 +1039,9 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
   $local_groupfile=$spooldir."/".$section."/local_groups.txt";
   $path=$spooldir."/articles/";
   $grouppath = $path.preg_replace('/\./', '/', $nntp_group);
+  if(!is_dir($grouppath)) {
+    mkdir($grouppath, 0755, true);
+  }
   $nocem_check="@@NCM";
   $article_date=strtotime($date_i); 
   # Check if group exists. Open it if it does
