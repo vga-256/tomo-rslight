@@ -20,10 +20,10 @@
   putenv("GNUPGHOME=".$config_dir.".gnupg");
   $webserver_group=$CONFIG['webserver_user'];
   $logfile=$logdir.'/nocem.log';
-  @mkdir($spooldir."nocem/processed",0755,'recursive');
-  @mkdir($spooldir."nocem/failed",0755,'recursive');
+  @mkdir($spooldir."/nocem/processed",0755,'recursive');
+  @mkdir($spooldir."/nocem/failed",0755,'recursive');
 
-  $nocem_path=$spooldir."nocem/";
+  $nocem_path=$spooldir."/nocem/";
   $messages=scandir($nocem_path);
   $begin="@@BEGIN NCM BODY";
   $end="@@END NCM BODY";
