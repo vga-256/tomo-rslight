@@ -1,6 +1,7 @@
 <?php
 //  setcookie("ts_limit",4096,time()+(3600*24*30),"/");
   include "config.inc.php";
+  include $config_dir.'/synchronet.conf';
   include "head.inc";
   $CONFIG = include($config_file);
   $workpath = $config_dir."users/";
@@ -12,7 +13,6 @@
   $userFilename = $workpath.$username;
   $keyFilename = $keypath.$username;
   @mkdir($workpath.'new/');
-  $tmpFilename = $workpath."new/".$username;
   $verified = 0;
 
   $no_verify=explode(' ', $CONFIG['no_verify']);
@@ -42,14 +42,10 @@
         fclose($userFileHandle);
         chmod($userFilename, 0666);
     }
-    if(isset($synch_create) && $synch_create === true) {
-        $result = shell_exec('/sbbs/rscreate/createbbsuser '.$username.' '.$password);
-    }
-    if ($userFileHandle = @fopen($tmpFilename, 'w+'))
-    {
-        fwrite($userFileHandle, $password);
-        fclose($userFileHandle);
-        chmod($tmpFilename, 0666);
+// Create synchronet account
+    if(isset($synch_create) && $synch_create == true) {
+	putenv("SBBSCTRL=$synch_path/ctrl");
+	$result = shell_exec("$synch_path/exec/makeuser $username -P $password");
     }
     $newkey = make_key($username);
     if ($userFileHandle = @fopen($keyFilename, 'w+'))
