@@ -1279,7 +1279,7 @@ function rslight_db_open($database, $table='overview') {
      id INTEGER PRIMARY KEY,
      newsgroup TEXT,
      number TEXT,
-     msgid TEXT,
+     msgid TEXT UNIQUE,
      date TEXT,
      name TEXT,
      subject TEXT)");
@@ -1305,7 +1305,7 @@ function article_db_open($database) {
      id INTEGER PRIMARY KEY,
      newsgroup TEXT,
      number TEXT,
-     msgid TEXT,
+     msgid TEXT UNIQUE,
      date TEXT,
      name TEXT,
      subject TEXT,
