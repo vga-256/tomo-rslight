@@ -24,7 +24,7 @@ $logfile=$logdir.'/import.log';
 $workpath=$spooldir."/";
 $path=$workpath."articles/";
 
-$lockfile = sys_get_temp_dir() . '/'.$config_name.'-import.lock';
+$lockfile = sys_get_temp_dir() . '/'.$config_name.'-spoolnews.lock';
 $pid = file_get_contents($lockfile);
 if (posix_getsid($pid) === false || !is_file($lockfile)) {
    print "Starting Import...\n";
@@ -34,13 +34,13 @@ if (posix_getsid($pid) === false || !is_file($lockfile)) {
    exit;
 }
 
-$group = $argv[1];
+$group = trim($argv[1]);
 import_articles($group);
 echo "\nSpoolnews Done\r\n";
 
 function import_articles($group) {
   global $spooldir, $CONFIG, $workpath, $path, $config_name, $logfile;
-
+  $overview_file = $workpath.'/'.$group."-overview";
   # Prepare databases
 // Overview db
   $database = $spooldir.'/articles-overview.db3';
@@ -101,18 +101,25 @@ function import_articles($group) {
    }
       $lines=$lines-1;
       $bytes = $bytes + ($lines * 2);
-// Overview
-      $overviewHandle = fopen($workpath.$group."-overview", 'a');
-      fputs($overviewHandle, $local."\t".$subject[1]."\t".$from[1]."\t".$finddate[1]."\t".$mid[1]."\t".$references."\t".$bytes."\t".$lines."\t".$xref."\n");
-      fclose($overviewHandle);
-      $references="";
 // add to database
+      $exists_sql = "SELECT * FROM overview WHERE newsgroup=:group AND msgid=:msgid";
+      $exists_stmt = $dbh->prepare($exists_sql);
+      $exists_stmt->execute([':group'=>$group, ':msgid'=>$mid[1]]);
+      $result = $exists_stmt->fetchAll();
+      if(count($result) < 1) { 
 	$stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1]]);
+      }
+      file_put_contents($overview_file, $local."\t".$subject[1]."\t".$from[1]."\t".$finddate[1]."\t".$mid[1]."\t".$references."\t".$bytes."\t".$lines."\t".$xref."\n", FILE_APPEND);
       echo "\nImported: ".$group." ".$local;
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Imported: ".$group.":".$local, FILE_APPEND);
       $i++;
+      $references="";
   }
   $article_dbh = null;
   $dbh = null;
+// Avoid duplicates in overview flat file
+  $lines = file($overview_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+  $lines = array_unique($lines);
+  file_put_contents($overview_file, implode(PHP_EOL, $lines));
 }
 ?>
