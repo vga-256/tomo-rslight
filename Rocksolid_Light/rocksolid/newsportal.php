@@ -1279,7 +1279,7 @@ function rslight_db_open($database, $table='overview') {
      id INTEGER PRIMARY KEY,
      newsgroup TEXT,
      number TEXT,
-     msgid TEXT UNIQUE,
+     msgid TEXT,
      date TEXT,
      name TEXT,
      subject TEXT)");
@@ -1304,7 +1304,7 @@ function article_db_open($database) {
   $dbh->exec("CREATE TABLE IF NOT EXISTS articles(
      id INTEGER PRIMARY KEY,
      newsgroup TEXT,
-     number TEXT,
+     number TEXT UNIQUE,
      msgid TEXT UNIQUE,
      date TEXT,
      name TEXT,

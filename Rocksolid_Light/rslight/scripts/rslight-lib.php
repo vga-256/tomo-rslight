@@ -687,7 +687,7 @@ function get_db_article($article, $group) {
     $msg2="";
     $ok_article = 0;
     $database = $spooldir.'/'.$nntp_group.'-articles.db3';
-    $dbh = article_db_open($database);
+    $dbh = rslight_db_open($database);
 // Use article pointer
     if(!isset($article) && is_numeric($nntp_article)) {
       $article = $nntp_article;
@@ -1136,16 +1136,17 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
 }
 
 function get_article_list($thisgroup) {
-  	global $spooldir;
-        $group_overviewfp=fopen($spooldir."/".$thisgroup."-overview", 'r');
-        $ok_article=array();
-        while($line = fgets($group_overviewfp)) {
-          $art=explode("\t", $line);
-          if(is_numeric($art[0])) {
-            $ok_article[] = $art[0];
-          }
-        }
-        fclose($group_overviewfp);
-	return($ok_article);
+  global $spooldir;
+  $database = $spooldir."/articles-overview.db3";
+  $table = 'overview';
+  $dbh = rslight_db_open($database, $table);
+  $stmt = $dbh->prepare("SELECT * FROM overview WHERE newsgroup=:thisgroup ORDER BY number");
+  $stmt->execute(['thisgroup' => $thisgroup]);
+  $ok_article=array();
+  while($found = $stmt->fetch()) {
+    $ok_article[] = $found['number'];
+  }
+  $dbh = null;
+  return(array_unique($ok_article));
 }
 ?>

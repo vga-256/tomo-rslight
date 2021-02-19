@@ -91,7 +91,7 @@ $enable_rslight=0;
   }
 $ns=nntp2_open($CONFIG['remote_server'], $CONFIG['remote_port']);
 $ns2=nntp_open();
-if($ns == false) {
+if(!$ns) {
   file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Failed to connect to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
   exit();
 }
