@@ -36,7 +36,7 @@ if (posix_getsid($pid) === false || !is_file($lockfile)) {
 
 $group = trim($argv[1]);
 import_articles($group);
-echo "\nSpoolnews Done\r\n";
+echo "\nImport Done\r\n";
 
 function import_articles($group) {
   global $spooldir, $CONFIG, $workpath, $path, $config_name, $logfile;
@@ -46,11 +46,16 @@ function import_articles($group) {
   $database = $spooldir.'/articles-overview.db3';
   $table = 'overview';
   $dbh = rslight_db_open($database, $table);
+  $clear_stmt = $dbh->prepare("DELETE FROM overview WHERE newsgroup=:group");
+  $clear_stmt->bindParam(':group', $group);
+  $clear_stmt->execute();
+  unlink($overview_file);
+
   $sql = 'INSERT INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';
   $stmt = $dbh->prepare($sql);
 // Incoming db
   $article_dbh = article_db_open($spooldir.'/'.$group.'-articles.db3');
-  $article_stmt = $article_dbh->query('SELECT * FROM articles');
+  $article_stmt = $article_dbh->query('SELECT DISTINCT * FROM articles');
   while ($row = $article_stmt->fetch()) {
       $local = $row['number'];
       $this_article = preg_split("/\r\n|\n|\r/", $row['article']);
@@ -71,13 +76,13 @@ function import_articles($group) {
 	// Find article date
 	if(stripos($response, "Date: ") === 0) {
 	  $finddate=explode(': ', $response, 2);
-	  $article_date = strtotime($finddate[1]);
 	  $ref=0;
 	}
 	// Get overview data
         $mid[1] = $row['msgid'];
 	$from[1] = $row['name'];
 	$subject[1] = $row['subject'];
+	$article_date = $row['date'];
 	
 	if(stripos($response, "Xref: ") === 0) {
 	  if(isset($CONFIG['enable_nntp']) && $CONFIG['enable_nntp'] == true) {
@@ -102,13 +107,7 @@ function import_articles($group) {
       $lines=$lines-1;
       $bytes = $bytes + ($lines * 2);
 // add to database
-      $exists_sql = "SELECT * FROM overview WHERE newsgroup=:group AND msgid=:msgid";
-      $exists_stmt = $dbh->prepare($exists_sql);
-      $exists_stmt->execute([':group'=>$group, ':msgid'=>$mid[1]]);
-      $result = $exists_stmt->fetchAll();
-      if(count($result) < 1) { 
-	$stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1]]);
-      }
+      $stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1]]);
       file_put_contents($overview_file, $local."\t".$subject[1]."\t".$from[1]."\t".$finddate[1]."\t".$mid[1]."\t".$references."\t".$bytes."\t".$lines."\t".$xref."\n", FILE_APPEND);
       echo "\nImported: ".$group." ".$local;
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Imported: ".$group.":".$local, FILE_APPEND);
@@ -117,9 +116,5 @@ function import_articles($group) {
   }
   $article_dbh = null;
   $dbh = null;
-// Avoid duplicates in overview flat file
-  $lines = file($overview_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-  $lines = array_unique($lines);
-  file_put_contents($overview_file, implode(PHP_EOL, $lines));
 }
 ?>
