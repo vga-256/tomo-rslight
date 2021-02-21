@@ -110,11 +110,6 @@ foreach($grouplist as $findgroup) {
 	  }
 	}
 	$thisgroup = preg_replace('/\./', '/', $findgroup);
-        if (!is_dir($spoolpath.$thisgroup)) {
-                continue;
-        }
-	$stats = stat($spoolpath.$thisgroup);
-	if($stats[9] > $oldest) {
           if($dbh) {
             $query->execute(['findgroup' => $findgroup]);
 	    while (($overviewline = $query->fetch()) !== false) {
@@ -122,7 +117,6 @@ foreach($grouplist as $findgroup) {
 	      $db_articles[] = $findgroup.':'.$overviewline['number'].':'.$overviewline['date'];
 	    }
 	  }	  
-	}
 }
 $dbh = null;
 
