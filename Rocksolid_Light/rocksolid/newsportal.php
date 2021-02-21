@@ -272,8 +272,12 @@ function get_mimetype_by_filename($name) {
 }
 
 function get_mimetype_by_string($filedata) {
-  $f = finfo_open();
-  return finfo_buffer($f, $filedata, FILEINFO_MIME_TYPE);
+  if(function_exists('finfo_open')) {
+    $f = finfo_open();
+    return finfo_buffer($f, $filedata, FILEINFO_MIME_TYPE);
+  } else {
+    return false;
+  }
 }
 
 /*
@@ -1214,6 +1218,9 @@ function get_date_interval($value) {
     $datetime1 = date_create($value);
     $datetime2 = date_create("@$current");
     $interval = date_diff($datetime1, $datetime2);
+    if(!$interval) {
+	return '(date error)';
+    }
     $years = $interval->format('%y')." Years ";
     $months = $interval->format('%m')." Months ";
     $days = $interval->format('%d')." Days ";
@@ -1282,7 +1289,8 @@ function rslight_db_open($database, $table='overview') {
      msgid TEXT,
      date TEXT,
      name TEXT,
-     subject TEXT)");
+     subject TEXT,
+     unique (newsgroup, msgid))");
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_date on overview(date)');
   $stmt->execute();
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_newsgroup on overview(newsgroup)');
