@@ -168,6 +168,7 @@ function get_articles($ns, $group) {
     if(!is_numeric($local)) {
       $local = 0;
     }
+    $local = $local + 1;
   }
   if($local < 1)
     $local = 1;

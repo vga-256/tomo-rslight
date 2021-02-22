@@ -1063,6 +1063,7 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
         $local = $ok_article[key(array_slice($ok_article, -1, 1, true))];
 	if(!is_numeric($local))
           $local = 0;
+	$local = $local + 1;
       }
       break;
     }
