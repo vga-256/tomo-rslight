@@ -1,7 +1,7 @@
 <?php
     function interact($msgsock, $use_crypto=false)
     {
-	global $CONFIG,$logdir,$logfile,$installed_path,$config_path,$groupconfig,$workpath,$path, $spooldir,$nntp_group,$nntp_article,$auth_ok,$user,$pass;
+	global $CONFIG,$logdir,$logfile,$installed_path,$config_path,$config_dir,$groupconfig,$workpath,$path, $spooldir,$nntp_group,$nntp_article,$auth_ok,$user,$pass;
 
 	$workpath=$spooldir."/";
 	$path=$workpath."articles/";
@@ -28,6 +28,11 @@
 	$msg="";	
 set_time_limit(30);
 	$buf = fgets($msgsock, 2048);
+        if(file_exists($config_dir."/nntp.disable")) {
+           $parent_pid = file_get_contents(sys_get_temp_dir().'/rslight-nntp.lock', IGNORE_NEW_LINES);
+           posix_kill($parent_pid, SIGTERM);
+           exit;
+        }
         if ($buf === false) {
 //            file_put_contents($logfile, "\n".format_log_date()." socket read failed: reason: " . socket_strerror(socket_last_error($msgsock)), FILE_APPEND); 
 	    break;
