@@ -44,9 +44,6 @@ include "auth.inc";
 if($post_captcha)
   include "lib/captcha/captcha.php";
 
-
-
-
 // Save name in cookies
 if (($setcookies==true) && (isset($abspeichern)) && ($abspeichern=="ja")) {
   setcookie("cookie_name",stripslashes($name),time()+(3600*24*90));
@@ -68,8 +65,40 @@ if($testgroup) {
 } else {
   $newsgroups=$thisgroup;
 }
-
-
+  echo '<h1 class="np_thread_headline">';
+  echo '<a href="'.$file_index.'" target='.$frame['menu'].'>'.basename(getcwd()).'</a> / ';
+  echo '<a href="'.$file_thread.'?group='.rawurlencode($thisgroup).'" target='.$frame["content"].'>'.htmlspecialchars(group_display_name($thisgroup)).'</a>';
+  if(isset($type) && $type == 'post') {
+    echo ' / '.$subject.'</h1>';
+  } else {
+    echo '</h1>';
+  }
+  echo '<table cellpadding="0" cellspacing="0" width="100%" class="np_buttonbar"><tr>';
+// View Latest button
+  if (isset($overboard) && ($overboard == true)) {
+    echo '<td>';
+    echo '<form action="overboard.php">';
+    echo '<input type="hidden" name="thisgroup" value="'._rawurlencode($thisgroup).'"/>';
+    echo '<button class="np_button_link" type="submit">'.$text_thread["button_latest"].'</button>';
+    echo '</form>';
+    echo '</td>';
+  }
+ if (!$CONFIG['readonly'] &&
+      (!function_exists("npreg_group_has_write_access") ||
+       npreg_group_has_write_access($thisgroup)))
+ {
+// New Thread button
+    echo '<td>';
+    echo '<form action="'.$file_post.'">';
+    echo '<input type="hidden" name="group" value="'.urlencode($thisgroup).'"/>';
+    echo '<button class="np_button_link" type="submit">'.$text_thread["button_write"].'</button>';
+    echo '</form>';
+    echo '</td>';
+ }
+ // Pages
+    echo '<td class="np_pages" width="100%" align="right">';
+    echo articleflat_pageselect($thisgroup,$id,count($subthread),$first);
+    echo '</td></tr></table>';
 // has the user write-rights on the newsgroups?
 if((function_exists("npreg_group_has_read_access") &&
     !npreg_group_has_read_access($newsgroups)) ||
