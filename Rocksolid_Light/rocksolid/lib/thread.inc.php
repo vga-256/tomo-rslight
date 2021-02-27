@@ -1181,6 +1181,9 @@ function thread_getsubthreadids($id,$thread) {
              thread_getsubthreadids_recursive($answer));
       }
     }
+    $answers = array_map('json_encode', $answers);
+    $answers = array_unique($answers);
+    $answers = array_map('json_decode', $answers);
     return $answers;
   }
 
