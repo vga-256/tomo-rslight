@@ -279,7 +279,6 @@ foreach($files as $article) {
     # Try to display useful snippet
 	if($stop=strpos($body, "begin 644 "))
 		$body=substr($body, 0, $stop);
-// TEST
     $body = quoted_printable_decode($body);
     $mysnippet = recode_charset($body, $content_type[1], "utf8");
     if($bodyend=strrpos($mysnippet, "\n---\n")) {
@@ -293,7 +292,7 @@ foreach($files as $article) {
 			} 
 		}
 	}
-	$keywords = preg_split("/\n\s{0,5}>/", $mysnippet);
+	$keywords = preg_split("/\n[^<]{0,5}>/", $mysnippet);
 	$newsnippet = preg_replace('/^.+\n/', '', end($keywords));
 	$quoteend = strlen($mysnippet) - strlen($newsnippet);
 
