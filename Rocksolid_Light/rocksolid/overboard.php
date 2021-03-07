@@ -60,8 +60,6 @@ $maxdisplay = 1000;
 
 # How many characters of the body to display per article
 $snippetlength = 240;
-# How short of a snippet is ok
-$snippetshort = 20;
 
 $spoolpath_regexp = '/'.preg_replace('/\//', '\\/', $spoolpath).'/';
 $thissite = '.';
@@ -292,26 +290,15 @@ foreach($files as $article) {
 			} 
 		}
 	}
-	$keywords = preg_split("/\n[^<]{0,5}>/", $mysnippet);
-	$newsnippet = preg_replace('/^.+\n/', '', end($keywords));
-	$quoteend = strlen($mysnippet) - strlen($newsnippet);
+	$mysnippet = preg_replace('/\n.{0,5}>(.*)/', '', $mysnippet);
 
-        if($quoteend) {
-		if($quoteend > (strlen($mysnippet) - $snippetshort)) {
-			$quoteend = (strlen($mysnippet) - $snippetlength);
-			if ($quoteend < 0)
-				$quoteend = 0;
-			$mysnippet = substr($mysnippet, $quoteend);
-			$mysnippet = substr($mysnippet, strpos($mysnippet, ' '));
-		} else {
-			$mysnippet = substr($mysnippet, $quoteend);
-		}
-    }
-    $mysnippet = substr($mysnippet, 0, $snippetlength);
-    $snippet = $mysnippet."<br /><br />\r\n";
-    $displayresult = explode('<', $snippet);
-    $echobody=$displayresult[0];
-    echo "<p class=np_ob_body>".$echobody."</p>\r\n";
+	$snipstart = strpos($mysnippet, ":\n");
+	if(substr_count(trim(substr($mysnippet, 0, $snipstart)), "\n") < 2) {
+		$mysnippet = substr($mysnippet, $snipstart + 1, $snippetlength);
+	} else {
+		$mysnippet = substr($mysnippet, 0, $snippetlength);
+	}
+    echo "<p class=np_ob_body>".$mysnippet."</p>\r\n";
     echo '</td></tr>';
     if($results++ > ($maxdisplay - 2))
 	break;
