@@ -245,6 +245,7 @@ function process_post($filename) {
     $no_date=1;
     $no_org=1;
     $is_header=1;
+    $body="";
     $ref=0;
     $response="";
     $bytes=0;
@@ -387,7 +388,7 @@ function process_post($filename) {
 	   fclose($group_overviewfp);
       }
       if($duplicate == 0) {
-	insert_article($section,$onegroup,$postfilename,$subject[1],$from[1],$article_date,$date_rep,$msgid,$references,$bytes,$lines,$xref);	
+	insert_article($section,$onegroup,$postfilename,$subject[1],$from[1],$article_date,$date_rep,$msgid,$references,$bytes,$lines,$xref,$body);	
         $response="240 Article received OK\r\n";
       } else {
 	$response="441 Posting failed\r\n";
@@ -1030,7 +1031,7 @@ function encode_subject($line) {
 }
 
 function insert_article($section,$nntp_group,$filename,$subject_i,$from_i,$article_date,
-$date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
+$date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i,$body) {
   global $enable_rslight,$spooldir,$CONFIG,$logdir,$logfile;
 
   $sn_lockfile = sys_get_temp_dir() . '/'.$section.'-spoolnews.lock';
@@ -1114,11 +1115,12 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i) {
     $dbh = null;
   }
   if($CONFIG['article_database'] == '1') {
+    $this_snippet = get_search_snippet($body, 'UTF8');
     $article_dbh = article_db_open($spooldir.'/'.$nntp_group.'-articles.db3');
-    $article_sql = 'INSERT INTO articles(newsgroup, number, msgid, date, name, subject, article) VALUES(?,?,?,?,?,?,?)';
+    $article_sql = 'INSERT INTO articles(newsgroup, number, msgid, date, name, subject, article, search_snippet) VALUES(?,?,?,?,?,?,?,?)';
     $article_stmt = $article_dbh->prepare($article_sql);
     $this_article = file_get_contents($grouppath."/".$local);
-    $article_stmt->execute([$nntp_group, $local, $mid_i, $article_date, $from_i, $subject_i, trim($this_article)]);
+    $article_stmt->execute([$nntp_group, $local, $mid_i, $article_date, $from_i, $subject_i, trim($this_article), $this_snippet]);
     unlink($grouppath."/".$local);
     $article_dbh = null;
   }

@@ -1275,6 +1275,31 @@ function get_date_interval($value) {
     return $variance;
 }
 
+function get_search_snippet($body, $content_type) {
+  $body = quoted_printable_decode($body);
+  $mysnippet = recode_charset($body, $content_type, "utf8");
+  if($bodyend=strrpos($mysnippet, "\n---\n")) {
+        $mysnippet = substr($mysnippet, 0, $bodyend);
+  } else {
+        if($bodyend=strrpos($mysnippet, "\n-- ")) {
+            $mysnippet = substr($mysnippet, 0, $bodyend);
+        } else {
+            if($bodyend=strrpos($mysnippet, "\n.")) {
+                 $mysnippet = substr($mysnippet, 0, $bodyend);
+            }
+        }
+   }
+	$mysnippet = preg_replace('/\n.{0,5}>(.*)/', '', $mysnippet);
+
+        $snipstart = strpos($mysnippet, ":\n");
+        if(substr_count(trim(substr($mysnippet, 0, $snipstart)), "\n") < 2) {
+                $mysnippet = substr($mysnippet, $snipstart + 1);
+        } else {
+                $mysnippet = substr($mysnippet, 0);
+        }
+   return $mysnippet;
+}
+
 function rslight_db_open($database, $table='overview') {
   try {
     $dbh = new PDO('sqlite:'.$database);
@@ -1317,9 +1342,23 @@ function article_db_open($database) {
      date TEXT,
      name TEXT,
      subject TEXT,
+     search_snippet TEXT,
      article TEXT)");
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS db_number on articles(number)');
   $stmt->execute();
+  $dbh->exec("CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
+     newsgroup,
+     number,
+     date,
+     msgid,
+     subject,
+     search_snippet)");
+  $dbh->exec("CREATE TRIGGER IF NOT EXISTS after_articles_insert AFTER INSERT ON articles BEGIN
+	INSERT INTO search_fts(newsgroup, number, date, msgid, subject, search_snippet) VALUES(new.newsgroup, new.number, new.date, new.msgid, new.subject, new.search_snippet);
+	END;");
+  $dbh->exec("CREATE TRIGGER IF NOT EXISTS after_articles_delete AFTER DELETE ON articles BEGIN
+	DELETE FROM search_fts WHERE msgid = old.msgid;
+	END;");	
 return($dbh);
 }
 

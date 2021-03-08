@@ -36,7 +36,7 @@ if(!isset($maxarticles_per_run)) {
   $maxarticles_per_run = 100;
 }
 if(!isset($maxfirstrequest)) {
-  $maxfirstrequest = 1000;
+  $maxfirstrequest = 100;
 }
 
 if(!isset($CONFIG['enable_nntp']) || $CONFIG['enable_nntp'] != true) {
@@ -118,17 +118,6 @@ echo "\nSpoolnews Done\r\n";
 function get_articles($ns, $group) {
   global $enable_rslight, $spooldir, $CONFIG, $maxarticles_per_run, $maxfirstrequest, $workpath, $path, $remote_groupfile, $local_groupfile, $local, $logdir, $config_name, $logfile;
 
-  # Prepare databases
-  $database = $spooldir.'/articles-overview.db3';
-  $table = 'overview';
-  $dbh = rslight_db_open($database, $table);
-  $sql = 'INSERT INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';
-  $stmt = $dbh->prepare($sql);
-  if($CONFIG['article_database'] == '1') {
-    $article_dbh = article_db_open($spooldir.'/'.$group.'-articles.db3');
-    $article_sql = 'INSERT INTO articles(newsgroup, number, msgid, date, name, subject, article) VALUES(?,?,?,?,?,?,?)';
-    $article_stmt = $article_dbh->prepare($article_sql);
-  }
   if($ns == false) {
     file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Lost connection to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
     exit();
@@ -188,6 +177,17 @@ function get_articles($ns, $group) {
   if($article > ($detail[3] + 1)) {
     $article = $detail[3];
   }
+  # Prepare databases
+  $database = $spooldir.'/articles-overview.db3';
+  $table = 'overview';
+  $dbh = rslight_db_open($database, $table);
+  $sql = 'INSERT INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';
+  $stmt = $dbh->prepare($sql);
+  if($CONFIG['article_database'] == '1') {
+    $article_dbh = article_db_open($spooldir.'/'.$group.'-articles.db3');
+    $article_sql = 'INSERT INTO articles(newsgroup, number, msgid, date, name, subject, article, search_snippet) VALUES(?,?,?,?,?,?,?,?)';
+    $article_stmt = $article_dbh->prepare($article_sql);
+  }
   # Pull articles and save them in our spool
   @mkdir($grouppath,0755,'recursive');
   $i=0;
@@ -239,6 +239,7 @@ function get_articles($ns, $group) {
       $ref=0;
       $banned=0;
       $is_header=1;
+      $body="";
       while(strcmp($response,".") != 0) 
       {
 	$bytes = $bytes + mb_strlen($response, '8bit');	
@@ -284,6 +285,10 @@ function get_articles($ns, $group) {
           $xref=$response;
 	  $ref=0;
         }
+	if(stripos($response, "Content-Type: ") === 0) {
+	  preg_match('/.*charset=.*/', $response, $te);
+          $content_type = explode("Content-Type: text/plain; charset=", $te[0]);
+	}
 	if(stripos($response, "References: ") === 0) {
 	  $this_references=explode('References: ', $response);
 	  $references = $this_references[1];
@@ -294,6 +299,8 @@ function get_articles($ns, $group) {
   	    $references=$references.$response;
 	  }
 	}
+       } else {
+	$body.=$response."\n";
        }
        fputs($articleHandle, $response."\n");
 // Check here for broken $ns connection before continuing
@@ -332,7 +339,9 @@ function get_articles($ns, $group) {
 	$stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1]]);
 	if($CONFIG['article_database'] == '1') {
 	  $this_article = file_get_contents($grouppath."/".$local);
-	  $article_stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1], $this_article]);
+// CREATE SEARCH SNIPPET
+	  $this_snippet = get_search_snippet($body, $content_type[1]);
+	  $article_stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1], $this_article, $this_snippet]);
 	  unlink($grouppath."/".$local);
         } else {
           if($article_date > time())
