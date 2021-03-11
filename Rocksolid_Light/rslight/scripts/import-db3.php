@@ -35,7 +35,19 @@ if (posix_getsid($pid) === false || !is_file($lockfile)) {
 }
 
 $group = trim($argv[1]);
-import_articles($group);
+if($group == '') {
+  $group_files = scandir($workpath);
+  foreach($group_files as $this_file) {
+    if(strpos($this_file, '-articles.db3') === false) {
+      continue;
+    } 
+    $group = preg_replace('/-articles.db3/', '', $this_file);
+    echo 'Importing: '.$group."\n";
+    import_articles($group);
+  }
+} else {
+  import_articles($group);
+}
 echo "\nImport Done\r\n";
 
 function import_articles($group) {
@@ -43,6 +55,9 @@ function import_articles($group) {
   $overview_file = $workpath.'/'.$group."-overview";
   # Prepare databases
 // Overview db
+  $new_article_dbh = article_db_open($spooldir.'/'.$group.'-articles.db3-new');
+  $new_article_sql = 'INSERT INTO articles(newsgroup, number, msgid, date, name, subject, article, search_snippet) VALUES(?,?,?,?,?,?,?,?)';
+  $new_article_stmt = $new_article_dbh->prepare($new_article_sql);
   $database = $spooldir.'/articles-overview.db3';
   $table = 'overview';
   $dbh = rslight_db_open($database, $table);
@@ -64,6 +79,7 @@ function import_articles($group) {
       $ref=0;
       $banned=0;
       $is_header=1;
+      $body="";
       foreach($this_article as $response) 
       {
 	$bytes = $bytes + mb_strlen($response, '8bit');	
@@ -91,6 +107,10 @@ function import_articles($group) {
           $xref=$response;
 	  $ref=0;
         }
+        if(stripos($response, "Content-Type: ") === 0) {
+          preg_match('/.*charset=.*/', $response, $te);
+          $content_type = explode("Content-Type: text/plain; charset=", $te[0]);
+        }
 	if(stripos($response, "References: ") === 0) {
 	  $this_references=explode('References: ', $response);
 	  $references = $this_references[1];
@@ -102,11 +122,17 @@ function import_articles($group) {
 	  }
 	}
        $response=str_replace("\n","",str_replace("\r","",$response));
+      } else {
+       $body.=$response."\n";
       }
    }
       $lines=$lines-1;
       $bytes = $bytes + ($lines * 2);
 // add to database
+// CREATE SEARCH SNIPPET
+      $this_snippet = get_search_snippet($body, $content_type[1]);
+      $new_article_stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1], $row['article'], $this_snippet]);
+
       $stmt->execute([$group, $local, $mid[1], $article_date, $from[1], $subject[1]]);
       file_put_contents($overview_file, $local."\t".$subject[1]."\t".$from[1]."\t".$finddate[1]."\t".$mid[1]."\t".$references."\t".$bytes."\t".$lines."\t".$xref."\n", FILE_APPEND);
       echo "\nImported: ".$group." ".$local;
@@ -114,7 +140,10 @@ function import_articles($group) {
       $i++;
       $references="";
   }
+  $new_article_dbh = null;
   $article_dbh = null;
   $dbh = null;
+  rename($spooldir.'/'.$group.'-articles.db3', $spooldir.'/'.$group.'-articles.db3-old');
+  rename($spooldir.'/'.$group.'-articles.db3-new', $spooldir.'/'.$group.'-articles.db3');
 }
 ?>

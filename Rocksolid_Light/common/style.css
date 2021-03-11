@@ -71,6 +71,10 @@
   color: var(--color-visited);
 }
 
+.search_result {
+  color: var(--color-text-alt);
+}
+
 /* Title */
 .np_title {
   text-decoration: none;

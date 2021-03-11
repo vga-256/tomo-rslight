@@ -47,9 +47,12 @@ if ($_GET['searchpoint'] == 'Poster') {
   echo '<td><input type="radio" name="searchpoint" value="subject" checked="checked"/>Subject&nbsp;'; 
   echo '<input type="radio" name="searchpoint" value="name"/>Poster&nbsp;';
 }
+  echo '<input type="radio" name="searchpoint" value="msgid"/>Message-ID';
+  if($CONFIG['article_database'] == '1') {
+    echo '&nbsp;<input type="radio" name="searchpoint" value="body"/>Body'; 
+  }
+  echo '</td></tr>';
 ?>
-<input type="radio" name="searchpoint" value="msgid"/>Message-ID</td>
-</tr>
 <tr>
 <td><input name="command" type="hidden" id="command" value="Search" readonly="readonly"></td>
 <?php echo '<input type="hidden" name="key" value="'.hash('md5', $admin['key']).'">';?>
@@ -137,32 +140,16 @@ $results=0;
   } else {
     $offset=$CONFIG['timezone'];
   }
-	$searchterms = "%".$_POST['terms']."%";
-	# Prepare search database
-  	$database = $spooldir.'/articles-overview.db3';
-  	$table = 'overview';
-  	$dbh = rslight_db_open($database, $table);
-	$overview = array();
-	if($dbh) {
-	  if(is_multibyte($_POST['terms'])) {
-	    $stmt = $dbh->query("SELECT * FROM $table");
-	    while($row = $stmt->fetch()) {
-	      if(stripos(quoted_printable_decode(mb_decode_mimeheader($row[$_POST['searchpoint']])), $_POST['terms']) !== false) {
-		$overview[] = $row;
-	      }
-	    } 
-	  } else {
-	    $stmt = $dbh->prepare("SELECT * FROM $table WHERE ".$_POST['searchpoint']." like :terms ORDER BY date DESC");
-	    $stmt->bindParam(':terms', $searchterms);
-	    $stmt->execute();
-	    while($found = $stmt->fetch()) {
-	      $overview[] = $found;
-	    }
-          }
-          $dbh = null;
-	  foreach($overview as $overviewline) {
+  $overview = array();
+  if($_POST['searchpoint'] == 'body') {
+    $overview = get_body_search($group, $_POST['terms']);
+  } else { 
+    $overview = get_header_search($group, $_POST['terms']);
+  }
+  foreach($overview as $overviewline) {
 /* Find section for links */
     $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
     foreach($menulist as $menu) {
       if($menu[0] == '#') {
         continue;
@@ -178,6 +165,8 @@ $results=0;
         }
       }
     }
+
+    fclose($glfp);
 		    # Generate link
 		    $url = "../".$section."/article-flat.php?id=".$overviewline['number']."&group="._rawurlencode($overviewline['newsgroup'])."#".$overviewline['number'];
 		    $groupurl = "../".$section."/thread.php?group="._rawurlencode($overviewline['newsgroup']);
@@ -186,35 +175,61 @@ $results=0;
 		// Use local timezone if possible
 		$ts = new DateTime(date($text_header["date_format"], $overviewline['date']), new DateTimeZone('UTC'));
       		$ts->add(DateInterval::createFromDateString($offset.' minutes'));
+
       		if($offset != 0) {
         		$newdate = $ts->format('D, j M Y H:i');
       		} else {
         		$newdate = $ts->format($text_header["date_format"]);
       		}
-      		unset($ts);
+
+       		unset($ts);
 		    
 		$fromline=address_decode(headerDecode($overviewline['name']),"nirgendwo");
+
       		if (!isset($fromline[0]["personal"])) {
         		$lastname=$fromline[0]["mailbox"];;
       		} else {
         		$lastname=$fromline[0]["personal"];
       		}
+
 		if(($results % 2) != 0){
-			    echo '<tr class="np_result_line1"><td style="word-wrap:break-word";>';
+			    echo '<tr class="np_result_line1"><td class="np_result_line1" style="word-wrap:break-word";>';
 		    } else {
-			    echo '<tr class="np_result_line2"><td style="word-wrap:break-word";>';
+			    echo '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
 		    }
+
 		    echo '<p class=np_ob_subject>';
 		    echo '<b><a href="'.$url.'">'.mb_decode_mimeheader($overviewline['subject'])."</a></b>\r\n";
 		    echo '</p><p class=np_ob_group>';
 		    echo '<a href="'.$groupurl.'">'.$overviewline['newsgroup'].'</a>';
 		    echo '</p>';
   
-	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.mb_decode_mimeheader($overviewline['name']).'</p>';
+
+    $articlefrom[0] = $overviewline['name'];
+    $fromoutput = explode("<", html_entity_decode($articlefrom[0]));
+// Just an email address?
+    if(strlen($fromoutput[0]) < 2) {
+        preg_match("/\<([^\)]*)\@/", html_entity_decode($articlefrom[0]), $fromaddress);
+        $fromoutput[0] = $fromaddress[1];
+    }
+    if(strpos($fromoutput[0], "(")) {
+        preg_match("/\(([^\)]*)\)/", html_entity_decode($articlefrom[0]), $fromaddress);
+        $fromoutput[0] = $fromaddress[1];
+    }
+		    if((isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) && (strpos($fromoutput[0], '@') !== false)) {
+      $poster_name = truncate_email($fromoutput[0]);
+    } else {
+      $poster_name = $fromoutput[0];
+    }
+    $poster_name = trim($poster_name, "\"");
+	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.create_name_link(mb_decode_mimeheader(mb_decode_mimeheader($poster_name))).'</p>';
+		    if($_POST['searchpoint'] == 'body') {
+			echo $overviewline['snippet'];
+		    }
 		    echo '</td></tr>';
 		    if($results++ > ($maxdisplay - 2))
                         break;
-	  }
+//	  }
 }
 
 echo '</table>';
@@ -227,6 +242,57 @@ $thispage = ob_get_contents();
 ob_end_clean();
 
 echo $thispage;
+
+function get_body_search($group, $terms) {
+  GLOBAL $CONFIG, $config_name, $spooldir;
+//$group = 'rocksolid.nodes';
+//  $terms = "%".$terms."%";
+    $local_groupfile=$spooldir."/".$config_name."/local_groups.txt";
+    $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach($grouplist as $thisgroup) {
+      $name = explode(':', $thisgroup);
+      $group=$name[0];
+      $database = $spooldir.'/'.$group.'-articles.db3';
+      $dbh = article_db_open($database);
+      $stmt = $dbh->prepare("SELECT snippet(search_fts, 6, '<strong><font class=search_result><i>', '</i></font></strong>', '...', 50) as snippet, newsgroup, number, name, date, subject FROM search_fts WHERE search_snippet MATCH :terms ORDER BY rank");
+      $stmt->bindParam(':terms', $terms);
+      $stmt->execute();
+
+      while ($row = $stmt->fetch()) {
+        $overview[] = $row;
+      }
+      $dbh = null;
+    }
+  return $overview;
+}
+
+function get_header_search($group, $terms) {
+  GLOBAL $CONFIG, $spooldir;
+  $searchterms = "%".$terms."%";
+        # Prepare search database
+        $database = $spooldir.'/articles-overview.db3';
+        $table = 'overview';
+        $dbh = rslight_db_open($database, $table);
+        if($dbh) {
+          if(is_multibyte($_POST['terms'])) {
+            $stmt = $dbh->query("SELECT * FROM $table");
+            while($row = $stmt->fetch()) {
+              if(stripos(quoted_printable_decode(mb_decode_mimeheader($row[$_POST['searchpoint']])), $_POST['terms']) !== false) {
+                $overview[] = $row;
+              }
+            }
+          } else {
+            $stmt = $dbh->prepare("SELECT * FROM $table WHERE ".$_POST['searchpoint']." like :terms ORDER BY date DESC");
+            $stmt->bindParam(':terms', $searchterms);
+            $stmt->execute();
+            while($found = $stmt->fetch()) {
+              $overview[] = $found;
+            }
+          }
+          $dbh = null;
+        }
+	return $overview;
+}
 
 function highlightStr($haystack, $needle) {
     preg_match_all("/$needle+/i", $haystack, $matches);

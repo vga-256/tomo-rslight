@@ -1349,12 +1349,13 @@ function article_db_open($database) {
   $dbh->exec("CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
      newsgroup,
      number,
-     date,
      msgid,
+     date,
+     name,
      subject,
      search_snippet)");
   $dbh->exec("CREATE TRIGGER IF NOT EXISTS after_articles_insert AFTER INSERT ON articles BEGIN
-	INSERT INTO search_fts(newsgroup, number, date, msgid, subject, search_snippet) VALUES(new.newsgroup, new.number, new.date, new.msgid, new.subject, new.search_snippet);
+	INSERT INTO search_fts(newsgroup, number, msgid, date, name, subject, search_snippet) VALUES(new.newsgroup, new.number, new.msgid, new.date, new.name, new.subject, new.search_snippet);
 	END;");
   $dbh->exec("CREATE TRIGGER IF NOT EXISTS after_articles_delete AFTER DELETE ON articles BEGIN
 	DELETE FROM search_fts WHERE msgid = old.msgid;
