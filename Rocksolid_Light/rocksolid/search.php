@@ -250,6 +250,9 @@ echo $thispage;
 
 function get_body_search($group, $terms) {
   GLOBAL $CONFIG, $config_name, $spooldir;
+    $terms = preg_replace('/"/', '', $terms);
+    $terms = preg_replace('/\ /', '" "', $terms);
+    $terms = '"'.$terms.'"';
     $local_groupfile=$spooldir."/".$config_name."/local_groups.txt";
     $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach($grouplist as $thisgroup) {
