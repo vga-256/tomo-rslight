@@ -199,7 +199,7 @@ $results=0;
 		    }
 
 		    echo '<p class=np_ob_subject>';
-		    echo '<b><a href="'.$url.'">'.mb_decode_mimeheader($overviewline['subject'])."</a></b>\r\n";
+		    echo '<b><a href="'.$url.'">'.htmlspecialchars(mb_decode_mimeheader($overviewline['subject']))."</a></b>\r\n";
 		    echo '</p><p class=np_ob_group>';
 		    echo '<a href="'.$groupurl.'">'.$overviewline['newsgroup'].'</a>';
 		    echo '</p>';
@@ -224,7 +224,8 @@ $results=0;
     $poster_name = trim($poster_name, "\"");
 	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.create_name_link(mb_decode_mimeheader(mb_decode_mimeheader($poster_name))).'</p>';
 		    if($_POST['searchpoint'] == 'body') {
-			echo $overviewline['snippet'];
+			$snip = strip_tags($overviewline['snippet'], '<strong><font>');
+			echo $snip;
 		    }
 		    echo '</td></tr>';
 		    if($results++ > ($maxdisplay - 2))
@@ -245,8 +246,6 @@ echo $thispage;
 
 function get_body_search($group, $terms) {
   GLOBAL $CONFIG, $config_name, $spooldir;
-//$group = 'rocksolid.nodes';
-//  $terms = "%".$terms."%";
     $local_groupfile=$spooldir."/".$config_name."/local_groups.txt";
     $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach($grouplist as $thisgroup) {
@@ -254,8 +253,7 @@ function get_body_search($group, $terms) {
       $group=$name[0];
       $database = $spooldir.'/'.$group.'-articles.db3';
       $dbh = article_db_open($database);
-      $stmt = $dbh->prepare("SELECT snippet(search_fts, 6, '<strong><font class=search_result><i>', '</i></font></strong>', '...', 50) as snippet, newsgroup, number, name, date, subject FROM search_fts WHERE search_snippet MATCH :terms ORDER BY rank");
-      $stmt->bindParam(':terms', $terms);
+      $stmt = $dbh->prepare("SELECT snippet(search_fts, 6, '<strong><font class=search_result><i>', '</i></font></strong>', '...', 50) as snippet, newsgroup, number, name, date, subject FROM search_fts WHERE search_fts MATCH 'search_snippet:$terms' ORDER BY rank");
       $stmt->execute();
 
       while ($row = $stmt->fetch()) {
