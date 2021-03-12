@@ -252,6 +252,10 @@ function get_body_search($group, $terms) {
   GLOBAL $CONFIG, $config_name, $spooldir;
     $terms = preg_replace('/"/', '', $terms);
     $terms = preg_replace('/\ /', '" "', $terms);
+    $terms = preg_replace('/"NEAR"/', 'NEAR', $terms);
+    $terms = preg_replace('/"AND"/', 'AND', $terms);
+    $terms = preg_replace('/"OR"/', 'OR', $terms);
+    $terms = preg_replace('/"NOT"/', 'NOT', $terms);
     $terms = '"'.$terms.'"';
     $local_groupfile=$spooldir."/".$config_name."/local_groups.txt";
     $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
