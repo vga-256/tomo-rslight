@@ -72,7 +72,7 @@
 }
 
 .search_result {
-  color: var(--color-text-alt);
+  color: var(--color-ob-date); 
 }
 
 /* Title */
