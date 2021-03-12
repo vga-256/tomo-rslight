@@ -143,7 +143,7 @@ function import_articles($group) {
   $new_article_dbh = null;
   $article_dbh = null;
   $dbh = null;
-  rename($spooldir.'/'.$group.'-articles.db3', $spooldir.'/'.$group.'-articles.db3-old');
+  unlink($spooldir.'/'.$group.'-articles.db3');
   rename($spooldir.'/'.$group.'-articles.db3-new', $spooldir.'/'.$group.'-articles.db3');
 }
 ?>
