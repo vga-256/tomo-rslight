@@ -23,23 +23,26 @@ echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
   } else {
 //    echo htmlspecialchars($CONFIG['title_full']);
   }
-?>
+  if(isset($_GET['group'])) {
+    $searching = $_GET['group'];
+  } else {
+    $searching = $config_name;
+  }
+  echo '<body>';
+  echo '<table width=100% border="0" align="center" cellpadding="0" cellspacing="1">';
+  echo '<tr>';
+  echo '<form name="form1" method="post" action="search.php">';
+  echo '<td>';
+  echo '<table width="100%" align="center" border="0" cellpadding="3" cellspacing="1">';
+  echo '<tr>';
+  echo '<td colspan="3"><strong>Search recent messages</strong><br />(Body searches '.$searching.' - Subject, Poster, Message-ID search entire site)</td>';
+  echo '</tr>';
+  echo '<tr></tr>';
+  echo '<tr>';
+  echo '<td><strong>Search Terms:</strong>&nbsp';
+  echo '<input name="terms" type="text" id="terms" value="'.$_GET[terms].'"></td>';
+  echo '</tr><tr></tr><tr><td>';
 
-<body>
-<table width=100% border="0" align="center" cellpadding="0" cellspacing="1">
-<tr>
-<form name="form1" method="post" action="search.php">
-<td>
-<table width="100%" align="center" border="0" cellpadding="3" cellspacing="1">
-<tr>
-<td colspan="3"><strong>Search recent messages</strong><br />(searches last <?php echo $maxarticles; ?> articles per group)</td>
-</tr>
-<tr></tr>
-<tr>
-<td><strong>Search Terms:</strong>&nbsp;
-<?php
-echo '<input name="terms" type="text" id="terms" value="'.$_GET['terms'].'"></td>';
-echo '</tr><tr></tr><tr><td>';
 if ($_GET['searchpoint'] == 'Poster') {
   if($CONFIG['article_database'] == '1') {
     echo '<input type="radio" name="searchpoint" value="body"/>Body&nbsp;';
@@ -56,10 +59,14 @@ if ($_GET['searchpoint'] == 'Poster') {
   echo '<input type="radio" name="searchpoint" value="msgid"/>Message-ID';
 }
   echo '</td></tr>';
+  echo '<tr>';
+  echo '<td><input name="command" type="hidden" id="command" value="Search" readonly="readonly"></td>';
+  if(isset($_GET['group'])) {
+    echo '<input type="hidden" name="group" value="'.$_GET['group'].'">';
+  }
+  echo '<input type="hidden" name="key" value="'.hash('md5', $admin['key']).'">';
+
 ?>
-<tr>
-<td><input name="command" type="hidden" id="command" value="Search" readonly="readonly"></td>
-<?php echo '<input type="hidden" name="key" value="'.hash('md5', $admin['key']).'">';?>
 </tr>
 <tr></tr>
 <tr>
@@ -257,8 +264,12 @@ function get_body_search($group, $terms) {
     $terms = preg_replace('/"OR"/', 'OR', $terms);
     $terms = preg_replace('/"NOT"/', 'NOT', $terms);
     $terms = '"'.$terms.'"';
-    $local_groupfile=$spooldir."/".$config_name."/local_groups.txt";
-    $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if(isset($_POST['group'])) {
+      $grouplist[0] = $_POST['group'];
+    } else {
+      $local_groupfile=$spooldir."/".$config_name."/local_groups.txt";
+      $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    }
     foreach($grouplist as $thisgroup) {
       $name = explode(':', $thisgroup);
       $group=$name[0];

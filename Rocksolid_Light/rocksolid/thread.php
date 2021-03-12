@@ -72,6 +72,13 @@ if(isset($frames_on) && $frames_on === true) {
     echo '</form>';
     echo '</td>';
  }
+// Search button
+  echo '<td>';
+  echo '<form target="'.$frame['content'].'" action="search.php">';
+  echo '<button class="np_button_link" type="submit">'.$text_thread["button_search"].'</button>';
+  echo '<input type="hidden" name="group" value="'.urlencode($group).'"/>';
+  echo '</form>';
+  echo '</td>';
 // Newsgroups button (hidden)
   if(isset($frames_on) && $frames_on === true) {
     echo '<td>';
