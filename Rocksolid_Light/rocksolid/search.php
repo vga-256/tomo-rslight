@@ -39,18 +39,22 @@ echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
 <td><strong>Search Terms:</strong>&nbsp;
 <?php
 echo '<input name="terms" type="text" id="terms" value="'.$_GET['terms'].'"></td>';
-echo '</tr><tr></tr><tr>';
+echo '</tr><tr></tr><tr><td>';
 if ($_GET['searchpoint'] == 'Poster') {
-  echo '<td><input type="radio" name="searchpoint" value="subject"/>Subject&nbsp;';
-  echo '<input type="radio" name="searchpoint" value="name" checked="checked"/>Poster&nbsp;';
-} else {
-  echo '<td><input type="radio" name="searchpoint" value="subject" checked="checked"/>Subject&nbsp;'; 
-  echo '<input type="radio" name="searchpoint" value="name"/>Poster&nbsp;';
-}
-  echo '<input type="radio" name="searchpoint" value="msgid"/>Message-ID';
   if($CONFIG['article_database'] == '1') {
-    echo '&nbsp;<input type="radio" name="searchpoint" value="body"/>Body'; 
+    echo '<input type="radio" name="searchpoint" value="body"/>Body&nbsp;';
   }
+  echo '<input type="radio" name="searchpoint" value="subject"/>Subject&nbsp;';
+  echo '<input type="radio" name="searchpoint" value="name" checked="checked"/>Poster&nbsp;';
+  echo '<input type="radio" name="searchpoint" value="msgid"/>Message-ID';
+} else {
+  if($CONFIG['article_database'] == '1') {
+    echo '&nbsp;<input type="radio" name="searchpoint" value="body" checked="checked"/>Body&nbsp;';
+  }
+  echo '<input type="radio" name="searchpoint" value="subject"/>Subject&nbsp;';
+  echo '<input type="radio" name="searchpoint" value="name"/>Poster&nbsp;';
+  echo '<input type="radio" name="searchpoint" value="msgid"/>Message-ID';
+}
   echo '</td></tr>';
 ?>
 <tr>
@@ -224,7 +228,7 @@ $results=0;
     $poster_name = trim($poster_name, "\"");
 	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.create_name_link(mb_decode_mimeheader(mb_decode_mimeheader($poster_name))).'</p>';
 		    if($_POST['searchpoint'] == 'body') {
-			$snip = strip_tags($overviewline['snippet'], '<strong><font>');
+			$snip = strip_tags($overviewline['snippet'], '<strong><font><i>');
 			echo $snip;
 		    }
 		    echo '</td></tr>';
