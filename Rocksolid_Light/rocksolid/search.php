@@ -257,6 +257,8 @@ echo $thispage;
 
 function get_body_search($group, $terms) {
   GLOBAL $CONFIG, $config_name, $spooldir;
+  $terms = trim($terms);
+  if($terms[0] !== '"' && substr($terms, -1) !== '"') {
     $terms = preg_replace('/"/', '', $terms);
     $terms = preg_replace('/\ /', '" "', $terms);
     $terms = preg_replace('/"NEAR"/', 'NEAR', $terms);
@@ -264,6 +266,7 @@ function get_body_search($group, $terms) {
     $terms = preg_replace('/"OR"/', 'OR', $terms);
     $terms = preg_replace('/"NOT"/', 'NOT', $terms);
     $terms = '"'.$terms.'"';
+  }
     if(isset($_POST['group'])) {
       $grouplist[0] = $_POST['group'];
     } else {
