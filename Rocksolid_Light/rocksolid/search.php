@@ -278,7 +278,7 @@ function get_body_search($group, $terms) {
       $group=$name[0];
       $database = $spooldir.'/'.$group.'-articles.db3';
       $dbh = article_db_open($database);
-      $stmt = $dbh->prepare("SELECT snippet(search_fts, 6, '<strong><font class=search_result><i>', '</i></font></strong>', '...', 50) as snippet, newsgroup, number, name, date, subject FROM search_fts WHERE search_fts MATCH 'search_snippet:$terms' ORDER BY rank");
+      $stmt = $dbh->prepare("SELECT snippet(search_fts, 6, '<strong><font class=search_result><i>', '</i></font></strong>', '...', 50) as snippet, newsgroup, number, name, date, subject, rank FROM search_fts WHERE search_fts MATCH 'search_snippet:$terms' ORDER BY rank");
       $stmt->execute();
 
       while ($row = $stmt->fetch()) {
@@ -286,6 +286,9 @@ function get_body_search($group, $terms) {
       }
       $dbh = null;
     }
+  usort($overview, function($a, $b) {
+    return $a['rank'] <=> $b['rank'];
+  });
   return $overview;
 }
 
