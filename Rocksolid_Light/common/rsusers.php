@@ -14,13 +14,14 @@ if (file_exists('../common/mods/style.css')) {
 <?php
 
 include "config.inc.php";
-include($config_dir.'/phpmailer.inc.php');
 
-// Setup mailer
-if(class_exists('PHPMailer')) {
-  $mail = new PHPMailer();
-} else {
-  $mail = new PHPMailer\PHPMailer\PHPMailer();
+if($CONFIG['verify_email'] == true) {
+  include($config_dir.'/phpmailer.inc.php');
+  if(class_exists('PHPMailer')) {
+    $mail = new PHPMailer();
+  } else {
+    $mail = new PHPMailer\PHPMailer\PHPMailer();
+  }
 }
 
 include "head.inc";
