@@ -7,6 +7,9 @@
  * Run this script as your web user from your $webdir/spoolnews dir:
  * php $config_dir/scripts/import.php group.name
  *
+ * To import/upgrade all group.db3 files, do not list group.name 
+ * after the above command.
+ *
  * This will create the overview files necessary to import the group
  * into your site.
  * Next: Add the group to the groups.txt file of the section you wish
