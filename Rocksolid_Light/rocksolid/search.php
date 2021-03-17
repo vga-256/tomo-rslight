@@ -6,6 +6,8 @@ include "config.inc.php";
 include "newsportal.php";
 include $config_dir.'/admin.inc.php';
 
+$snippet_size = 100;
+
 if(!isset($_POST['key']) || $_POST['key'] !== hash('md5', $admin['key'])) {
 include "head.inc"; 
 
@@ -256,7 +258,7 @@ ob_end_clean();
 echo $thispage;
 
 function get_body_search($group, $terms) {
-  GLOBAL $CONFIG, $config_name, $spooldir;
+  GLOBAL $CONFIG, $config_name, $spooldir, $snippet_size;
   $terms = trim($terms);
   if($terms[0] !== '"' && substr($terms, -1) !== '"') {
     $terms = preg_replace('/"/', '', $terms);
@@ -278,7 +280,7 @@ function get_body_search($group, $terms) {
       $group=$name[0];
       $database = $spooldir.'/'.$group.'-articles.db3';
       $dbh = article_db_open($database);
-      $stmt = $dbh->prepare("SELECT snippet(search_fts, 6, '<strong><font class=search_result><i>', '</i></font></strong>', '...', 50) as snippet, newsgroup, number, name, date, subject, rank FROM search_fts WHERE search_fts MATCH 'search_snippet:$terms' ORDER BY rank");
+      $stmt = $dbh->prepare("SELECT snippet(search_fts, 6, '<strong><font class=search_result><i>', '</i></font></strong>', '...', $snippet_size) as snippet, newsgroup, number, name, date, subject, rank FROM search_fts WHERE search_fts MATCH 'search_snippet:$terms' ORDER BY rank");
       $stmt->execute();
 
       while ($row = $stmt->fetch()) {
