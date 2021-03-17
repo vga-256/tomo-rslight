@@ -329,6 +329,9 @@ function get_header_search($group, $terms) {
           }
       $dbh=null;
     }
+  usort($overview, function($b, $a) {
+    return $a['date'] <=> $b['date'];
+  });
 	return $overview;
 }
 
