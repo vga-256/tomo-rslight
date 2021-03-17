@@ -37,11 +37,11 @@ echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
   echo '<td>';
   echo '<table width="100%" align="center" border="0" cellpadding="3" cellspacing="1">';
   echo '<tr>';
-  echo '<td colspan="3"><strong>Search recent messages</strong><br />(Body searches '.$searching.' - Subject, Poster, Message-ID search entire site)</td>';
+  echo '<td colspan="3">Searching <strong>'.$searching.'</strong></td>';
   echo '</tr>';
   echo '<tr></tr>';
   echo '<tr>';
-  echo '<td><strong>Search Terms:</strong>&nbsp';
+  echo '<td>Search Terms:&nbsp';
   echo '<input name="terms" type="text" id="terms" value="'.$_GET[terms].'"></td>';
   echo '</tr><tr></tr><tr><td>';
 
@@ -238,8 +238,11 @@ $results=0;
 	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.create_name_link(mb_decode_mimeheader(mb_decode_mimeheader($poster_name))).'</p>';
 		    if($_POST['searchpoint'] == 'body') {
 			$snip = strip_tags(mb_decode_mimeheader($overviewline['snippet']), '<strong><font><i>');
-			echo $snip;
+		    } else {
+		        $snip = strip_tags(mb_decode_mimeheader($overviewline['search_snippet']), '<strong><font><i>');
+			$snip = substr($snip, 0, $snippet_size);
 		    }
+		    echo $snip;
 		    echo '</td></tr>';
 		    if($results++ > ($maxdisplay - 2))
                         break;
@@ -295,13 +298,20 @@ function get_body_search($group, $terms) {
 }
 
 function get_header_search($group, $terms) {
-  GLOBAL $CONFIG, $spooldir;
+  GLOBAL $CONFIG, $config_name, $spooldir, $snippet_size;
   $searchterms = "%".$terms."%";
-        # Prepare search database
-        $database = $spooldir.'/articles-overview.db3';
-        $table = 'overview';
-        $dbh = rslight_db_open($database, $table);
-        if($dbh) {
+    if(isset($_POST['group']) && $_POST['searchpoint'] != 'Message-ID') {
+      $grouplist[0] = $_POST['group'];
+    } else {
+      $local_groupfile=$spooldir."/".$config_name."/local_groups.txt";
+      $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    }
+    foreach($grouplist as $thisgroup) {
+      $name = explode(':', $thisgroup);
+      $group=$name[0];
+      $database = $spooldir.'/'.$group.'-articles.db3';
+      $table = 'articles';
+      $dbh = article_db_open($database);
           if(is_multibyte($_POST['terms'])) {
             $stmt = $dbh->query("SELECT * FROM $table");
             while($row = $stmt->fetch()) {
@@ -317,8 +327,8 @@ function get_header_search($group, $terms) {
               $overview[] = $found;
             }
           }
-          $dbh = null;
-        }
+      $dbh=null;
+    }
 	return $overview;
 }
 
