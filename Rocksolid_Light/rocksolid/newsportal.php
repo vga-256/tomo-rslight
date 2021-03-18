@@ -1275,9 +1275,13 @@ function get_date_interval($value) {
     return $variance;
 }
 
-function get_search_snippet($body, $content_type) {
+function get_search_snippet($body, $content_type='') {
   $body = quoted_printable_decode($body);
-  $mysnippet = recode_charset($body, $content_type, "utf8");
+  if($content_type !== '') {
+    $mysnippet = recode_charset($body, $content_type, "utf8");
+  } else {
+    $mysnippet = $body;
+  }
   if($bodyend=strrpos($mysnippet, "\n---\n")) {
         $mysnippet = substr($mysnippet, 0, $bodyend);
   } else {

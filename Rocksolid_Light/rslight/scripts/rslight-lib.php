@@ -1115,7 +1115,20 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i,$body) {
     $dbh = null;
   }
   if($CONFIG['article_database'] == '1') {
-    $this_snippet = get_search_snippet($body, 'UTF8');
+    foreach($body as $line) {
+      if(trim($line) == "") {
+	break;
+      }
+      if(stripos($line, "Content-Type: ") === 0) {
+        preg_match('/.*charset=.*/', $line, $te);
+        $content_type = explode("Content-Type: text/plain; charset=", $te[0]);
+      }
+    }
+    if(isset($content_type[1])) {
+	$this_snippet = get_search_snippet($body, $content_type[1]);
+    } else {
+        $this_snippet = get_search_snippet($body);
+    }
     $article_dbh = article_db_open($spooldir.'/'.$nntp_group.'-articles.db3');
     $article_sql = 'INSERT INTO articles(newsgroup, number, msgid, date, name, subject, article, search_snippet) VALUES(?,?,?,?,?,?,?,?)';
     $article_stmt = $article_dbh->prepare($article_sql);
