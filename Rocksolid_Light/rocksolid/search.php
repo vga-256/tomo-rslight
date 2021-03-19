@@ -237,9 +237,9 @@ $results=0;
     $poster_name = trim($poster_name, "\"");
 	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.create_name_link(mb_decode_mimeheader(mb_decode_mimeheader($poster_name))).'</p>';
 		    if($_POST['searchpoint'] == 'body') {
-			$snip = strip_tags(mb_decode_mimeheader($overviewline['snippet']), '<strong><font><i>');
+			$snip = strip_tags(quoted_printable_decode($overviewline['snippet']), '<strong><font><i>');
 		    } else {
-		        $snip = strip_tags(mb_decode_mimeheader($overviewline['search_snippet']), '<strong><font><i>');
+		        $snip = strip_tags(quoted_printable_decode($overviewline['search_snippet']), '<strong><font><i>');
 			$snip = substr($snip, 0, $snippet_size);
 		    }
 		    echo $snip;
