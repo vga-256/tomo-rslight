@@ -262,10 +262,11 @@ echo $thispage;
 
 function get_body_search($group, $terms) {
   GLOBAL $CONFIG, $config_name, $spooldir, $snippet_size;
+  $terms = preg_replace("/'/", ' ', $terms);
   $terms = trim($terms);
-  if($terms[0] !== '"' && substr($terms, -1) !== '"') {
+  if($terms[0] !== '"' || substr($terms, -1) !== '"') {
     $terms = preg_replace('/"/', '', $terms);
-    $terms = preg_replace('/\ /', '" "', $terms);
+    $terms = preg_replace("/\ /", '" "', $terms);
     $terms = preg_replace('/"NEAR"/', 'NEAR', $terms);
     $terms = preg_replace('/"AND"/', 'AND', $terms);
     $terms = preg_replace('/"OR"/', 'OR', $terms);
