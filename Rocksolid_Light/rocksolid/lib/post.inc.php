@@ -263,7 +263,8 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
       fputs($ns,'Organization: '.quoted_printable_encode($CONFIG['organization'])."\r\n");
     $body=trim($body);
     if ((isset($CONFIG['postfooter'])) && ($CONFIG['postfooter']!="")) {
-      $body.="\n-- \n".$CONFIG['postfooter']."\n".$_SERVER['HTTP_HOST']; 
+      $postfooter = preg_replace('/\{DOMAIN\}/', "\n".$_SERVER['HTTP_HOST'], $CONFIG['postfooter']);
+      $body.="\n-- \n".$postfooter; 
     }
     fputs($ns,'Message-ID: '.$msgid."\r\n");
     $body=str_replace("\n.\r","\n..\r",$body);
