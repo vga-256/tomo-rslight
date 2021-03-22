@@ -62,7 +62,14 @@ Features added in 0.6.8
 
 * Store articles in sqlite .db3 instead of tradspool
 * Simple config option to choose database or tradspool
-* Search now searches across all sections
 * Faster search and overboard 
+
+Featurs added in 0.6.9
+
+* Search body of articles
+* import script to import, restore or repair group databases and/or rebuild overview
+* Add body snippet to any search results
+* Search link in thread page searches only group
+* Search link in section searches section
 
 Retro Guy retroguy@novabbs.com
