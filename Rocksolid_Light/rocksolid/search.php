@@ -307,31 +307,44 @@ function get_header_search($group, $terms) {
       $local_groupfile=$spooldir."/".$config_name."/local_groups.txt";
       $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     }
+    # Prepare search database
+    $database = $spooldir.'/articles-overview.db3';
+    $table = 'overview';
+    $dbh = rslight_db_open($database, $table);
+    $overview = array();
+
     foreach($grouplist as $thisgroup) {
       $name = explode(':', $thisgroup);
       $group=$name[0];
-      $database = $spooldir.'/'.$group.'-articles.db3';
-      $table = 'articles';
-      $dbh = article_db_open($database);
+      $article_database = $spooldir.'/'.$group.'-articles.db3';
+      $article_dbh = article_db_open($article_database);
+      $article_stmt = $article_dbh->prepare("SELECT * FROM articles WHERE number=:number");
           if(is_multibyte($_POST['terms'])) {
-            $stmt = $dbh->query("SELECT * FROM $table");
+            $stmt = $dbh->query("SELECT * FROM $table WHERE newsgroup=$group");
             while($row = $stmt->fetch()) {
               if(stripos(quoted_printable_decode(mb_decode_mimeheader($row[$_POST['searchpoint']])), $_POST['terms']) !== false) {
                 $overview[] = $row;
               }
             }
           } else {
-            $stmt = $dbh->prepare("SELECT * FROM $table WHERE ".$_POST['searchpoint']." like :terms ORDER BY date DESC");
+            $stmt = $dbh->prepare("SELECT * FROM $table WHERE newsgroup=:group AND ".$_POST['searchpoint']." like :terms ORDER BY date DESC");
+	    $stmt->bindParam(':group', $group);
             $stmt->bindParam(':terms', $searchterms);
             $stmt->execute();
             while($found = $stmt->fetch()) {
+	      $article_stmt->bindParam(':number', $found['number']);
+	      $article_stmt->execute();
+	      $found_snip = $article_stmt->fetch();
+	      $found['search_snippet'] = $found_snip['search_snippet'];
+	      $found['sort_date'] = $found_snip['date'];
               $overview[] = $found;
             }
           }
-      $dbh=null;
+    $article_dbh = null;
     }
+  $dbh = null;
   usort($overview, function($b, $a) {
-    return $a['date'] <=> $b['date'];
+    return $a['sort_date'] <=> $b['sort_date'];
   });
 	return $overview;
 }
