@@ -234,8 +234,8 @@ $results=0;
     } else {
       $poster_name = $fromoutput[0];
     }
-    $poster_name = trim($poster_name, "\"");
-	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.create_name_link(mb_decode_mimeheader(mb_decode_mimeheader($poster_name))).'</p>';
+    $poster_name = trim(mb_decode_mimeheader($poster_name), " \n\r\t\v\0\"");
+	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.create_name_link($poster_name).'</p>';
 		    if($_POST['searchpoint'] == 'body') {
 			$snip = strip_tags(quoted_printable_decode($overviewline['snippet']), '<strong><font><i>');
 		    } else {
@@ -320,10 +320,17 @@ function get_header_search($group, $terms) {
       $article_dbh = article_db_open($article_database);
       $article_stmt = $article_dbh->prepare("SELECT * FROM articles WHERE number=:number");
           if(is_multibyte($_POST['terms'])) {
-            $stmt = $dbh->query("SELECT * FROM $table WHERE newsgroup=$group");
-            while($row = $stmt->fetch()) {
-              if(stripos(quoted_printable_decode(mb_decode_mimeheader($row[$_POST['searchpoint']])), $_POST['terms']) !== false) {
-                $overview[] = $row;
+            $stmt = $dbh->prepare("SELECT * FROM $table WHERE newsgroup=:group");
+            $stmt->bindParam(':group', $group);
+            $stmt->execute();
+            while($found = $stmt->fetch()) {
+		    if(stripos(mb_decode_mimeheader($found[$_POST['searchpoint']]), $_POST['terms']) !== false) {
+          $article_stmt->bindParam(':number', $found['number']);
+          $article_stmt->execute();
+          $found_snip = $article_stmt->fetch();
+          $found['search_snippet'] = $found_snip['search_snippet'];
+          $found['sort_date'] = $found_snip['date'];
+                $overview[] = $found;
               }
             }
           } else {
