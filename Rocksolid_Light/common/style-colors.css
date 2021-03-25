@@ -5,7 +5,7 @@
   --color-bg-alt: #333545;
   --color-text-alt: #4488BB;
   --color-text-quote: teal;
-  --color-title: #BBAAAA;
+  --color-title: #D1BEBE;
   --color-link: #00BFDF;
   --color-visited: #6688BB;
   --color-border: #828282;
@@ -16,5 +16,6 @@
 
 /* overboard date line */
   --color-ob-date: #9966CC;
-}
 
+  --color-search-result: #B266CC;
+}
