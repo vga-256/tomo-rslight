@@ -27,7 +27,7 @@
     }
     $groupname=explode(' ', $groupline);
     $group=$groupname[0];
-    if($days = get_config_value('expire.conf', $group)) {
+    if(($days = get_config_value('expire.conf', $group)) !== false) {
       if($days > 0) {
 	$expireme = time() - ($days * 86400);
       }
