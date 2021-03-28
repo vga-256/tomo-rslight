@@ -43,13 +43,12 @@ set_time_limit(0);
             continue;
         }
 	if(stripos($buf, 'AUTHINFO PASS') !== false) {
-	  file_put_contents($logfile, "\n".format_log_date()." AUTHINFO PASS (hidden)", FILE_APPEND);
+	  file_put_contents($logfile, "\n".format_log_date()." ".$client." AUTHINFO PASS (hidden)", FILE_APPEND);
 	} else {
 	  file_put_contents($logfile, "\n".format_log_date()." ".$client." ".$buf, FILE_APPEND);
 	}
 	$command = explode(' ', $buf);
 	$command[0] = strtolower($command[0]);
-//echo "0:".$command[0]." 1:".$command[1]." 2:".$command[2]." 3:".$command[3]."\r\n";
 	if(isset($command[1])) {
   	  $command[1] = strtolower($command[1]);
 	}
