@@ -189,9 +189,19 @@ function check_rate_limit($name,$set=0,$gettime=0) {
  */
 function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryptto) {
   global $server,$port,$send_poster_host,$text_error,$CONFIG;
-  global $www_charset,$spooldir;
+  global $www_charset,$config_dir,$spooldir;
   global $msgid_generate,$msgid_fqdn;
   flush();
+  if(isset($encryptthis)) {
+    $workpath = $config_dir."users/";
+    $username = trim(strtolower($encryptto));
+    $userFilename = $workpath.$username;
+    if((!is_file($userFilename)) || $encryptto == $CONFIG['anonusername']) {
+      $response = "Cannot encrypt to $encryptto. No such user";
+      return $response;
+    }
+  }
+
   $msgid=generate_msgid($subject.",".$from.",".$newsgroups.",".$ref.",".$body);
 /*
  * SPAM CHECK
@@ -213,6 +223,8 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
 	nntp_close($ns);
 	return $weg;
     }
+
+
     fputs($ns,'Subject: '.encode_subject($subject)."\r\n");
 
 // For Synchronet use

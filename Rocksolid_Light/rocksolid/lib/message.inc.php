@@ -746,6 +746,7 @@ function message_decrypt($key,$group,$id,$attachment=0,$article_data=false,$maxl
              $article_data->header->content_type_format[$attachment]);
       $depth=0;
       echo '<div class="np_article_body">';
+      echo "(Copy text below to quote in reply)<br /><br />";
       $currentlen=0; // needed if $maxlen is set
       for ($i=0; $i<=count($body) &&
                  (($currentlen<$maxlen) || ($maxlen==false)); $i++) {
