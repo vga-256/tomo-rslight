@@ -36,7 +36,7 @@ if(!isset($maxarticles_per_run)) {
   $maxarticles_per_run = 100;
 }
 if(!isset($maxfirstrequest)) {
-  $maxfirstrequest = 100;
+  $maxfirstrequest = 1000;
 }
 
 if(!isset($CONFIG['enable_nntp']) || $CONFIG['enable_nntp'] != true) {
@@ -95,9 +95,12 @@ if(!$ns) {
   file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Failed to connect to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
   exit();
 }
-$grouplist = file($remote_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$grouplist = file($config_dir.'/'.$config_name.'/groups.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 foreach($grouplist as $findgroup) {
-  $name = explode(':', $findgroup);
+  if($findgroup[0] == ":") {
+      continue;
+  }
+  $name = preg_split("/( |\t)/", $findgroup, 2);
   file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Retrieving articles for: ".$name[0]."...", FILE_APPEND);
   echo "\nRetrieving articles for: ".$name[0]."...  \r\n";
   get_articles($ns, $name[0]);
