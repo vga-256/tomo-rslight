@@ -336,6 +336,33 @@ function testGroup($groupname) {
   }
 }
 
+function get_section_by_group($groupname) {
+    global $CONFIG, $config_dir;
+    $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach($menulist as $menu) {
+      if($menu[0] == '#') {
+        continue;
+      }
+      $menuitem=explode(':', $menu);
+      if($menuitem[1] == '0') {
+        continue;
+      }
+      $section = "";
+      $glfp=fopen($config_dir.$menuitem[0]."/groups.txt", 'r');
+      while($gl=fgets($glfp)) {
+        $group_name = preg_split("/( |\t)/", $gl, 2);
+        if(stripos(trim($groupname), trim($group_name[0])) !== false) {
+          fclose($glfp);
+	  $section=$menuitem[0];
+	  fclose($glfp);
+	  return $section;
+        }
+      }
+    }
+    fclose($glfp);
+    return false;
+}
+
 function testGroups($newsgroups) {
   $groups=explode(",",$newsgroups);
   $count=count($groups);

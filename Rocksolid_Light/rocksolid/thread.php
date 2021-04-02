@@ -15,6 +15,13 @@ if(isset($_REQUEST["first"]))
 if(isset($_REQUEST["last"]))
   $last=intval($_REQUEST["last"]);
 
+  $findsection = get_section_by_group($group);
+  if(trim($findsection) !== $config_name) {
+    $newurl = preg_replace("|/$config_name/|", "/$findsection/", $_SERVER['REQUEST_URI']);
+    header("Location: $newurl");
+    die();
+  }
+
 $thread_show["latest"]=true;
 $title.= ' - '.$group;
 include "head.inc";

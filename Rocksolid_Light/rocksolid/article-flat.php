@@ -12,6 +12,14 @@
   // register parameters
   $id=$_REQUEST["id"];
   $group=_rawurldecode($_REQUEST["group"]);
+
+  $findsection = get_section_by_group($group);
+  if(trim($findsection) !== $config_name) {
+    $newurl = preg_replace("|/$config_name/|", "/$findsection/", $_SERVER['REQUEST_URI']);
+    header("Location: $newurl");
+    die();
+  }
+
   if(isset($_REQUEST["first"]))
     $first=$_REQUEST["first"];
 
