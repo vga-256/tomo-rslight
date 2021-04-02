@@ -53,9 +53,16 @@ if ((isset($post_server)) && ($post_server!=""))
 if ((isset($post_port)) && ($post_port!=""))
   $port=$post_port;
 
-include "head.inc";
 include $file_newsportal;
 
+  $findsection = get_section_by_group($_REQUEST["group"]);
+  if(trim($findsection) !== $config_name) {
+    $newurl = preg_replace("|/$config_name/|", "/$findsection/", $_SERVER['REQUEST_URI']);
+    header("Location: $newurl");
+    die();
+  }
+
+include "head.inc";
 global $synchro_user,$synchro_pass;
 
 // check to which groups the user is allowed to post to
