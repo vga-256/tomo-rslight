@@ -289,7 +289,7 @@ function get_mimetype_by_string($filedata) {
  * returns true, if access is allowed
  */
 function testGroup($groupname) {
-  global $testgroup,$file_groups;
+  global $CONFIG,$testgroup,$file_groups,$config_dir;
   $groupname=strtolower($groupname);
   if ($testgroup) {
     $gf=fopen($file_groups,"r");
@@ -305,10 +305,32 @@ function testGroup($groupname) {
       }
     }
     fclose($gf);
-	if($groupname=$CONFIG['spamgroup'])
-		return true;
-	else
-		return false;
+    if($groupname == $CONFIG['spamgroup']) {
+	return true;
+    } else {
+/* Find section */
+    $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach($menulist as $menu) {
+      if($menu[0] == '#') {
+        continue;
+      }
+      $menuitem=explode(':', $menu);
+      if($menuitem[1] == '0') {
+	continue;
+      }
+      $glfp=fopen($config_dir.$menuitem[0]."/groups.txt", 'r');
+      $section="";
+      while($gl=fgets($glfp)) {
+        $group_name = preg_split("/( |\t)/", $gl, 2);
+        if(stripos(trim($groupname), trim($group_name[0])) !== false) {
+	  fclose($glfp);
+	  return true;
+        }
+      }
+    }
+    fclose($glfp);
+    return false;
+    }
   } else {
     return true;
   }
@@ -1350,6 +1372,15 @@ function article_db_open($database) {
      article TEXT)");
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS db_number on articles(number)');
   $stmt->execute();
+
+// TEMPORARY
+  $stmt = $dbh->query('DROP INDEX IF EXISTS db_date');
+  $stmt->execute();
+  $stmt = $dbh->query('DROP INDEX IF EXISTS db_newsgroup');
+  $stmt->execute();
+  $stmt = $dbh->query('DROP INDEX IF EXISTS db_name');
+// TEMPORARY
+
   $dbh->exec("CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
      newsgroup,
      number,
