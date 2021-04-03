@@ -621,23 +621,13 @@ function groups_show($gruppen) {
     } else {
       $lastarticleinfo->date = 0;
     }
-    if((isset($spoolnews)) && ($spoolnews === true)) {
-      $ovfp=popen($CONFIG['tac'].' '.$spooldir.'/'.$g->name.'-overview', 'r');
-      $lastpost=fgets($ovfp);
-      pclose($ovfp);      
-      $lastdata = explode("\t", $lastpost);
-      echo get_date_interval(date("D, j M Y H:i T",strtotime($lastdata[3])));
-      $fromline=address_decode(headerDecode($lastdata[2]),"nirgendwo");
+      echo get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
+      $fromline=address_decode(headerDecode($lastarticleinfo->name),"nirgendwo");
       if (!isset($fromline[0]["personal"])) {    
         $lastname=$fromline[0]["mailbox"];;        
       } else {    
         $lastname=$fromline[0]["personal"];        
       }
-    } else {
-      echo get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
-      $lastarticleinfo->name = ltrim($lastarticleinfo->name, "<");
-      $lastname = $lastarticleinfo->name;
-    }
     echo '<table><tr><td>';
     echo '<font class="np_last_posted_date">by: ';
     echo create_name_link($lastname);             
