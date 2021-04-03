@@ -1387,16 +1387,13 @@ function article_db_open($database) {
      subject TEXT,
      search_snippet TEXT,
      article TEXT)");
+
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS db_number on articles(number)');
   $stmt->execute();
-
-// TEMPORARY
-  $stmt = $dbh->query('DROP INDEX IF EXISTS db_date');
+  $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS db_date on articles(date)');
   $stmt->execute();
-  $stmt = $dbh->query('DROP INDEX IF EXISTS db_newsgroup');
+  $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS db_name on articles(name)');
   $stmt->execute();
-  $stmt = $dbh->query('DROP INDEX IF EXISTS db_name');
-// TEMPORARY
 
   $dbh->exec("CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
      newsgroup,

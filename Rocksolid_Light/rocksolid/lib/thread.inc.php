@@ -682,7 +682,7 @@ function formatTreeText($tree) {
  * format the subject inside the thread
  */
 function thread_format_subject($c,$group,$highlightids=false) {
-  global $file_article, $thread_maxSubject, $frame_article, $thread_show, $spooldir, $ovfile, $CONFIG;
+  global $file_article, $thread_maxSubject, $frame_article, $thread_show, $spooldir, $CONFIG;
   if(isset($_COOKIE['tzo'])) {
     $offset=$_COOKIE['tzo'];
   } else {
@@ -810,36 +810,21 @@ function thread_format_author($c,$group='',$lastmessage=1) {
  * format the last message info in the thread
  */
 function thread_format_lastmessage($c,$group='') {
-  global $thread_show,$anonym_address,$spooldir,$ovcache,$ovfile,$CONFIG;
-      $ovfound = 0;
-      $thiscache = array_slice($ovcache,-5);
-      if(!empty($thiscache)) {
-        $ovcache = $thiscache;
-      }
-      foreach($ovcache as $cacheline) {
-        $line = preg_split("/(:#rsl#:|\t)/", $cacheline);
-        if(intval($c->date_thread) == strtotime($line[3])) {
-          $ovfound = 1;
-          break;
-        }
-      }
-      if($ovfound == 0) {
-        $ovcache = array();
-        while($overviewline = fgets($ovfile)) {
-          $line = preg_split("/(:#rsl#:|\t)/", $overviewline);
-          $ovcache[] = $overviewline;
-          if(intval($c->date_thread) == strtotime($line[3])) {
-            $ovfound = 1;
-            break;
-          }
-        }
-      }
-      if($ovfound == 0) {
-        pclose($ovfile);
-        $overviewfile = $spooldir.'/'.$group.'-overview';
-        $ovfile = popen($CONFIG['tac'].' '.$overviewfile, 'r');
-      }
-      $fromline = address_decode(headerDecode($line[2]),"nirgendwo");
+  global $thread_show,$anonym_address,$spooldir,$CONFIG;
+  $ovfound = 0;
+  if($CONFIG['article_database'] == '1') {
+    $database = $spooldir.'/'.$group.'-articles.db3';
+    $table = 'articles';
+    $dbh = article_db_open($database, $table);
+    $stmt = $dbh->prepare("SELECT * FROM $table WHERE date=:date ORDER BY date DESC");
+    $stmt->bindParam(':date', $c->date_thread);
+    $stmt->execute();
+    if($found = $stmt->fetch()) {
+      $ovfound = 1;
+    };
+    $dbh = null;
+
+      $fromline = address_decode(headerDecode($found['name']),"nirgendwo");
           if (!isset($fromline[0]["host"])) $fromline[0]["host"]="";
           $name_from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
           $name_username=$fromline[0]["mailbox"];
@@ -856,8 +841,9 @@ function thread_format_lastmessage($c,$group='') {
            $poster_name = $fromoutput[0];
          }
        }
+  }
     if($ovfound == 1) {
-      $url = 'article-flat.php?id='.$line[0].'&group='.urlencode($group).'#'.$line[0];
+      $url = 'article-flat.php?id='.$found['number'].'&group='.urlencode($group).'#'.$found['number'];
       $return.='<p class=np_posted_date_left><a href="'.$url.'">'.get_date_interval(date("D, j M Y H:i T",$c->date_thread)).'</a>';
     } else {
       $return.='<p class=np_posted_date_left>'.get_date_interval(date("D, j M Y H:i T",$c->date_thread)).'</p>';

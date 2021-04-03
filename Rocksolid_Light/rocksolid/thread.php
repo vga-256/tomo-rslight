@@ -33,10 +33,6 @@ if((!function_exists("npreg_group_has_read_access") ||
    (!function_exists("npreg_group_is_visible") ||
     npreg_group_is_visible($group))) {
 
-$overviewfile = $spooldir.'/'.$group.'-overview';
-      $ovfile = popen($CONFIG['tac'].' '.$overviewfile, 'r');
-      $ovcache = array();
-
 if(isset($frames_on) && $frames_on === true) {
 ?>
 <script>
@@ -136,7 +132,6 @@ if(isset($frames_on) && $frames_on === true) {
   echo '<td class="np_pages" width="100%" align="right">';
   thread_pageselect($group,$pagecount,$first);
   echo '</td></tr></table>';
-  pclose($ovfile);
 } else {
   echo $text_register["no_access_group"];
 }
