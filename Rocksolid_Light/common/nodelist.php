@@ -1,50 +1,30 @@
 <?php
 include "head.inc";
-?>
-<h4>
-<p align="left">Welcome
-to Rocksolid</p>
-<p align="left">How
-to access and what’s available:</p>
-</h4>
-<br />
-<font size='2em'>
-<p align="left">i2p
-Web forums: <a href="http://def2.i2p/">def2.i2p</a>
-   <a href="http://def3.i2p/">def3.i2p</a>    <a href="http://def4.i2p/">def4.i2p</a>
-       <a href="http://retrobbs.i2p/">retrobbs.i2p</a>
-   <a href="http://novabbs.i2p/">novabbs.i2p</a>    <a href="http://rslight.i2p/">rslight.i2p</a></p>
-<p align="left">Tor
-Web Forums: <a href="http://z5bqfv5v75kxy7pj.onion/">z5bqfv5v75kxy7pj.onion</a>
-   <a href="http://dkzerogt6z6ybhcj.onion/">dkzerogt6z6ybhcj.onion</a>
-   <a href="http://j7zbybfl5ho2rta3.onion/">j7zbybfl5ho2rta3.onion</a></p>
-<p align="left">Clearnet
-Web Forums:
-<a href="http://www.rocksolidbbs.com/">www.rocksolidbbs.com</a>   
-<a href="http://www.novabbs.com/">www.novabbs.com</a>
-<a href="http://news.novabbs.org/">news.novabbs.org</a></p>
-<br />
-<p align="left">NNTP
-Newsreader Access: 
-</p>
-<p align="left">dgqrm3ouc5cqct7yzlk35qpq2hlkm3v3gegzvkyahvo67ulronhq.b32.i2p</p>
-<p align="left">asq5mo52aghemn2i.onion:119</p>
-<p align="left">news.i2pn2.org:119, 563</p>
-<br />
-<p align="left">Create
-NNTP Account: <a href="http://rslight.i2p/">rslight.i2p</a>
-   <a href="http://dkzerogt6z6ybhcj.onion/">dkzerogt6z6ybhcj.onion</a>
-   <a href="http://news.novabbs.org/">news.novabbs.org</a>
-<p align="left"NNTP
-Peering and FTN Connections also available in i2p/tor/ clearnet</p>
-</p>
-<br />
-<p align="left" style="margin-bottom: 0.06in">Questions?
-Post in rocksolid.shared.rocksolid (Rocksolid)</p>
-<p align="left" style="margin-bottom: 0.06in"><br/>
-<br/>
 
-</p>
-</font>
-</body>
-</html>
+echo '<h4><p align="left">Welcome to Rocksolid</p>';
+echo '<p align="left">How to access and what’s available</p></h4><br />';
+
+echo '<font size="4em">';
+echo '<b>def2:</b><br /><a href="http://def2.i2p">def2.i2p</a><br /><a href="http://kyue3hfjhqxj3df4hox46itdyz7euah457ldtg4d23evfggumxw4rkid.onion">kyue3hfjhqxj3df4hox46itdyz7euah457ldtg4d23evfggumxw4rkid.onion</a><br />';
+echo '<b>def3:</b><br /><a href="http://def3.i2p">def3.i2p</a><br /><a href="http://sumconrfm6sbd24f6clau7ynwjvot54hmiidf62d6e3otktd4fyxupid.onion">sumconrfm6sbd24f6clau7ynwjvot54hmiidf62d6e3otktd4fyxupid.onion</a><br />';
+echo '<b>def4:</b><br /><a href="http://def4.i2p">def4.i2p</a><br /><a href="http://q4pkyd4wt5s7bzcmjzmtq2htm3hfklylf3va3xt4gcwrp2zt6oeyseid.onion">q4pkyd4wt5s7bzcmjzmtq2htm3hfklylf3va3xt4gcwrp2zt6oeyseid.onion</a><br />';
+echo '<br />';
+echo '<b>Rocksolid Light:</b><br /><a href="http://rslight.i2p">rslight.i2p</a><br /><a href="http://fev4bgoasgxttqb3x3tukxxia6lwryteq6a2ramqb2gjiol3zbu6xaid.onion">fev4bgoasgxttqb3x3tukxxia6lwryteq6a2ramqb2gjiol3zbu6xaid.onion</a><br /><a href="https://news.novabbs.org">news.novabbs.org</a><br />';
+echo '<b>retrobbs:</b><br /><a href="http://retrobbs.i2p">retrobbs.i2p</a><br /><a href="https://www.rocksolidbbs.com">www.rocksolidbbs.com</a><br />';
+echo '<b>novabbs:</b><br /><a href="https://www.novabbs.com">www.novabbs.com</a><br />';
+echo '<br />';
+
+echo 'Newsreader Access:<br />';
+echo 'v77lu6t26velvaddm4gibyzd5sogskuczp7vwoc4vxmukvvaucva.b32.i2p<br />';
+echo 'asq5mo52aghemn2i.onion:119<br />';
+echo 'news.novabbs.org:119 or 563<br />';
+echo '<br />';
+echo 'Create NNTP Account: Use one of the <i>rslight</i> links above to create account.<br />';
+echo 'NNTP Peering also available in i2p/tor/clearnet<br />';
+echo '<br />';
+echo 'Rocksolid is also available from any usenet news provider carrying the rocksolid.* hierarchy<br />';
+echo '<br />';
+
+echo 'Questions? Post in rocksolid.shared.rocksolid (Rocksolid)';
+echo '</font><br /><br />';
+?> 
