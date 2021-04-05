@@ -16,7 +16,7 @@ echo '<br />';
 
 echo 'Newsreader Access:<br />';
 echo 'v77lu6t26velvaddm4gibyzd5sogskuczp7vwoc4vxmukvvaucva.b32.i2p<br />';
-echo 'asq5mo52aghemn2i.onion:119<br />';
+echo 'zkcvkb5xprurx5dvpanhyivneuzah6k6xayxgxd4h2ekklxgoi2x5aad.onion:119<br />';
 echo 'news.novabbs.org:119 or 563<br />';
 echo '<br />';
 echo 'Create NNTP Account: Use one of the <i>rslight</i> links above to create account.<br />';
