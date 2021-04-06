@@ -109,7 +109,7 @@ foreach($grouplist as $findgroup) {
             $query->execute(['findgroup' => $findgroup]);
 	    while (($overviewline = $query->fetch()) !== false) {
 	      $articles[] = $spoolpath.$thisgroup.'/'.$overviewline['number'];
-	      $db_articles[] = $findgroup.':'.$overviewline['number'].':'.$overviewline['date'];
+	      $db_articles[] = $findgroup.':'.$overviewline['number'].':'.$overviewline['date'].':'.$overviewline['name'];
 	    }
 	  }	  
 }
@@ -237,11 +237,13 @@ foreach($files as $article) {
     if(trim($this_encoding[1]) == "base64") {
       $body=base64_decode($body);
     }
- 
-    preg_match('/From:.*/', htmlspecialchars($header), $articlefrom);
-    $isfrom = explode("From: ", $articlefrom[0]);    
-    $articlefrom[0] = $isfrom[1];
-
+    if($CONFIG['article_database'] == '1') {
+      $articlefrom[0] = $data[3];
+    } else { 
+      preg_match('/From:.*/', htmlspecialchars($header), $articlefrom);
+      $isfrom = explode("From: ", $articlefrom[0]);    
+      $articlefrom[0] = $isfrom[1];
+    }
     $fromoutput = explode("<", html_entity_decode($articlefrom[0]));
 
 // Just an email address?
@@ -271,7 +273,7 @@ foreach($files as $article) {
     } else {
       $poster_name = $fromoutput[0]; 
     }
-    $poster_name = trim($poster_name, "\"");
+
     echo '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.create_name_link(mb_decode_mimeheader($poster_name)).'</p>';
 //    echo '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.mb_decode_mimeheader($fromoutput[0]).'</p>';
     # Try to display useful snippet

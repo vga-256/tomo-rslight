@@ -1228,6 +1228,7 @@ function format_log_date() {
 
 function create_name_link($name) {
     global $CONFIG; 
+    $name = preg_replace('/\"/', '', $name);
     if(strpos($name, '...@') !== false && (isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true)) {
 	$return = '<span class="visited">'.substr(htmlspecialchars($name),0,20).'</span>';
     } else {
