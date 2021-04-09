@@ -148,5 +148,7 @@ function import_articles($group) {
   $dbh = null;
   unlink($spooldir.'/'.$group.'-articles.db3');
   rename($spooldir.'/'.$group.'-articles.db3-new', $spooldir.'/'.$group.'-articles.db3');
+  unlink($spooldir.'/'.$group.'-data.dat');
+  unlink($spooldir.'/'.$group.'-info.txt');
 }
 ?>
