@@ -117,14 +117,19 @@ function quoted_printable_encode($line) {
  * returns: a complete message-id
  */
 function generate_msgid($identity) {
-  global $msgid_generate,$msgid_fqdn;
+  global $CONFIG, $msgid_generate,$msgid_fqdn;
   switch($msgid_generate) {
     case "no":
       // no, we don't want to generate a message-id.
       return false;
       break;
     case "md5":
-      return '<'.md5($identity).'$1@'.$msgid_fqdn.'>';
+      if($CONFIG['email_tail'][0] !== '@') {
+        $mymsgid = '@'.$CONFIG['email_tail'];
+      } else {
+	$mymsgid = $CONFIG['email_tail'];
+      }
+      return '<'.md5($identity).$mymsgid.'>';
       break;
     default:
       return false;
