@@ -47,6 +47,8 @@ if(isset($frames_on) && $frames_on === true) {
 <?php 
 }
 
+  $_SESSION['return_page'] = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
+
   echo '<a name="top"></a>';
   echo '<h1 class="np_thread_headline">';
 

@@ -40,6 +40,11 @@
     exit(0);
   }
 
+  $location = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
+  preg_match('/id=(.*)&/', $location, $hash);
+  $_SESSION['return_page'] = $location.'#'.$hash[1];
+
+ 
 if(isset($frames_on) && $frames_on === true) {
 ?>
 <script>

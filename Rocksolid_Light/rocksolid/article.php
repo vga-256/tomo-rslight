@@ -27,6 +27,10 @@ if(isset($frames_on) && $frames_on === true) {
 <?php
 }
 
+  $location = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
+  preg_match('/id=(.*)&/', $location, $hash);
+  $_SESSION['return_page'] = $location.'#'.$hash[1];
+
   $message=message_read($id,0,$group);
   if (!$message) {
     header ("HTTP/1.0 404 Not Found");

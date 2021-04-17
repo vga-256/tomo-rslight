@@ -64,7 +64,6 @@ include $file_newsportal;
 
 include "head.inc";
 global $synchro_user,$synchro_pass;
-
 // check to which groups the user is allowed to post to
 $thisgroup=_rawurldecode($_REQUEST['group']);
 if($testgroup) {
@@ -260,7 +259,8 @@ if ($type=="post") {
          echo 'Please wait '.round($wait).' minutes before posting again.<br />';
        }
      }
-     echo '<p><a href="'.$file_thread.'?group='.urlencode($returngroup[0]).'">'.$text_post["button_back"].'</a> '.$text_post["button_back2"].' '.group_display_name($returngroup[0]).'</p>';
+//     echo '<p><a href="'.$file_thread.'?group='.urlencode($returngroup[0]).'">'.$text_post["button_back"].'</a> '.$text_post["button_back2"].' '.group_display_name($returngroup[0]).'</p>';
+     echo '<p><a href="'.$_SESSION['return_page'].'">Back to Previous Page</a></p>';
       } else {
         // article not accepted by the newsserver
         $type="retry";
