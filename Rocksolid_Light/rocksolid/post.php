@@ -220,7 +220,7 @@ if ($type=="post") {
         if(($rate_limit !== FALSE) && ($rate_limit > 0)) {
           $CONFIG['rate_limit'] = $rate_limit;
         }
-	if($CONFIG['rate_limit'] == true && strcmp($name, $CONFIG['anonusername'])) {
+	if($CONFIG['rate_limit'] == true) { 
             $postsremaining = check_rate_limit($name);
 	    if($postsremaining < 1) {
 	      $wait = check_rate_limit($name,0,1);
@@ -251,7 +251,7 @@ if ($type=="post") {
      if(isset($CONFIG['auto_return']) && ($CONFIG['auto_return'] == true)) {
   	echo '<meta http-equiv="refresh" content="0;url='.$file_thread.'?group='.urlencode($returngroup[0]).'"';
      }
-     if($CONFIG['rate_limit'] == true && strcmp($name, $CONFIG['anonusername'])) {
+     if($CONFIG['rate_limit'] == true) {
        $postsremaining = check_rate_limit($name,1);
        echo 'You have '.$postsremaining.' posts remaining of '.$CONFIG['rate_limit'].' posts per hour.<br />';
        if($postsremaining < 1) {

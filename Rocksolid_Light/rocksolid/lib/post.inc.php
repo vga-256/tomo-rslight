@@ -139,6 +139,9 @@ function generate_msgid($identity) {
 
 function check_rate_limit($name,$set=0,$gettime=0) {
 	    global $CONFIG,$spooldir;
+	    if(strcasecmp($name, $CONFIG['anonusername']) == 0) {
+	      $name = session_id();
+	    }
 	    $ratefile=$spooldir.'/'.strtolower($name).'-rate.dat';
             $postqty=0;
 	    $first=0;
