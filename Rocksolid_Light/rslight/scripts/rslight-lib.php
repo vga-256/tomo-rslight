@@ -459,27 +459,17 @@ function get_last($nntp_group) {
 
 function get_xhdr($header, $articles) {
     global $config_dir,$spooldir,$nntp_group,$workpath,$path;
-// By Message-ID
     $tmpgroup=$nntp_group;
     $mid=false;
+// By Message-ID
     if(!is_numeric($articles)) {
-      $database = $spooldir.'/articles-overview.db3';
-      $table = 'overview';
-      $dbh = rslight_db_open($database, $table);
-      $stmt = $dbh->prepare("SELECT * FROM $table WHERE msgid like :terms");
-      $stmt->bindParam(':terms', $article);
-      $stmt->execute();
-      while($found = $stmt->fetch()) {
-        $nntp_group = $found['newsgroup'];
-        $article = $found['number'];
-        break;
-      }
-      $dbh = null;
-    } else {
-      if($nntp_group == '') {
-        $msg="412 no newsgroup selected\r\n";
-        return $msg;
-      }
+      $found = find_article_by_msgid($articles);
+      $tmpgroup = $found['newsgroup'];
+      $articles = $found['number'];
+    }
+    if($tmpgroup == '') {
+      $msg="412 no newsgroup selected\r\n";
+      return $msg;
     }
     $thisgroup = $path."/".preg_replace('/\./', '/', $tmpgroup);
     $article_num = explode('-', $articles);
@@ -501,7 +491,7 @@ function get_xhdr($header, $articles) {
     $msg="221 Header information for ".$header." follows (from articles)\r\n";
     for($i=$first; $i<=$last; $i++) {
       $article_full_path=$thisgroup.'/'.strval($i);
-      $data=extract_header_line($article_full_path, $header, $thisgroup, $i);
+      $data=extract_header_line($article_full_path, $header, $tmpgroup, $i);
       if($data !== false) {
         if($mid !== false) {
           $msg.=$mid." ".$data;
@@ -517,7 +507,7 @@ function get_xhdr($header, $articles) {
 function extract_header_line($article_full_path, $header, $thisgroup, $article) {
   global $CONFIG;
   if($CONFIG['article_database'] == '1') {
-    $thisarticle=get_db_article($article, $thisgroup);
+    $thisarticle=np_get_db_article($article, $thisgroup);
   } else {
     $thisarticle=file($article_full_path, FILE_IGNORE_NEW_LINES);
   }
@@ -638,19 +628,10 @@ function get_article($article, $nntp_group) {
     }
 // By Message-ID
     if(!is_numeric($article)) {
-      $database = $spooldir.'/articles-overview.db3';
-      $table = 'overview';
-      $dbh = rslight_db_open($database, $table);
-      $stmt = $dbh->prepare("SELECT * FROM $table WHERE msgid like :terms");
-      $stmt->bindParam(':terms', $article);
-      $stmt->execute();
-      while($found = $stmt->fetch()) {
-	$nntp_group = $found['newsgroup'];
-	$article = $found['number'];
-	$this_id = $found['msgid'];
-	break;
-      }
-      $dbh = null; 
+      $found = find_article_by_msgid($article);
+      $nntp_group = $found['newsgroup'];
+      $article = $found['number'];
+      $this_id = $found['msgid'];
     } else {
 // By article number
       if($nntp_group === "") {
@@ -663,11 +644,12 @@ function get_article($article, $nntp_group) {
       }
     } 
   if($CONFIG['article_database'] == '1') {
-      $thisarticle=get_db_article($article, $nntp_group);
+      $thisarticle=np_get_db_article($article, $nntp_group);
       if($thisarticle === FALSE) {
 	$msg.="430 no such article found\r\n";
         return $msg;
       }
+      $thisarticle[] = ".";
   } else {
     $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
     if(!file_exists($thisgroup."/".$article)) {
@@ -680,50 +662,11 @@ function get_article($article, $nntp_group) {
         if((strpos($thisline, "Message-ID: ") === 0) && !isset($mid[1])) {
           $mid=explode(': ', $thisline);
         }
-        $msg2.=$thisline."\r\n";
+	$msg2.=$thisline."\r\n";
     }
     $msg="220 ".$article." ".$mid[1]." article retrieved - head and body follow\r\n";
     $nntp_article = $article;
     return $msg.$msg2;
-}
-
-function get_db_article($article, $group) {
-    global $nntp_article,$nntp_group,$config_dir,$path,$groupconfig,$config_name,$spooldir;
-    $msg2="";
-    $ok_article = 0;
-    $database = $spooldir.'/'.$nntp_group.'-articles.db3';
-    $dbh = rslight_db_open($database);
-// Use article pointer
-    if(!isset($article) && is_numeric($nntp_article)) {
-      $article = $nntp_article;
-    }
-// By Message-ID
-    if(!is_numeric($article)) {
-      $stmt = $dbh->prepare("SELECT * FROM articles WHERE msgid like :terms");
-      $stmt->bindParam(':terms', $article);
-      $stmt->execute();
-      while($found = $stmt->fetch()) {
-	$msg2 = $found['article'];
-	$ok_article = 1;
-        break;
-      }
-    } else {
-      $stmt = $dbh->prepare("SELECT * FROM articles WHERE number = :terms");
-      $stmt->bindParam(':terms', $article);
-      $stmt->execute();
-      while($found = $stmt->fetch()) {
-        $msg2 = $found['article'];
-	$ok_article = 1;
-        break;
-      }
-    }
-    $dbh = null;
-    if($ok_article !== 1) {
-	return FALSE;
-    } else {
-    	$thisarticle = preg_split("/\r\n|\n|\r/", trim($msg2));
-    	return $thisarticle;
-    }
 }
 
 function get_header($article, $nntp_group) {
@@ -733,45 +676,37 @@ function get_header($article, $nntp_group) {
     if(!isset($article) && is_numeric($nntp_article)) {
       $article = $nntp_article;
     }
-    if($CONFIG['article_database'] == '1') {
-      $thisarticle=get_db_article($article, $nntp_group);
+// By Message-ID
+    if(!is_numeric($article)) {
+      $found = find_article_by_msgid($article);
+      $nntp_group = $found['newsgroup'];
+      $article = $found['number'];
+      $this_id = $found['msgid'];
+    } else {
+// By article number
+      if($nntp_group === "") {
+        $msg.="412 no newsgroup has been selected\r\n";
+        return $msg;
+      }
+      if(!is_numeric($article)) {
+        $msg.="420 no article has been selected\r\n";
+        return $msg;
+      }
+    }
+  if($CONFIG['article_database'] == '1') {
+      $thisarticle=np_get_db_article($article, $nntp_group);
       if($thisarticle === FALSE) {
         $msg.="430 no such article found\r\n";
         return $msg;
       }
-    } else {
-// By Message-ID
-      if(!is_numeric($article)) {
-        $database = $spooldir.'/articles-overview.db3';
-        $table = 'overview';
-        $dbh = rslight_db_open($database, $table);
-        $stmt = $dbh->prepare("SELECT * FROM $table WHERE msgid like :terms");
-        $stmt->bindParam(':terms', $article);
-        $stmt->execute();
-        while($found = $stmt->fetch()) {
-          $nntp_group = $found['newsgroup'];
-          $article = $found['number'];
-          break;
-        }
-        $dbh = null;
-      } else {
-// By article number
-        if($nntp_group === "") {
-          $msg.="412 no newsgroup has been selected\r\n";
-          return $msg;
-        }
-        if(!is_numeric($article)) {
-          $msg.="420 no article has been selected\r\n";
-          return $msg;
-        }
-      }
-      $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
-      if(!file_exists($thisgroup."/".$article)) {
+ } else {
+    $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
+    if(!file_exists($thisgroup."/".$article)) {
         $msg.="430 no such article found\r\n";
         return $msg;
-      }
-      $thisarticle=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
     }
+    $thisarticle=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
+  }
      foreach($thisarticle as $thisline) {
 	if($thisline == "") {
 	  $msg2.=".\r\n";
@@ -793,32 +728,12 @@ function get_body($article, $nntp_group) {
     if(!isset($article) && is_numeric($nntp_article)) {
       $article = $nntp_article;
     }
-    if($CONFIG['article_database'] == '1') {
-      $thisarticle=get_db_article($article, $nntp_group);
-      if($thisarticle === FALSE) {
-        $msg.="430 no such article found\r\n";
-        return $msg;
-      }
-    } else {
 // By Message-ID
     if(!is_numeric($article)) {
-      $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-      foreach($menulist as $menu) {
-        if(($menu[0] == '#') || (trim($menu) == "")) {
-          continue;
-        }
-        $name=explode(":", $menu);
-        $overviewdata = file($spooldir."/".$name[0]."-overview", FILE_IGNORE_NEW_LINES);
-        foreach($overviewdata as $overviewline) {
-// Remove :#rsl#: in 0.6.6 and only use tab
-          $articledata = preg_split("/(:#rsl#:|\t)/", $overviewline);
-          if(!strcasecmp($articledata[2], $article)) {
-            $nntp_group=$articledata[0];
-            $article=$articledata[1];
-            break;
-          }
-        }
-      }
+      $found = find_article_by_msgid($article);
+      $nntp_group = $found['newsgroup'];
+      $article = $found['number'];
+      $this_id = $found['msgid'];
     } else {
 // By article number
       if($nntp_group === "") {
@@ -830,14 +745,21 @@ function get_body($article, $nntp_group) {
         return $msg;
       }
     }
+  if($CONFIG['article_database'] == '1') {
+      $thisarticle=np_get_db_article($article, $nntp_group);
+      if($thisarticle === FALSE) {
+        $msg.="430 no such article found\r\n";
+        return $msg;
+      }
+      $thisarticle[] = ".";
+ } else {
     $thisgroup = $path."/".preg_replace('/\./', '/', $nntp_group);
     if(!file_exists($thisgroup."/".$article)) {
         $msg.="430 no such article found\r\n";
         return $msg;
     }
     $thisarticle=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
-   }
-    $body=0;
+  }
     foreach($thisarticle as $thisline) {
         if(($thisline == "") && ($body == 0)) {
 	  $body=1;
@@ -1153,6 +1075,24 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i,$body) {
   }
   fclose($saveconfig);
   unlink($sn_lockfile);
+}
+
+function find_article_by_msgid($msgid) {
+  global $spooldir;
+      $database = $spooldir.'/articles-overview.db3';
+      $table = 'overview';
+      $dbh = rslight_db_open($database, $table);
+      $stmt = $dbh->prepare("SELECT * FROM $table WHERE msgid like :terms");
+      $stmt->bindParam(':terms', $msgid);
+      $stmt->execute();
+      while($found = $stmt->fetch()) {
+        $return['newsgroup'] = $found['newsgroup'];
+        $return['number'] = $found['number'];
+        $return['msgid'] = $found['msgid'];
+        break;
+      }
+      $dbh = null;
+  return $return;
 }
 
 function get_article_list($thisgroup) {
