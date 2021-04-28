@@ -5,12 +5,11 @@ spoolpath="/var/spool/rslight"
 configpath="/etc/rslight"
 username="www"
 
-randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9{} | head -c${1:-16};echo;}
-site_key=$(randpw)
-anonymous_password=$(randpw)
-local_password=$(randpw)
-admin_password=$(randpw)
-admin_key=$(randpw)
+site_key=$(/usr/bin/openssl rand -base64 48 | cut -c1-16)
+anonymous_password=$(/usr/bin/openssl rand -base64 48 | cut -c1-16)
+local_password=$(/usr/bin/openssl rand -base64 48 | cut -c1-16)
+admin_password=$(/usr/bin/openssl rand -base64 48 | cut -c1-16)
+admin_key=$(/usr/bin/openssl rand -base64 48 | cut -c1-16)
 
 echo
 echo "This is the main installation script for Rocksolid Light"

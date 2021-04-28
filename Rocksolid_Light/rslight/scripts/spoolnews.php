@@ -354,10 +354,11 @@ function get_articles($ns, $group) {
       echo "\nRetrieved: ".$group." ".$article."\n";
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Wrote to spool: ".$CONFIG['remote_server']." ".$group.":".$article, FILE_APPEND);
       $i++;
-      if($i > $maxarticles_per_run)
-	break;
       $article++;
       $local++; 
+      if($i > $maxarticles_per_run) {
+        break;
+      }
     }
   }
   $article--;
