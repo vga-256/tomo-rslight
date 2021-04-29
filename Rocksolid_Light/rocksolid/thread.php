@@ -137,5 +137,7 @@ if(isset($frames_on) && $frames_on === true) {
 } else {
   echo $text_register["no_access_group"];
 }
+$sessions_data = file_get_contents($spooldir.'/sessions.dat');
+echo '<h1 class="np_thread_headline">'.$sessions_data.'</h1>';
 include "tail.inc"; 
 ?>

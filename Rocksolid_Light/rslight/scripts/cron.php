@@ -25,11 +25,14 @@
       }
     }
     fclose($fp1);
-    exec($CONFIG['php_exec']." ".$config_dir."scripts/nntp.php > /dev/null 2>&1");
+    exec($CONFIG['php_exec']." ".$config_dir."/scripts/nntp.php > /dev/null 2>&1");
     if(is_numeric($CONFIG['local_ssl_port'])) {
-      exec($CONFIG['php_exec']." ".$config_dir."scripts/nntp-ssl.php > /dev/null 2>&1");
+      exec($CONFIG['php_exec']." ".$config_dir."/scripts/nntp-ssl.php > /dev/null 2>&1");
     }
   }
+# Generate user count file (must be root)
+  exec($CONFIG['php_exec']." ".$config_dir."/scripts/count_users.php");
+  echo "Updated user count\n";
 /* Change to non root user */
   $uinfo=posix_getpwnam($CONFIG['webserver_user']);
   change_identity($uinfo["uid"],$uinfo["gid"]);
@@ -39,7 +42,7 @@
 
 if(isset($CONFIG['enable_nocem']) && $CONFIG['enable_nocem'] == true) {
   @mkdir($spooldir."nocem",0755,'recursive');
-  exec($CONFIG['php_exec']." ".$config_dir."scripts/nocem.php");
+  exec($CONFIG['php_exec']." ".$config_dir."/scripts/nocem.php");
 }
 
 reset($menulist);
@@ -51,14 +54,14 @@ foreach($menulist as $menu) {
   chdir("../".$menuitem[0]);
 # Send articles
   echo "Sending articles\n";
-  echo exec($CONFIG['php_exec']." ".$config_dir."scripts/send.php");
+  echo exec($CONFIG['php_exec']." ".$config_dir."/scripts/send.php");
 # Refresh spool
   if(isset($spoolnews) && ($spoolnews == true)) {
-    exec($CONFIG['php_exec']." ".$config_dir."scripts/spoolnews.php");
+    exec($CONFIG['php_exec']." ".$config_dir."/scripts/spoolnews.php");
     echo "Refreshed spoolnews\n";
   }
 # Expire articles
-  exec($CONFIG['php_exec']." ".$config_dir."scripts/expire.php");
+  exec($CONFIG['php_exec']." ".$config_dir."/scripts/expire.php");
   echo "Expired articles\n";
 }
 # Rotate log files

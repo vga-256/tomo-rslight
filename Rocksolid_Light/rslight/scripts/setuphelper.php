@@ -51,7 +51,7 @@ return [
 
 # Executables on your system 
 'php_exec' => 'The path to php, or just php if it is already in your path',
-'tac' => 'The shell command to display a file in reverse (Try tac, or tail -r)',
+'tac' => 'Path to php session files (leave empty to not display number of users online)',
 'webserver_user' => 'The user that your webserver runs as',
 
 # NOCEM

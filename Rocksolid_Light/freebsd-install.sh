@@ -108,6 +108,7 @@ sed -i '' -e "s|<anonymous_password>|$anonymous_password|" $configpath/rslight.i
 sed -i '' -e "s|<local_password>|$local_password|" $configpath/rslight.inc.php
 sed -i '' -e "s|<admin_password>|$admin_password|" $configpath/admin.inc.php
 sed -i '' -e "s|<admin_key>|$admin_key|" $configpath/admin.inc.php
+sed -i '' -e "s|<sessions_path>|/tmp|" $configpath/rslight.inc.php
 echo "done"
 echo
 echo "***************************************************"
