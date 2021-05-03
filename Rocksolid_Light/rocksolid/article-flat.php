@@ -30,8 +30,10 @@
   }
   $_SESSION['views']++;
 
+// $loadrate = allowed article request per second
+  $loadrate = 1.5;
   $rate = ($_SESSION['views'] / (time() - $_SESSION['starttime']));
-  if (($rate > .15) && ($_SESSION['views'] > 5)) {
+  if (($rate > $loadrate) && ($_SESSION['views'] > 5)) {
     header("HTTP/1.0 429 Too Many Requests");
     if(!isset($_SESSION['throttled'])) {
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Too many requests from ".$_SERVER['REMOTE_ADDR']." throttling", FILE_APPEND);
