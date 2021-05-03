@@ -3,6 +3,7 @@
 session_start();
 
 $_SESSION['group'] = $_SERVER['REQUEST_URI'];
+$_SESSION['rsactive'] = true;
 
 include "config.inc.php";
 include("$file_newsportal");

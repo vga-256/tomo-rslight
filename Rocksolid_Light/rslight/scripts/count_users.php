@@ -11,7 +11,7 @@ count_users();
 
 function count_users() {
 	GLOBAL $CONFIG, $spooldir;
-	$session_age = 300;
+	$session_age = 600;
 	$session_save_file = $spooldir.'/sessions.dat';
     $session_dir = $CONFIG['tac'];
     $session_files = scandir($session_dir);
@@ -22,7 +22,7 @@ function count_users() {
 		}
         if(strpos($session_file, 'sess_') === 0) {
             $contents = file_get_contents($session_dir.'/'.$session_file);
-            if(strpos($contents, 'starttime') !== false) {
+            if(strpos($contents, 'rsactive') !== false) {
                 $count++;
             }
         }

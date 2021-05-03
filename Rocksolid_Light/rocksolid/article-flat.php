@@ -40,6 +40,8 @@
     exit(0);
   }
 
+  $_SESSION['rsactive'] = true;
+
   $location = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
   preg_match('/id=(.*)&/', $location, $hash);
   $_SESSION['return_page'] = $location.'#'.$hash[1];
