@@ -2,14 +2,13 @@
 
 include "config.inc.php";
 include "newsportal.php";
-include $config_dir.'/admin.inc.php';
 
   if(isset($_COOKIE['tzo'])) {
     $offset=$_COOKIE['tzo'];
   } else {
     $offset=$CONFIG['timezone'];
   }
-  if($_REQUEST['command'] == 'Show' && $_REQUEST['key'] == hash('md5', $admin['key'])) {
+  if($_REQUEST['command'] == 'Show' && password_verify($CONFIG['thissitekey'], $_REQUEST['key'])) {
     $getfilename = $spooldir.'/upload/'.$_REQUEST['showfile'];
     $getfh = fopen($getfilename, "rb");
     $getfile = fread($getfh, filesize($getfilename));
@@ -41,7 +40,7 @@ include "head.inc";
     echo "Select a user directory to browse</small></strong>";
     echo '<form name="browse" method="post" action="files.php" enctype="multipart/form-data">';
     echo '<input name="command" type="hidden" id="command" value="Browse" readonly="readonly">';
-    echo '<input type="hidden" name="key" value="'.hash('md5', $admin['key']).'">';
+    echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'], PASSWORD_DEFAULT).'">';
     echo '<select name="listbox">';  
     foreach($users as $user) {
       $num = count(scandir($spooldir.'/upload/'.$user.'/')) - 2;
@@ -57,11 +56,11 @@ include "head.inc";
     echo '</form>';
   }
 
-  if($found == 1 && $_POST['key'] == hash('md5', $admin['key'])) {
-    display_user_files($_POST['listbox'], $offset, $admin);
+  if($found == 1 && password_verify($CONFIG['thissitekey'], $_REQUEST['key'])) {
+    display_user_files($_POST['listbox'], $offset);
   } 
 
-function display_user_files($user, $offset, $admin) {
+function display_user_files($user, $offset) {
   global $CONFIG, $spooldir, $text_header;
   $directory = $spooldir.'/upload/'.$user.'/';
   if(is_dir($directory)) {
@@ -95,12 +94,11 @@ function display_user_files($user, $offset, $admin) {
     echo '<button class="np_button_link" type="submit">'.$file.'</button>';
     echo '<input type="hidden" name="showfile" value="'.$user.'/'.$file.'"/>';
     echo '<input type="hidden" name="showfilename" value="'.$file.'"/>';
-    echo '<input type="hidden" name="key" value="'.hash('md5', $admin['key']).'">';
+    echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'], PASSWORD_DEFAULT).'">';
     echo '<input type="hidden" name="contenttype" value="'.$mime.'">';
     echo '<input name="command" type="hidden" id="command" value="Show" readonly="readonly">';
     echo '</form>';
     echo '</td>';
-//    echo '<td class="'.$lineclass.'"><span class="np_thread_line_text">'.$file.'</span></td>';
     echo '<td class="'.$lineclass.'"><span class="np_thread_line_text">'.$mime.'</span></td>';
     echo '<td class="'.$lineclass.'"><span class="np_thread_line_text">'.$newdate.'</span></td>';
     echo '</tr>';

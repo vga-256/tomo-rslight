@@ -4,11 +4,10 @@ session_start();
 
 include "config.inc.php";
 include "newsportal.php";
-include $config_dir.'/admin.inc.php';
 
 $snippet_size = 100;
 
-if(!isset($_POST['key']) || $_POST['key'] !== hash('md5', $admin['key'])) {
+if(!isset($_POST['key']) || !password_verify($CONFIG['thissitekey'], $_POST['key'])) {
 include "head.inc"; 
 
   echo '<h1 class="np_thread_headline">';
@@ -66,7 +65,7 @@ if ($_GET['searchpoint'] == 'Poster') {
   if(isset($_GET['group'])) {
     echo '<input type="hidden" name="group" value="'.$_GET['group'].'">';
   }
-  echo '<input type="hidden" name="key" value="'.hash('md5', $admin['key']).'">';
+  echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'], PASSWORD_DEFAULT).'">';
 
 ?>
 </tr>

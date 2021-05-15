@@ -1,7 +1,6 @@
 <?php
 include "config.inc.php";
 include "newsportal.php";
-include $config_dir.'/admin.inc.php';
 
 if(isset($_POST['username'])) {
   $name = $_POST['username'];
@@ -23,7 +22,7 @@ include "head.inc";
 
 if(isset($_FILES)) {
 // Check auth here
-    if(isset($_POST['key']) && $_POST['key'] == hash('md5', $admin['key'])) {
+    if(isset($_POST['key']) && password_verify($CONFIG['thissitekey'], $_POST['key'])) {
       if(check_bbs_auth($_POST['username'], $_POST['password'])) {
 	$userdir = '/var/spool/rslight/upload/'.strtolower($_POST[username]);
 	$upload_to = $userdir.'/'.$_FILES[photo][name];
@@ -49,11 +48,11 @@ if(isset($_FILES)) {
 
 echo '<table border="0" align="center" cellpadding="0" cellspacing="1">';
 echo '<form name="form1" method="post" action="upload.php" enctype="multipart/form-data">';
-echo '<tr><td><strong>Please Login to Upload<br />(max size=1MB)</strong></td></tr>';
+echo '<tr><td><strong>Please Login to Upload<br />(max size=2MB)</strong></td></tr>';
 echo '<tr><td>Username:</td><td><input name="username" type="text" id="username" value="'.$name.'"></td></tr>';
 echo '<tr><td>Password:</td><td><input name="password" type="password" id="password"></td></tr>';
 echo '<td><input name="command" type="hidden" id="command" value="Upload" readonly="readonly"></td>';
-echo '<input type="hidden" name="key" value="'.hash('md5', $admin['key']).'">';
+echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'], PASSWORD_DEFAULT).'">';
 echo '<tr><td><input type="file" name="photo" id="fileSelect" value="fileSelect" accept="image/*,audio/*,text/*,application/*"></td>
 ';
 echo '<td>&nbsp;</td>';
