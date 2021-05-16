@@ -72,7 +72,7 @@ function log_rotate() {
   global $logdir;
   $rotate = filemtime($logdir.'/rotate');
   if((time() - $rotate) > 86400) {
-    $log_files = array('nntp.log', 'spoolnews.log', 'nocem.log', 'newsportal.log', 'expire.log');
+    $log_files = array('nntp.log', 'spoolnews.log', 'nocem.log', 'newsportal.log', 'expire.log', 'access.log');
     foreach($log_files as $logfile) {
       $logfile=$logdir.'/'.$logfile;
       if(!is_file($logfile)) {
