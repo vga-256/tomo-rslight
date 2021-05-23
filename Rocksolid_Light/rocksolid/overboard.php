@@ -107,9 +107,14 @@ foreach($grouplist as $findgroup) {
 	$thisgroup = preg_replace('/\./', '/', $findgroup);
           if($dbh) {
             $query->execute(['findgroup' => $findgroup]);
+	    $i=0;
 	    while (($overviewline = $query->fetch()) !== false) {
 	      $articles[] = $spoolpath.$thisgroup.'/'.$overviewline['number'];
 	      $db_articles[] = $findgroup.':'.$overviewline['number'].':'.$overviewline['date'].':'.$overviewline['name'];
+	      $i++;
+	      if($i > $maxdisplay) {
+		break;
+	      }
 	    }
 	  }	  
 }
