@@ -1,12 +1,12 @@
 :root {
-  --color-dark: #232334;
+  --color-dark: #0C090A;
   --color-medium: #3E4147;
-  --color-light: #343444;
-  --color-bg-alt: #333545;
+  --color-light: #101020;
+  --color-bg-alt: #101025;
   --color-text-alt: #4488BB;
   --color-text-quote: teal;
-  --color-title: #D1BEBE;
-  --color-link: #00BFDF;
+  --color-title: #D0BDBD;
+  --color-link: #00B0DF;
   --color-visited: #6688BB;
   --color-border: #828282;
   --color-row-border: black;
