@@ -9,6 +9,15 @@
   }
 count_users();
 
+function count_articles() {
+  GLOBAL $CONFIG, $spooldir;
+  $database = $spooldir.'/articles-overview.db3';
+  $dbh = rslight_db_open($database);
+  $count = $dbh->query('SELECT COUNT(DISTINCT msgid) FROM overview')->fetchColumn();
+  $dbh = null;
+  return $count;
+}
+
 function count_users() {
 	GLOBAL $CONFIG, $spooldir;
 	$session_age = 600;
@@ -34,7 +43,7 @@ function count_users() {
             $are = 'are';
             $users = 'users';
         }
-		$session_info = '<h1 class="np_thread_headline">There '.$are.' currently '.$count.' '. $users.' online</h1>'."\r\n";
+		$session_info = '<h1 class="np_thread_headline">There '.$are.' currently '.$count.' '. $users.' online <br />Total messages: '.number_format(count_articles()).'</h1>'."\r\n";
         file_put_contents($session_save_file, $session_info);
 }
 ?>
