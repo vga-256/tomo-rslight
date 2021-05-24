@@ -72,12 +72,12 @@ function log_rotate() {
   global $logdir;
   $rotate = filemtime($logdir.'/rotate');
   if((time() - $rotate) > 86400) {
-    $log_files = array('nntp.log', 'spoolnews.log', 'nocem.log', 'newsportal.log', 'expire.log', 'access.log');
+    $log_files=scandir($logdir);
     foreach($log_files as $logfile) {
-      $logfile=$logdir.'/'.$logfile;
-      if(!is_file($logfile)) {
+      if(substr($logfile, -4) != '.log' ) {
         continue;
       }
+      $logfile=$logdir.'/'.$logfile;
       @unlink($logfile.'.5');
       @rename($logfile.'.4', $logfile.'.5');
       @rename($logfile.'.3', $logfile.'.4');
