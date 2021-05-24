@@ -357,7 +357,7 @@ function get_articles($ns, $group) {
       $article++;
       $local++; 
       if($i > $maxarticles_per_run) {
-        break;
+	break;
       }
     }
   }
