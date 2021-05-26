@@ -299,6 +299,7 @@ function get_body_search($group, $terms) {
 
 function get_header_search($group, $terms) {
   GLOBAL $CONFIG, $config_name, $spooldir, $snippet_size;
+  $terms = preg_replace('/\%/', '\%', $terms);
   $searchterms = "%".$terms."%";
     if(isset($_POST['group']) && $_POST['searchpoint'] != 'Message-ID') {
       $grouplist[0] = $_POST['group'];
@@ -333,7 +334,7 @@ function get_header_search($group, $terms) {
               }
             }
           } else {
-            $stmt = $dbh->prepare("SELECT * FROM $table WHERE newsgroup=:group AND ".$_POST['searchpoint']." like :terms ORDER BY date DESC");
+            $stmt = $dbh->prepare("SELECT * FROM $table WHERE newsgroup=:group AND ".$_POST['searchpoint']." like :terms ESCAPE '\' ORDER BY date DESC");
 	    $stmt->bindParam(':group', $group);
             $stmt->bindParam(':terms', $searchterms);
             $stmt->execute();
