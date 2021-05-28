@@ -305,7 +305,7 @@ foreach($files as $article) {
 	} else {
 		$mysnippet = substr($mysnippet, 0, $snippetlength);
 	}
-    echo "<p class=np_ob_body>".$mysnippet."</p>\r\n";
+    echo "<p class=np_ob_body>".htmlspecialchars($mysnippet, ENT_QUOTES)."</p>\r\n";
     echo '</td></tr>';
     if($results++ > ($maxdisplay - 2))
 	break;
