@@ -3,6 +3,8 @@
 include "config.inc.php";
 include "newsportal.php";
 
+  $logfile=$logdir.'/files.log';
+
   if(isset($_COOKIE['tzo'])) {
     $offset=$_COOKIE['tzo'];
   } else {
@@ -15,6 +17,8 @@ include "newsportal.php";
     fclose($getfh);
     header('Content-type: '.$_REQUEST[contenttype]);
     header('Content-disposition: filename="'.$_REQUEST[showfilename].'"');
+    file_put_contents($logfile, "\n".format_log_date()." Requesting: ".$_REQUEST['showfile'], FILE_APPEND);
+
     echo $getfile;
     exit(0);
   }

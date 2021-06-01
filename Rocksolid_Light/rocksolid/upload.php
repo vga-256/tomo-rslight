@@ -2,6 +2,8 @@
 include "config.inc.php";
 include "newsportal.php";
 
+$logfile=$logdir.'/files.log';
+
 if(isset($_POST['username'])) {
   $name = $_POST['username'];
 // Save name in cookie
@@ -34,6 +36,7 @@ if(isset($_FILES)) {
 	  }	
 	  $success = move_uploaded_file($_FILES[photo][tmp_name], $upload_to);
 	  if ($success) {
+	    file_put_contents($logfile, "\n".format_log_date()." Saved: ".strtolower($_POST['username'])."/".$_FILES[photo][name], FILE_APPEND);
   	    echo 'Saved '.$_FILES[photo][name].' to your files folder';
 	  } else {
   	    echo 'There was an error saving '.$_FILES[photo][name];
