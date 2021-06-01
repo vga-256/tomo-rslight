@@ -58,8 +58,7 @@ echo '<td><input name="command" type="hidden" id="command" value="Upload" readon
 echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'].$name, PASSWORD_DEFAULT).'">';
 echo '<tr><td><input type="file" name="photo" id="fileSelect" value="fileSelect" accept="image/*,audio/*,text/*,application/*"></td>
 ';
-echo '<td>&nbsp;</td>';
-echo '<td><input type="submit" name="Submit" value="Upload"></td>';
+echo '<td>&nbsp;<input type="submit" name="Submit" value="Upload"></td>';
 echo '</tr>';
 echo '</form>';
 echo '<tr><td><a href="files.php">Go to Files</a></td></tr>';
