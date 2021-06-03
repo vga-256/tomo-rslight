@@ -94,7 +94,7 @@ if (!preg_match("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{
 }
 
 # Does user file already exist?
-if ($userFileHandle = @fopen($userFilename, 'r'))
+if (($userFileHandle = @fopen($userFilename, 'r')) || (get_config_value('aliases.conf', strtolower($thisusername)) !== false)) 
 {
     if ($command == "Create")
     {
@@ -205,6 +205,28 @@ function create_code($username) {
   $userfile = sys_get_temp_dir()."/".$username;
   file_put_contents($userfile, $code);
   return $code;
+}
+
+function get_config_value($configfile,$request) {
+  global $config_dir;
+ 
+  if ($configFileHandle = @fopen($config_dir.'/'.$configfile, 'r'))
+  {
+    while (!feof($configFileHandle))
+    {
+      $buffer = fgets($configFileHandle);
+      if(strpos($buffer, $request.':') !== FALSE) {
+        $dataline=$buffer;
+        fclose($configFileHandle);
+        $datafound = explode(':',$dataline);
+        return $datafound[1];
+      }
+    } 
+    fclose($configFileHandle);
+    return FALSE;
+  } else {
+    return FALSE;
+  }
 }
 ?>
 </body>

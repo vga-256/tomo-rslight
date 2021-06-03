@@ -140,6 +140,42 @@
   font-size: 1.8em;
 }
 
+/* Mail buttons */
+.np_mail_button_link {
+  padding-left: 5px;
+  padding-right: 5px;
+  border: none;
+  color: var(--color-text-alt);
+  white-space: nowrap;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-dark);
+  border-radius: 5px;
+  font-size: 1.2em;
+}
+ 
+.np_mail_button_link:hover {
+  color: var(--color-dark);
+  background: var(--color-text-alt);
+}
+
+/* Filename buttons */
+.np_filename_button_link {
+  padding-left: 5px;
+  padding-right: 5px;
+  border: none;
+  color: var(--color-text-alt);
+  white-space: nowrap;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-dark);
+  border-radius: 5px;
+  font-size: 0.8em;
+}
+
+.np_filename_button_link:hover {
+  color: var(--color-dark);
+  background: var(--color-text-alt);
+}
+
 /* Username buttons */
 .np_username_button_link {
   padding-left: 5px;

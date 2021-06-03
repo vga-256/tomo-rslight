@@ -95,7 +95,7 @@ function display_user_files($user, $offset) {
 // Link 
     echo '<td class="'.$lineclass.'">';
     echo '<form action="files.php" method="post" target="rslight_view">';
-    echo '<button class="np_button_link" type="submit">'.$file.'</button>';
+    echo '<button class="np_filename_button_link" type="submit">'.$file.'</button>';
     echo '<input type="hidden" name="showfile" value="'.$user.'/'.$file.'"/>';
     echo '<input type="hidden" name="showfilename" value="'.$file.'"/>';
     echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'], PASSWORD_DEFAULT).'">';
