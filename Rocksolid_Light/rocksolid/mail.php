@@ -54,6 +54,8 @@ echo '</form>';
 echo '</table>';
 	exit(0);
       	}
+
+  $user = strtolower($_POST['username']);
   if(isset($_POST['command']) && $_POST['command'] == 'Message') {
     $database = $spooldir.'/mail.db3';
     $dbh = mail_db_open($database);
@@ -69,6 +71,9 @@ echo '</table>';
         $newdate = $ts->format('D, j M Y H:i T');
       }
       unset($ts);
+      if(($row['mail_from'] != $user) && ($row['rcpt_to'] != $user)) {
+	continue;
+      } 
       $body = rtrim(nl2br($row['message'])).'<br />'; 
       echo '<div class="np_article_header">';
       echo '<b>Subject:</b> '.$row['subject'].'<br />';  
@@ -130,7 +135,6 @@ echo '</table>';
 	    $dbh = null;
 	  }
         }
-  $user = strtolower($_POST['username']);
   if(isset($_POST['command']) && $_POST['command'] == 'Send') {
 	if(isset($_POST['id'])) {
 	  $database = $spooldir.'/mail.db3';
