@@ -55,8 +55,10 @@
       }
       if((isset($nocem_line[0]) && $nocem_line[0] == '<') && $start == 1) {
         $found = explode(' ', $nocem_line);
-        echo 'SEARCH: '.$found[0].' IN: '.$found[1]."\r\n";
-        delete_message($found[0], $found[1]);
+	$msgid = $found[0];
+	foreach($found as $found_group) {
+	  delete_message($msgid, $found_group);
+	}
       }
     }  
   rename($nocem_file, $nocem_path."processed/".$message);
