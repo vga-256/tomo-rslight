@@ -622,15 +622,9 @@ function groups_show($gruppen) {
       $lastarticleinfo->date = 0;
     }
       echo get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
-      $fromline=address_decode(headerDecode($lastarticleinfo->name),"nirgendwo");
-      if (!isset($fromline[0]["personal"])) {    
-        $lastname=$fromline[0]["mailbox"];;        
-      } else {    
-        $lastname=$fromline[0]["personal"];        
-      }
     echo '<table><tr><td>';
     echo '<font class="np_last_posted_date">by: ';
-    echo create_name_link($lastname);             
+    echo create_name_link($lastarticleinfo->name);             
     echo '</td></tr></table>';
     }
     echo "\n";
