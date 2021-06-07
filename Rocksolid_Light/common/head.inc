@@ -6,6 +6,9 @@
 <?php
 
 include "config.inc.php";
+if(file_exists($config_dir.'/googleanalytics.conf')) {
+  include $config_dir.'/googleanalytics.conf';
+}
 
 if (file_exists('mods/header.php')) {
   include "mods/header.php";
