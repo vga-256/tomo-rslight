@@ -23,6 +23,7 @@ if(isset($_POST['username'])) {
 include "head.inc";
 
 if(isset($_FILES)) {
+   $_FILES[photo][name] = preg_replace('/[^a-zA-Z0-9\.]/', '_', $_FILES[photo][name]);
 // Check auth here
     if(isset($_POST['key']) && password_verify($CONFIG['thissitekey'].$_POST['username'], $_POST['key'])) {
       if(check_bbs_auth($_POST['username'], $_POST['password'])) {
