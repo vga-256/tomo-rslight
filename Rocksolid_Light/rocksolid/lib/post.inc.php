@@ -265,7 +265,7 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
     fputs($ns,"Mime-Version: 1.0\r\n");
     fputs($ns,"Content-Type: text/plain; charset=".$www_charset."; format=flowed\r\n");
     fputs($ns,"Content-Transfer-Encoding: 8bit\r\n");
-    fputs($ns,"User-Agent: Rocksolid Light (news.novabbs.com/getrslight)\r\n");
+    fputs($ns,"User-Agent: Rocksolid Light (www.novabbs.com/getrslight)\r\n");
     if ($send_poster_host)
       @fputs($ns,'X-HTTP-Posting-Host: '.gethostbyaddr(getenv("REMOTE_ADDR"))."\r\n");
     if (($ref!=false) && (count($ref)>0)) {
