@@ -19,8 +19,26 @@ if(isset($_POST['username'])) {
     }
   }
 }
-
+  
+  $title.=' - Upload file';
 include "head.inc";
+  echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
+// Browse button
+    echo '<td>';
+    echo '<form target="'.$frame['content'].'" method="post" action="files.php">';
+    echo '<input name="command" type="hidden" id="command" value="Browse" readonly="readonly">';
+    echo '<button class="np_button_link" type="submit">Browse</button>';
+    echo '</form>';
+    echo '</td>';
+// Upload button
+    echo '<td>';
+    echo '<form target="'.$frame['content'].'" method="post" action="upload.php">';
+    echo '<input name="command" type="hidden" id="command" value="Upload" readonly="readonly">';
+    echo '<button class="np_button_link" type="submit">Upload</button>';
+    echo '</form>';
+    echo '</td>';
+    echo '<td width=100%></td></tr></table>';
+    echo '<hr>';
 
 if(isset($_FILES)) {
    $_FILES[photo][name] = preg_replace('/[^a-zA-Z0-9\.]/', '_', $_FILES[photo][name]);
@@ -62,7 +80,6 @@ echo '<tr><td><input type="file" name="photo" id="fileSelect" value="fileSelect"
 echo '<td>&nbsp;<input type="submit" name="Submit" value="Upload"></td>';
 echo '</tr>';
 echo '</form>';
-echo '<tr><td><a href="files.php">Go to Files</a></td></tr>';
 echo '</table>';
 echo '</body></html>';
 ?>

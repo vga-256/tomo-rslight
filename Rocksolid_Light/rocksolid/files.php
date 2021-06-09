@@ -10,6 +10,7 @@ include "newsportal.php";
   } else {
     $offset=$CONFIG['timezone'];
   }
+
   if($_REQUEST['command'] == 'Show' && password_verify($CONFIG['thissitekey'], $_REQUEST['key'])) {
     $getfilename = $spooldir.'/upload/'.$_REQUEST['showfile'];
     $getfh = fopen($getfilename, "rb");
@@ -23,7 +24,26 @@ include "newsportal.php";
     exit(0);
   }
 
+  $title.=' - Browse files';
 include "head.inc";
+  echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
+// Browse button
+    echo '<td>';
+    echo '<form target="'.$frame['content'].'" method="post" action="files.php">';
+    echo '<input name="command" type="hidden" id="command" value="Browse" readonly="readonly">';
+    echo '<button class="np_button_link" type="submit">Browse</button>';
+    echo '</form>';
+    echo '</td>';
+// Upload button
+    echo '<td>';
+    echo '<form target="'.$frame['content'].'" method="post" action="upload.php">';
+    echo '<input name="command" type="hidden" id="command" value="Upload" readonly="readonly">';
+    echo '<button class="np_button_link" type="submit">Upload</button>';
+    echo '</form>';
+    echo '</td>';
+    echo '<td width=100%></td></tr></table>';
+    echo '<hr>';
+
   $directory = $spooldir.'/upload/';
   $users = array();
   if(is_dir($directory)) {
@@ -39,9 +59,8 @@ include "head.inc";
   }
   sort($users);
   $found = 0;
-  echo '<strong><small><a href="upload.php">Click here to upload to your directory</a>, or<br />';
   if(count($users) > 0) {
-    echo "Select a user directory to browse</small></strong>";
+    echo "<strong><small>Select a user directory to browse:</small></strong>";
     echo '<form name="browse" method="post" action="files.php" enctype="multipart/form-data">';
     echo '<input name="command" type="hidden" id="command" value="Browse" readonly="readonly">';
     echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'], PASSWORD_DEFAULT).'">';
