@@ -17,7 +17,7 @@ include "head.inc";
   $auth_expire = 14400;
   $logged_in = false;
   if(!isset($_POST['username'])) {
-    $_POST['username'] = $_COOKIE['cookie_name'];
+    $_POST['username'] = $_COOKIE['mail_name'];
   }
   $name = $_POST['username'];
   if(password_verify($_POST['username'].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['auth'])) {
@@ -31,8 +31,8 @@ include "head.inc";
          var authcookie = "<?php echo $authkey; ?>";
          var savename = "<?php echo stripslashes($name); ?>";
 	 var auth_expire = "<?php echo $auth_expire; ?>";
-         document.cookie = "auth="+authcookie+"; max-age="+auth_expire+";";
-         document.cookie = "cookie_name=" + savename;
+         document.cookie = "auth="+authcookie+"; max-age="+auth_expire;
+         document.cookie = "mail_name="+savename;
       </script>
 <?php
       $logged_in = true;
@@ -59,12 +59,12 @@ if(isset($_POST['username'])) {
   $name = $_POST['username'];
 // Save name in cookie
   if ($setcookies==true) {
-    setcookie("cookie_name",stripslashes($name),time()+(3600*24*90));
+    setcookie("mail_name",stripslashes($name),time()+(3600*24*90));
   }
 } else {
   if ($setcookies) {
-    if ((isset($_COOKIE["cookie_name"])) && (!isset($name))) {
-      $name=$_COOKIE["cookie_name"];
+    if ((isset($_COOKIE["mail_name"])) && (!isset($name))) {
+      $name=$_COOKIE["mail_name"];
     } else {
       $name = '';
     }
