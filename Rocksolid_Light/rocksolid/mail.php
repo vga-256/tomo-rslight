@@ -12,6 +12,33 @@ include "newsportal.php";
 
 include "head.inc";
 
+  $logged_in = false;
+  if(!isset($_POST['username'])) {
+    $_POST['username'] = $_COOKIE['cookie_name'];
+  }
+  $name = $_POST['username'];
+  if(password_verify($_POST['username'].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['auth'])) {
+    $logged_in = true;
+  } else {
+    if(check_bbs_auth($_POST['username'], $_POST['password'])) {
+      $authkey = password_hash($_POST['username'].get_user_config($_POST['username'],'encryptionkey'), PASSWORD_DEFAULT);
+?>
+      <script type="text/javascript">
+       if (navigator.cookieEnabled)
+         var authcookie = "<?php echo $authkey; ?>";
+         var savename = "<?php echo stripslashes($name); ?>";
+         document.cookie = "auth=" + authcookie;
+         document.cookie = "cookie_name=" + savename;
+      </script>
+<?php
+      $logged_in = true;
+    }
+  }
+  echo '<h1 class="np_thread_headline">';
+    
+  echo '<a href="mail.php" target='.$frame['menu'].'>mail</a> / ';
+  echo htmlspecialchars($_POST['username']).'</h1>';
+
 echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
 // New Message button
     echo '<td>';
@@ -39,7 +66,7 @@ if(isset($_POST['username'])) {
     }
   }
 }
-        if(!check_bbs_auth($_POST['username'], $_POST['password'])) {
+        if($logged_in !== true) {
 echo '<table border="0" align="center" cellpadding="0" cellspacing="1">';
 echo '<form name="form1" method="post" action="mail.php" enctype="multipart/form-data">';
 echo '<tr><td><strong>Please Login<br /></strong></td></tr>';
