@@ -12,6 +12,9 @@ include "newsportal.php";
 
 include "head.inc";
 
+// How long should cookie allow user to stay logged in?
+// 14400 = 4 hours
+  $auth_expire = 14400;
   $logged_in = false;
   if(!isset($_POST['username'])) {
     $_POST['username'] = $_COOKIE['cookie_name'];
@@ -27,7 +30,8 @@ include "head.inc";
        if (navigator.cookieEnabled)
          var authcookie = "<?php echo $authkey; ?>";
          var savename = "<?php echo stripslashes($name); ?>";
-         document.cookie = "auth=" + authcookie;
+	 var auth_expire = "<?php echo $auth_expire; ?>";
+         document.cookie = "auth="+authcookie+"; max-age="+auth_expire+";";
          document.cookie = "cookie_name=" + savename;
       </script>
 <?php
