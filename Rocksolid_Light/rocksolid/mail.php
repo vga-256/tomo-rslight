@@ -23,7 +23,7 @@ include "head.inc";
     $_POST['username'] = $_COOKIE['mail_name'];
   }
   $name = $_POST['username'];
-  if((password_verify($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['auth'])) || (password_verify($_POST['username'].$keys[1].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['auth']))) {
+  if((password_verify($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['mail_auth'])) || (password_verify($_POST['username'].$keys[1].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['mail_auth']))) {
     $logged_in = true;
   } else {
     if(check_bbs_auth($_POST['username'], $_POST['password'])) {
@@ -34,7 +34,7 @@ include "head.inc";
          var authcookie = "<?php echo $authkey; ?>";
          var savename = "<?php echo stripslashes($name); ?>";
 	 var auth_expire = "<?php echo $auth_expire; ?>";
-         document.cookie = "auth="+authcookie+"; max-age="+auth_expire;
+         document.cookie = "mail_auth="+authcookie+"; max-age="+auth_expire;
          document.cookie = "mail_name="+savename;
       </script>
 <?php
