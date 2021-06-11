@@ -10,6 +10,9 @@ include "newsportal.php";
     $offset=$CONFIG['timezone'];
   }
 
+$keyfile = $spooldir.'/keys.dat';
+$keys = unserialize(file_get_contents($keyfile));
+
 include "head.inc";
 
 // How long should cookie allow user to stay logged in?
@@ -20,11 +23,11 @@ include "head.inc";
     $_POST['username'] = $_COOKIE['mail_name'];
   }
   $name = $_POST['username'];
-  if(password_verify($_POST['username'].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['auth'])) {
+  if((password_verify($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['auth'])) || (password_verify($_POST['username'].$keys[1].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['auth']))) {
     $logged_in = true;
   } else {
     if(check_bbs_auth($_POST['username'], $_POST['password'])) {
-      $authkey = password_hash($_POST['username'].get_user_config($_POST['username'],'encryptionkey'), PASSWORD_DEFAULT);
+      $authkey = password_hash($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), PASSWORD_DEFAULT);
 ?>
       <script type="text/javascript">
        if (navigator.cookieEnabled)

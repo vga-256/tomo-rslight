@@ -67,6 +67,9 @@ foreach($menulist as $menu) {
 # Rotate log files
   log_rotate();
   echo "Log files rotated\n";
+# Rotate keys
+  rotate_keys();
+  echo "Keys rotated\n";
 
 function log_rotate() {
   global $logdir;
@@ -89,6 +92,30 @@ function log_rotate() {
     unlink($logdir.'/rotate');
     touch($logdir.'/rotate');
   }
+}
+
+function rotate_keys() {
+  global $spooldir;
+  $keyfile = $spooldir.'/keys.dat';
+  $newkeys = array();
+  if(filemtime($keyfile)+14400 > time()) {
+    return;
+  } else {
+    $new = true;
+    if(is_file($keyfile)) {
+      $keys = unserialize(file_get_contents($keyfile));
+      $new = false;
+    }  
+    if($new !== true) {
+      $newkeys[0] = base64_encode(openssl_random_pseudo_bytes(44));
+      $newkeys[1] = $keys[0];
+    } else {
+      $newkeys[0] = base64_encode(openssl_random_pseudo_bytes(44));
+      $newkeys[1] = base64_encode(openssl_random_pseudo_bytes(44));
+    }
+  }
+  file_put_contents($keyfile, serialize($newkeys));
+  touch($keyfile);
 }
 
 function change_identity( $uid, $gid )
