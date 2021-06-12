@@ -118,14 +118,20 @@ echo '</table>';
 
       echo '<div class="np_article_body">';
       echo $body;
-    echo '<form action="mail.php" method="post">';
-    echo '<button class="np_button_link" type="submit">Reply</button>';
-    echo "<input type='hidden' name='id' value='".$row['id']."' />";
-    echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
-    echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
-    echo '<input name="command" type="hidden" id="command" value="Send" readonly="readonly">';
-    echo '</form>';
+      echo '<form action="mail.php" method="post">';
+      echo '<button class="np_button_link" type="submit">Reply</button>';
+      echo "<input type='hidden' name='id' value='".$row['id']."' />";
+      echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
+      echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
+      echo '<input name="command" type="hidden" id="command" value="Send" readonly="readonly">';
+      echo '</form>';
       echo '</div>';
+      if($row['mail_from'] == $user) {
+        $sql_update = $dbh->prepare('UPDATE messages SET mail_viewed=? WHERE msgid=?');
+      } elseif($row['rcpt_to'] == $user) {
+        $sql_update = $dbh->prepare('UPDATE messages SET rcpt_viewed=? WHERE msgid=?');
+      }
+      $sql_update->execute(array('true', $row['msgid']));
     }
     $dbh = null;
  
@@ -223,7 +229,12 @@ echo '</table>';
       } else {
         echo '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
       }
-
+    $button_link = 'np_mail_button_link';;
+    if(($row['mail_from'] == $user) && ($row['mail_viewed'] == 'true')) {
+      $button_link = 'np_mail_button_read';
+    } elseif(($row['rcpt_to'] == $user) && ($row['rcpt_viewed'] == 'true')) {
+      $button_link = 'np_mail_button_read';
+    }
 // Use local timezone if possible
     $ts = new DateTime(date("D, j M Y H:i T", $row["date"]), new DateTimeZone('UTC'));
     $ts->add(DateInterval::createFromDateString($offset.' minutes'));
@@ -235,7 +246,7 @@ echo '</table>';
     }
     unset($ts);
     echo '<form action="mail.php" method="post">';
-    echo '<button class="np_mail_button_link" type="submit">'.$row["subject"].'</button>';
+    echo '<button class="'.$button_link.'" type="submit">'.$row["subject"].'</button>';
     echo "<input type='hidden' name='id' value='".$row['id']."' />";
     echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
     echo "<input type='hidden' name='password' value='".$_POST['password']."' />"; 
