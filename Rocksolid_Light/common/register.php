@@ -1,19 +1,113 @@
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=<?=$www_charset?>">
-<?php
-if (file_exists('../common/mods/style.css')) {
-  echo '<link rel="stylesheet" type="text/css" href="../common/mods/style.css">';
-} else {
-  echo '<link rel="stylesheet" type="text/css" href="../common/style.css">';
-}
-?>
-</head>
-<body>
 <?php
 
 include "config.inc.php";
+include "head.inc";
+
+if(!isset($_POST['command'])) {
+if (isset($_COOKIE["ts_limit"])) {
+  echo "It appears you already have an active account<br/>";
+  echo "More than one account may not be created in 30 days<br/>";
+  echo '<br/><a href="/">Return to Home Page</a>';
+} else {
+  echo '<table border="0" align="center" cellpadding="0" cellspacing="1">';
+  echo '<tr>';
+  echo '<form name="form1" method="post" action="register.php">';
+  echo '<td><tr>';
+  echo '<td><strong>Register Username </strong></td>';
+  echo '</tr><tr>';
+  echo '<td>Username:</td>';
+  echo '<td><input name="username" type="text" id="username"></td>';
+  echo '</tr><tr>';
+  echo '<td>Email:</td>';
+  echo '<td><input name="user_email" type="text" id="user_email"></td>';
+  echo '</tr><tr>';
+  echo '<td>Password:</td>';
+  echo '<td><input name="password" type="password" id="password"></td>';
+  echo '</tr><tr>';
+  echo '<td>Re-enter Password:</td>';
+  echo '<td><input name="password2" type="password" id="password2"></td>';
+  echo '</tr><tr>';
+  echo '<td><input name="command" type="hidden" id="command" value="Create" readonly="readonly"></td>';
+  echo '</tr><tr>';
+  echo '<td>&nbsp;</td>';
+  echo '<td><input type="submit" name="Submit" value="Create"></td>';
+  echo '</tr>';
+  echo '<tr><td><a href="changepw.php">Change current password</a></td></tr>';
+  echo '<tr><td>';
+  echo '<td></td><td></td>';
+  echo '</td></tr>';
+  echo '</td>';
+  echo '</form>';
+  echo '</tr>';
+  echo '</table>';
+}
+  echo '</body>';
+  echo '</html>';
+  exit(0);
+}
+
+if(isset($_POST['command']) && $_POST['command'] == 'CreateNew') {
+  $workpath = $config_dir."users/";
+  $keypath = $config_dir."userconfig/";
+  $username = $_POST['username'];
+  $password = $_POST['password'];
+  $user_email = $_POST['user_email'];
+  $code = $_POST['code'];
+  $userFilename = $workpath.$username;
+  $keyFilename = $keypath.$username;
+  @mkdir($workpath.'new/');
+  $verified = 0;
+
+  $no_verify=explode(' ', $CONFIG['no_verify']);
+  foreach($no_verify as $no) {
+    if (strlen($_SERVER['HTTP_HOST']) - strlen($no) === strrpos($_SERVER['HTTP_HOST'],$no)) {
+      $CONFIG['verify_email'] = false;
+    }
+  }
+ if($CONFIG['verify_email'] == true) {
+  $saved_code = file_get_contents(sys_get_temp_dir()."/".$username);
+  if((strcmp(trim($code), trim($saved_code))) !== 0) {
+    echo "Code does not match. Try again.<br />";
+    echo '<form name="create1" method="post" action="register.php">';
+    echo '<input name="code" type="text" id="code">&nbsp;';
+    echo '<input name="username" type="hidden" id="username" value="'.$username.'" readonly="readonly">';
+    echo '<input name="password" type="hidden" id="password" value="'.$password.'" readonly="readonly">';
+    echo '<input name="command" type="hidden" id="command" value="CreateNew" readonly="readonly">';
+    echo '<input name="user_email" type="hidden" id="user_email" value="'.$user_email.'" readonly="readonly">';
+    echo '<input type="submit" name="Submit" value="Click Here to Create"></td>';
+    echo '<br/><br/><a href="'.$CONFIG['default_content'].'">Cancel and return to home page</a>';
+    exit(2);
+  }
+  $verified = 1;
+ }
+    if ($userFileHandle = @fopen($userFilename, 'w+'))
+    {
+        fwrite($userFileHandle, password_hash($password, PASSWORD_DEFAULT));
+        fclose($userFileHandle);
+        chmod($userFilename, 0666);
+    }
+// Create synchronet account
+    if(isset($synch_create) && $synch_create == true) {
+        putenv("SBBSCTRL=$synch_path/ctrl");
+        $result = shell_exec("$synch_path/exec/makeuser $username -P $password");
+    }
+    $newkey = make_key($username);
+    if ($userFileHandle = @fopen($keyFilename, 'w+'))
+    {
+        fwrite($userFileHandle, 'encryptionkey:'.$newkey."\r\n");
+        fwrite($userFileHandle, 'email:'.$user_email."\r\n");
+        if($verified == 1) {
+          fwrite($userFileHandle, "email_verified:true\r\n");
+        }
+        fclose($userFileHandle);
+        chmod($userFilename, 0666);
+    }
+    unlink(sys_get_temp_dir()."/".$username);
+    echo "User:".$username." Created\r\n";
+    echo '<br /><a href="'.$CONFIG['default_content'].'">Back</a>';
+
+  exit(0);
+}
 
 if($CONFIG['verify_email'] == true) {
   include($config_dir.'/phpmailer.inc.php');
@@ -24,9 +118,6 @@ if($CONFIG['verify_email'] == true) {
   }
 }
 
-include "head.inc";
-$CONFIG = include($config_file);
-
 # $hostname: '{POPaddress:port/pop3}INBOX'
 $hostname = '{mail.example.com:110/pop3}INBOX';
 # $external: Using external POP auth?
@@ -35,7 +126,6 @@ $external = 0;
 $workpath = $config_dir."users/";
 $keypath = $config_dir."userconfig/";
 
-# DO NOT EDIT ANYTHING BELOW THIS LINE
 $ok = FALSE;
 $command = "Login";
 
@@ -180,12 +270,13 @@ $mail->send();
     echo 'An email has been sent to '.$user_email.'<br />';
     echo 'Please enter the code from the email below:<br />'; 
   }    
-    echo '<form name="create1" method="post" action="create.php">';
+    echo '<form name="create1" method="post" action="register.php">';
   if($CONFIG['verify_email'] == true) {
       echo '<input name="code" type="text" id="code">&nbsp;';
   }
     echo '<input name="username" type="hidden" id="username" value="'.$username.'" readonly="readonly">';
     echo '<input name="password" type="hidden" id="password" value="'.$password.'" readonly="readonly">';
+    echo '<input name="command" type="hidden" id="command" value="CreateNew" readonly="readonly">';
     echo '<input name="user_email" type="hidden" id="user_email" value="'.$user_email.'" readonly="readonly">';
     echo '<input type="submit" name="Submit" value="Click Here to Create"></td>';
     echo '<br/><br/><a href="'.$CONFIG['default_content'].'">Cancel and return to home page</a>';
@@ -229,5 +320,3 @@ function get_config_value($configfile,$request) {
   }
 }
 ?>
-</body>
-</html> 
