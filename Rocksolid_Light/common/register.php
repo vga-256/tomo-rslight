@@ -47,6 +47,7 @@ if (isset($_COOKIE["ts_limit"])) {
 }
 
 if(isset($_POST['command']) && $_POST['command'] == 'CreateNew') {
+  include $config_dir.'/synchronet.conf';
   $workpath = $config_dir."users/";
   $keypath = $config_dir."userconfig/";
   $username = $_POST['username'];
