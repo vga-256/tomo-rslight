@@ -48,14 +48,28 @@ include "head.inc";
 
 echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
 // New Message button
-    echo '<td>';
-    echo '<form target="'.$frame['content'].'" method="post" action="mail.php">';
-    echo '<input name="command" type="hidden" id="command" value="Send" readonly="readonly">';
-    echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
-    echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
-    echo '<button class="np_button_link" type="submit">New Message</button>';
-    echo '</form>';
-    echo '</td>';
+    if($_POST['command'] !== 'Send') {
+      echo '<td>';
+      echo '<form target="'.$frame['content'].'" method="post" action="mail.php">';
+      echo '<input name="command" type="hidden" id="command" value="Send" readonly="readonly">';
+      echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
+      echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
+      echo '<button class="np_button_link" type="submit">New Message</button>';
+      echo '</form>';
+      echo '</td>';
+    }
+// Delete Message button
+    if(isset($_POST['command']) && $_POST['command'] == 'Message') {
+      echo '<td>';
+      echo '<form target="'.$frame['content'].'" method="post" action="mail.php">';
+      echo '<input name="command" type="hidden" id="command" value="Delete" readonly="readonly">';
+      echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
+      echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
+      echo "<input type='hidden' name='id' value='".$_POST['id']."' />";
+      echo '<button class="np_button_link" type="submit">Delete This Message</button>';
+      echo '</form>';
+      echo '</td>';
+    }
     echo '<td width=100%></td></tr></table>';
 
 if(isset($_POST['username'])) {
@@ -90,6 +104,26 @@ echo '</table>';
       	}
 
   $user = strtolower($_POST['username']);
+
+  if(isset($_POST['command']) && $_POST['command'] == 'Delete') {
+    $database = $spooldir.'/mail.db3';
+    $dbh = mail_db_open($database);
+    $query = $dbh->prepare('SELECT * FROM messages where id=:id');
+    $query->execute(['id' => $_POST['id']]);
+    while (($row = $query->fetch()) !== false) {
+      if(($row['mail_from'] != $user) && ($row['rcpt_to'] != $user)) {
+        continue;
+      }
+      if($row['mail_from'] == $user) {
+        $sql_update = $dbh->prepare('UPDATE messages SET from_hide=? WHERE id=?');
+      } elseif($row['rcpt_to'] == $user) {
+        $sql_update = $dbh->prepare('UPDATE messages SET to_hide=? WHERE id=?');
+      }
+      $sql_update->execute(array('true', $row['id']));
+    }
+    $dbh = null;
+  }
+
   if(isset($_POST['command']) && $_POST['command'] == 'Message') {
     $database = $spooldir.'/mail.db3';
     $dbh = mail_db_open($database);
@@ -164,7 +198,7 @@ echo '</table>';
 	    $stmt = $dbh->prepare($sql);
 // For possible future use
 	    $target = "local";
-	    $mail_viewed = "1";
+	    $mail_viewed = "true";
 	    $rcpt_viewed = null;
 	    $q = $stmt->execute([$msgid, $from, $to, $target, $date, $subject, $message, null, null, $mail_viewed, $rcpt_viewed]);
             if ($q) {
@@ -224,6 +258,12 @@ echo '</table>';
     echo '<tr class="np_thread_head"><td class="np_thread_head">Subject</td><td class="np_thread_head">From</td><td class="np_thread_head">To</td><td class="np_thread_head">Date</td></tr>';
     $i=1;
     while (($row = $query->fetch()) !== false) { 
+      if(($row['mail_from'] == $user) && ($row['from_hide'] == 'true')) { 
+        continue;
+      }
+      if(($row['rcpt_to'] == $user) && ($row['to_hide'] == 'true')) {
+        continue;
+      }
       if(($i % 2) != 0){
         echo '<tr class="np_result_line1"><td class="np_result_line1" style="word-wrap:break-word";>';
       } else {
