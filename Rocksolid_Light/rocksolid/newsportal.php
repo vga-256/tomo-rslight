@@ -877,40 +877,17 @@ function html_parse($text) {
   } else {
     $target=' ';
   }
-  // regular expressions that will be applied to every word in the text
-  $regexp_replace=array(
-    'http://((\.*([-a-z0-9_/~@?=%#;+]|&amp;)+)+)' =>
-      '<a'.$target.'href="http://\1">http://\1</a>',
-    '(www\.[-a-z]+\.(de|pl|cz|sk|tk|tv|cc|cx|biz|us|uk|info|int|eu|dk|org|net|at|ch|com))' =>
-      '<a'.$target.'href="http://\1">\1</a>',
-    'https://([-a-z0-9_./~@?=%#&;\n]+)' =>
-      '<a'.$target.'href="https://\1">https://\1</a>',
-    'gopher://([-a-z0-9_./~@?=%\n]+)' =>
-      '<a'.$target.'href="gopher://\1">gopher://\1</a>',
-    'news://([-a-z0-9_./~@?=%\n]+)' =>
-      '<a'.$target.'href="news://\1">news://\1</a>',
-    'ftp://([-a-z0-9_./~@?=%\n]+)' =>
-      '<a'.$target.'href="ftp://\1">ftp://\1</a>',
-    //'([-a-z0-9_./n]+)@([-a-z0-9_.]+)' =>
-    //  $_SESSION["loggedin"]!==true ? '(e-Mail)' :
-    //  '<a href="mailto:\1@\2">\1@\2</a>'
-  );
   $ntext="";
   // split every line into it's words
   $words=explode(" ",$text);
   $n=count($words);
   for($i=0; $i<$n; $i++) {
     $word=$words[$i];
-    // test, if we need the slow walk through all the regular expressions
-    if(preg_match('/www|\:|@/i',$word)) {
-      // apply the regular expressions to the word until a matching 
-      // expression is found
-      foreach ($regexp_replace as $key => $value) {
-        $nword=preg_replace('/{$key}/i',$value,$word);
-        if($nword!=$word) {
-          $word=$nword;
-          break;
-        }
+    if(preg_match('/https?\:\/\/[^\",]+/i', $word)) {
+      $nlink = preg_replace('/(\&lt|\&gt);/', '', $word);
+      $nword = '<a '.$target.' href="'.$nlink.'">'.$word.'</a>';
+      if($nword!=$word) {
+        $word=$nword;
       }
     }
     // add the spaces between the words
