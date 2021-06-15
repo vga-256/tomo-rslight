@@ -885,6 +885,7 @@ function html_parse($text) {
     $word=$words[$i];
     if(preg_match('/https?\:\/\/[^\",]+/i', $word)) {
       $nlink = preg_replace('/(\&lt|\&gt);/', '', $word);
+      $nlink = rtrim($nlink, '.');
       $nword = '<a '.$target.' href="'.$nlink.'">'.$word.'</a>';
       if($nword!=$word) {
         $word=$nword;
