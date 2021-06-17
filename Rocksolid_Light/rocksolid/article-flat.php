@@ -31,7 +31,7 @@
   $_SESSION['views']++;
 
 // $loadrate = allowed article request per second
-  $loadrate = 1.5;
+  $loadrate = .2;
   $rate = ($_SESSION['views'] / (time() - $_SESSION['starttime']));
   if (($rate > $loadrate) && ($_SESSION['views'] > 5)) {
     header("HTTP/1.0 429 Too Many Requests");
@@ -45,9 +45,9 @@
   $_SESSION['rsactive'] = true;
 
   $location = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
-  preg_match('/id=(.*)&/', $location, $hash);
-  $_SESSION['return_page'] = $location.'#'.$hash[1];
+  $_SESSION['return_page'] = $location.'#'.$id;
 
+  file_put_contents('/var/spool/rslight/log/access.log', "\n".format_log_date()." ".$config_name." ".$group.":".$id, FILE_APPEND);  
  
 if(isset($frames_on) && $frames_on === true) {
 ?>
