@@ -22,9 +22,12 @@
 ?>
 
 <?php
+  session_start();
   include "config.inc.php";
   include "auth.inc";
   include "$file_newsportal";
+
+  throttle_hits();
 
 if(isset($frames_on) && $frames_on === true) {
 ?>
@@ -52,7 +55,7 @@ $CONFIG = include($config_file);
 if (isset($_GET['thisgroup'])) {
   $article_age = 30;
 } else {
-  $article_age = 7;
+  $article_age = 30;
 }
 
 # Maximum number of articles to show

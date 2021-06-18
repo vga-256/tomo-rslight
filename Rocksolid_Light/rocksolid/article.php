@@ -1,9 +1,12 @@
 <?php
+  session_start();
   header("Expires: ".gmdate("D, d M Y H:i:s",time()+(3600*24))." GMT");
 
   include "config.inc.php";
   include "auth.inc";
   include "$file_newsportal";
+
+  throttle_hits();
 
   // register parameters
   $id=$_REQUEST["id"];

@@ -5,6 +5,8 @@ session_start();
 include "config.inc.php";
 include "newsportal.php";
 
+throttle_hits();
+
 $snippet_size = 100;
 
 if(!isset($_POST['key']) || !password_verify($CONFIG['thissitekey'], $_POST['key'])) {

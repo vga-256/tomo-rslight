@@ -1420,10 +1420,10 @@ function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
 	  $dbh = null;
     }
     if($ok_article !== 1) {
-	file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: ".$article." from ".$group." not found in database", FILE_APPEND);
+//	file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: ".$article." from ".$group." not found in database", FILE_APPEND);
 	return FALSE;
     }
-    file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: fetched: ".$article." from ".$group, FILE_APPEND);
+//    file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG: fetched: ".$article." from ".$group, FILE_APPEND);
     if($makearray == 1) {
 	$thisarticle = preg_split("/\r\n|\n|\r/", trim($msg2));
 	array_pop($thisarticle);
@@ -1452,6 +1452,28 @@ function get_config_value($configfile,$request) {
     return FALSE;
   } else {
     return FALSE;
+  }
+}
+
+function throttle_hits() {
+global $CONFIG, $logdir; 
+$logfile=$logdir.'/newsportal.log';
+  if(!isset($_SESSION['starttime'])) {
+    $_SESSION['starttime'] = time();
+    $_SESSION['views'] = 0;
+  }
+  $_SESSION['views']++;
+
+// $loadrate = allowed article request per second
+  $loadrate = .15;
+  $rate = ($_SESSION['views'] / (time() - $_SESSION['starttime']));
+  if (($rate > $loadrate) && ($_SESSION['views'] > 5)) {
+    header("HTTP/1.0 429 Too Many Requests");
+    if(!isset($_SESSION['throttled'])) {
+      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Too many requests from ".$_SERVER['REMOTE_ADDR']." throttling", FILE_APPEND);
+      $_SESSION['throttled'] = true;
+    }
+    exit(0);
   }
 }
 ?>

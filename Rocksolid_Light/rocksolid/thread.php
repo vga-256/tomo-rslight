@@ -9,6 +9,9 @@ include "config.inc.php";
 include("$file_newsportal");
 include "auth.inc";
 
+$logfile=$logdir.'/newsportal.log';
+throttle_hits();
+
 // register parameters
 $group=_rawurldecode($_REQUEST["group"]);
 if(isset($_REQUEST["first"]))

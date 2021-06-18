@@ -9,6 +9,9 @@
   include "auth.inc";
   include "$file_newsportal";
 
+  $logfile=$logdir.'/newsportal.log';
+  throttle_hits();
+
   // register parameters
   $id=$_REQUEST["id"];
   $group=_rawurldecode($_REQUEST["group"]);
@@ -23,28 +26,11 @@
   if(isset($_REQUEST["first"]))
     $first=$_REQUEST["first"];
 
-  $logfile=$logdir.'/newsportal.log';
-  if(!isset($_SESSION['starttime'])) {
-    $_SESSION['starttime'] = time();
-    $_SESSION['views'] = 0;
-  }
-  $_SESSION['views']++;
-
-// $loadrate = allowed article request per second
-  $loadrate = .2;
-  $rate = ($_SESSION['views'] / (time() - $_SESSION['starttime']));
-  if (($rate > $loadrate) && ($_SESSION['views'] > 5)) {
-    header("HTTP/1.0 429 Too Many Requests");
-    if(!isset($_SESSION['throttled'])) {
-      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Too many requests from ".$_SERVER['REMOTE_ADDR']." throttling", FILE_APPEND);
-	  $_SESSION['throttled'] = true;
-    }
-    exit(0);
-  }
-
   $_SESSION['rsactive'] = true;
 
   $location = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
+//  preg_match('/id=(.*)&/', $location, $hash);
+//  $_SESSION['return_page'] = $location.'#'.$hash[1];
   $_SESSION['return_page'] = $location.'#'.$id;
 
   file_put_contents('/var/spool/rslight/log/access.log', "\n".format_log_date()." ".$config_name." ".$group.":".$id, FILE_APPEND);  
