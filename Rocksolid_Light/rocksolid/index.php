@@ -20,7 +20,7 @@ if (isset($frames_on) && $frames_on === true) {
 ?>
    <script type="text/javascript">
      if (navigator.cookieEnabled)
-       document.cookie = "tzo="+ (- new Date().getTimezoneOffset());
+       document.cookie = "tzo="+ (- new Date().getTimezoneOffset())+"; path=/";
    </script>
 <?php
 $title.=' - '.basename(getcwd());

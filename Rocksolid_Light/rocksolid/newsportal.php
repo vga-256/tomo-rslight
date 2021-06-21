@@ -1316,6 +1316,29 @@ function get_search_snippet($body, $content_type='') {
    return $mysnippet;
 }
 
+function mail_db_open($database, $table='messages') {
+  try {
+    $dbh = new PDO('sqlite:'.$database);
+  } catch (PDOExeption $e) {
+    echo 'Connection failed: '.$e->getMessage();
+    exit;
+  }
+  $dbh->exec("CREATE TABLE IF NOT EXISTS messages(
+     id INTEGER PRIMARY KEY,
+     msgid TEXT UNIQUE,
+     mail_from TEXT,
+     mail_viewed TEXT,
+     rcpt_to TEXT,
+     rcpt_viewed TEXT,
+     rcpt_target TEXT,
+     date TEXT,
+     subject TEXT,
+     message TEXT,
+     from_hide TEXT,
+     to_hide TEXT)");
+  return($dbh);
+}
+
 function rslight_db_open($database, $table='overview') {
   try {
     $dbh = new PDO('sqlite:'.$database);

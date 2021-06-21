@@ -8,6 +8,7 @@ if (basename(getcwd()) == 'mods') {
 }
 
 include($rootdir.'common/config.inc.php');
+
 $CONFIG = include $config_file;
 ?>
    <script type="text/javascript">
@@ -49,6 +50,11 @@ if (file_exists($rootdir.'common/mods/images/rocksolidlight.png')) {
 		</td>
 		<td align="right">
 <?php
+		if(check_unread_mail() == true) {
+			$unread = true;
+		} else {
+			$unread = false;
+		}
 			foreach($linklist as $link) {
 				if($link[0] == '#') {
 					continue;
@@ -57,7 +63,13 @@ if (file_exists($rootdir.'common/mods/images/rocksolidlight.png')) {
 				if($linkitem[1] == '0') {
 					continue;
 				}
-				echo '<a href="'.trim($linkitem[1]).'">'.trim($linkitem[0]).'</a>&nbsp;&nbsp';
+				if($unread && (strpos($linkitem[1], 'spoolnews/mail.php') !== false)) {
+				  echo '<strong>';
+           			  echo '<a href="'.trim($linkitem[1]).'">'.trim(strtoupper($linkitem[0])).'</a>&nbsp;&nbsp';
+				  echo '</strong>';
+				} else {
+				  echo '<a href="'.trim($linkitem[1]).'">'.trim($linkitem[0]).'</a>&nbsp;&nbsp';
+				}
 			}
 ?>
 		</td>
@@ -132,5 +144,46 @@ foreach($menulist as $menu) {
     }
     echo '</tr></table>';
     echo '</p>';
+function check_unread_mail() {
+global $CONFIG, $spooldir;
+        if(isset($_COOKIE['mail_name'])) {
+          $name = strtolower($_COOKIE['mail_name']);
+          $database = $spooldir.'/mail.db3';
+          $dbh = head_mail_db_open($database);
+          $query = $dbh->prepare('SELECT * FROM messages where rcpt_to=:rcpt_to');
+          $query->execute(['rcpt_to' => $name]);
+          $newmail = false;
+          while (($row = $query->fetch()) !== false) {
+            if(($row['rcpt_viewed'] != 'true') && ($row['to_hide'] !='true')) {
+              $newmail = true;
+            }
+          }
+          $dbh = null;
+          return $newmail;
+        }
+}
+
+function head_mail_db_open($database, $table='messages') {
+  try {
+    $dbh = new PDO('sqlite:'.$database);
+  } catch (PDOExeption $e) {
+    echo 'Connection failed: '.$e->getMessage();
+    exit;
+  }
+  $dbh->exec("CREATE TABLE IF NOT EXISTS messages(
+     id INTEGER PRIMARY KEY,
+     msgid TEXT UNIQUE,
+     mail_from TEXT,
+     mail_viewed TEXT,
+     rcpt_to TEXT,
+     rcpt_viewed TEXT,
+     rcpt_target TEXT,
+     date TEXT,
+     subject TEXT,
+     message TEXT,
+     from_hide TEXT,
+     to_hide TEXT)");
+  return($dbh);
+}
 ?>
 </body></html>

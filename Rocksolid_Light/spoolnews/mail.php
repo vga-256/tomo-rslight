@@ -34,8 +34,9 @@ include "head.inc";
          var authcookie = "<?php echo $authkey; ?>";
          var savename = "<?php echo stripslashes($name); ?>";
 	 var auth_expire = "<?php echo $auth_expire; ?>";
-         document.cookie = "mail_auth="+authcookie+"; max-age="+auth_expire;
-         document.cookie = "mail_name="+savename;
+	 var name_expire = "7776000";
+         document.cookie = "mail_auth="+authcookie+"; max-age="+auth_expire+"; path=/";
+         document.cookie = "mail_name="+savename+"; max-age="+name_expire+"; path=/";
       </script>
 <?php
       $logged_in = true;
@@ -114,12 +115,15 @@ echo '</table>';
       if(($row['mail_from'] != $user) && ($row['rcpt_to'] != $user)) {
         continue;
       }
+      $istrue = 'true';
       if($row['mail_from'] == $user) {
-        $sql_update = $dbh->prepare('UPDATE messages SET from_hide=? WHERE id=?');
-      } elseif($row['rcpt_to'] == $user) {
-        $sql_update = $dbh->prepare('UPDATE messages SET to_hide=? WHERE id=?');
+        $sql_update = $dbh->prepare('UPDATE messages SET from_hide=:from_hide WHERE id=:row_id');
+	$sql_update->execute(array(':from_hide' => $istrue, ':row_id' => $row['id']));
+      } 
+      if($row['rcpt_to'] == $user) {
+        $sql_update = $dbh->prepare('UPDATE messages SET to_hide=:to_hide WHERE id=:row_id');
+	$sql_update->execute(array(':to_hide' => $istrue, ':row_id' => $row['id']));
       }
-      $sql_update->execute(array('true', $row['id']));
     }
     $dbh = null;
   }
@@ -162,10 +166,12 @@ echo '</table>';
       echo '</div>';
       if($row['mail_from'] == $user) {
         $sql_update = $dbh->prepare('UPDATE messages SET mail_viewed=? WHERE msgid=?');
-      } elseif($row['rcpt_to'] == $user) {
+	$sql_update->execute(array('true', $row['msgid']));
+      } 
+      if($row['rcpt_to'] == $user) {
         $sql_update = $dbh->prepare('UPDATE messages SET rcpt_viewed=? WHERE msgid=?');
+	$sql_update->execute(array('true', $row['msgid']));
       }
-      $sql_update->execute(array('true', $row['msgid']));
     }
     $dbh = null;
  
@@ -173,7 +179,7 @@ echo '</table>';
         if (isSet($_POST['sendMessage'])) {
                 if (isSet($_POST['to']) && $_POST['to'] != '' && isSet($_POST['from']) && $_POST['from'] != '' && isSet($_POST['message']) && $_POST['message'] != '') {
             if(($to = get_config_value('aliases.conf', strtolower($_POST['to']))) == false) {
-              $to = $_POST['to'];
+              $to = strtolower($_POST['to']);
             }
 	    $userlist = scandir($config_dir.'/users/');
 	    $found = 0;
@@ -297,27 +303,4 @@ echo '</table>';
     }
     echo '</tbody></table><br />';
     include "tail.inc";
-
-function mail_db_open($database, $table='messages') {
-  try {
-    $dbh = new PDO('sqlite:'.$database);
-  } catch (PDOExeption $e) {
-    echo 'Connection failed: '.$e->getMessage();
-    exit;
-  }
-  $dbh->exec("CREATE TABLE IF NOT EXISTS messages(
-     id INTEGER PRIMARY KEY,
-     msgid TEXT UNIQUE,
-     mail_from TEXT,
-     mail_viewed TEXT,
-     rcpt_to TEXT,
-     rcpt_viewed TEXT,
-     rcpt_target TEXT,
-     date TEXT,
-     subject TEXT,
-     message TEXT,
-     from_hide TEXT,
-     to_hide TEXT)");
-  return($dbh);
-}
 ?>
