@@ -17,12 +17,6 @@ if (isset($frames_on) && $frames_on === true) {
 </script>
 <?php
 }
-?>
-   <script type="text/javascript">
-     if (navigator.cookieEnabled)
-       document.cookie = "tzo="+ (- new Date().getTimezoneOffset())+"; path=/";
-   </script>
-<?php
 $title.=' - '.basename(getcwd());
 include "head.inc";
 echo '<h1 class="np_thread_headline">'.basename(getcwd()).'</h1>';

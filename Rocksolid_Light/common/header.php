@@ -13,7 +13,7 @@ $CONFIG = include $config_file;
 ?>
    <script type="text/javascript">
      if (navigator.cookieEnabled)
-       document.cookie = "tzo="+ (- new Date().getTimezoneOffset());
+       document.cookie = "tzo="+ (- new Date().getTimezoneOffset())+"; path=/";
    </script>
 <?php
 
