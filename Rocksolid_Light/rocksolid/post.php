@@ -46,7 +46,7 @@ if($post_captcha)
 
 // Save name in cookies
 if (($setcookies==true) && (isset($abspeichern)) && ($abspeichern=="ja")) {
-  setcookie("cookie_name",stripslashes($name),time()+(3600*24*90));
+  setcookie("cookie_name",stripslashes($name),time()+(3600*24*90),"/");
 } 
 if ((isset($post_server)) && ($post_server!=""))
   $server=$post_server;
