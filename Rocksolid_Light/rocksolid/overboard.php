@@ -1,4 +1,5 @@
 <?php
+    session_start();
 /*  rocksolid overboard - overboard for rslight
 *  Download: https://news.novabbs.com/getrslight
 *
@@ -22,7 +23,6 @@
 ?>
 
 <?php
-  session_start();
   include "config.inc.php";
   include "auth.inc";
   include "$file_newsportal";
