@@ -1,6 +1,5 @@
 <?php
 /*  rslight NNTP<->HTTP Gateway
- *  Version: 0.6.x
  *  Download: https://news.novabbs.com/getrslight
  *
  *  Based on Newsportal by Florian Amrhein

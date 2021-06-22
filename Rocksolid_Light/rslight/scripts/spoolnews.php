@@ -1,6 +1,5 @@
 <?php
 /*  spoolnews NNTP news spool creator
- *  Version: 0.3.0
  *  Download: https://news.novabbs.com/getrslight
  *
  *  E-Mail: retroguy@novabbs.com
