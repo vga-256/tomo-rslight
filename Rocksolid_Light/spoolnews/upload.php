@@ -4,22 +4,20 @@ include "newsportal.php";
 
 $logfile=$logdir.'/files.log';
 
-if(isset($_POST['username'])) {
+unset($name);
+if(isset($_POST['username']) && $_POST['username'] !== '') {
   $name = $_POST['username'];
-// Save name in cookie
-  if ($setcookies==true) {
-    setcookie("cookie_name",stripslashes($name),time()+(3600*24*90));
-  }
 } else {
   if ($setcookies) {
-    if ((isset($_COOKIE["cookie_name"])) && (!isset($name))) {
-      $name=$_COOKIE["cookie_name"];
-    } else {
-      $name = '';
+    if (isset($_COOKIE['files_name'])) {
+      $name=$_COOKIE['files_name'];
     }
   }
 }
-  
+if(!isset($name)) {
+  $name = '';
+}
+
   $title.=' - Upload file';
 include "head.inc";
   echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
@@ -27,6 +25,8 @@ include "head.inc";
     echo '<td>';
     echo '<form target="'.$frame['content'].'" method="post" action="files.php">';
     echo '<input name="command" type="hidden" id="command" value="Browse" readonly="readonly">';
+    echo '<input type="hidden" name="username" value="'.$_POST['username'].'">';
+    echo '<input type="hidden" name="password" value="'.$_POST['password'].'">';
     echo '<button class="np_button_link" type="submit">Browse</button>';
     echo '</form>';
     echo '</td>';
@@ -34,6 +34,8 @@ include "head.inc";
     echo '<td>';
     echo '<form target="'.$frame['content'].'" method="post" action="upload.php">';
     echo '<input name="command" type="hidden" id="command" value="Upload" readonly="readonly">';
+    echo '<input type="hidden" name="username" value="'.$_POST['username'].'">';
+    echo '<input type="hidden" name="password" value="'.$_POST['password'].'">';
     echo '<button class="np_button_link" type="submit">Upload</button>';
     echo '</form>';
     echo '</td>';
@@ -61,6 +63,14 @@ if(isset($_FILES)) {
   	    echo 'There was an error saving '.$_FILES[photo][name];
 	  }
 	}
+      $authkey = password_hash($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), PASSWORD_DEFAULT);
+?>
+      <script type="text/javascript">
+       if (navigator.cookieEnabled)
+         var savename = "<?php echo stripslashes($name); ?>";
+         document.cookie = "files_name="+savename+"; path=/";
+      </script>
+<?php
       } else {
 	echo 'Authentication Failed';
       }
@@ -68,16 +78,25 @@ if(isset($_FILES)) {
     }
 }
 
-echo '<table border="0" align="center" cellpadding="0" cellspacing="1">';
-echo '<form name="form1" method="post" action="upload.php" enctype="multipart/form-data">';
-echo '<tr><td><strong>Please Login to Upload<br />(max size=2MB)</strong></td></tr>';
-echo '<tr><td>Username:</td><td><input name="username" type="text" id="username" value="'.$name.'"></td></tr>';
-echo '<tr><td>Password:</td><td><input name="password" type="password" id="password"></td></tr>';
-echo '<td><input name="command" type="hidden" id="command" value="Upload" readonly="readonly"></td>';
-echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'].$name, PASSWORD_DEFAULT).'">';
-echo '<tr><td><input type="file" name="photo" id="fileSelect" value="fileSelect" accept="image/*,audio/*,text/*,application/*"></td>
+  echo '<table border="0" align="center" cellpadding="0" cellspacing="1">';
+  echo '<form name="form1" method="post" action="upload.php" enctype="multipart/form-data">';
+
+if(!check_bbs_auth($_POST['username'], $_POST['password'])) {  
+  echo '<tr><td><strong>Please Login to Upload<br /></strong></td></tr>';
+  echo '<tr><td>Username:</td><td><input name="username" type="text" id="username" value="'.$name.'"></td></tr>';
+  echo '<tr><td>Password:</td><td><input name="password" type="password" id="password"></td></tr>';
+  echo '<td><input name="command" type="hidden" id="command" value="Upload" readonly="readonly"></td>';
+  echo '<td><input type="submit" name="Submit" value="Login"></td>';
+} else {
+  echo '<tr><td><strong>Logged in as '.$_POST['username'].'<br />(max size=2MB)</strong></td></tr>';
+  echo '<td><input name="command" type="hidden" id="command" value="Upload" readonly="readonly"></td>';
+  echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'].$name, PASSWORD_DEFAULT).'">';
+  echo '<input type="hidden" name="username" value="'.$_POST['username'].'">';
+  echo '<input type="hidden" name="password" value="'.$_POST['password'].'">';
+  echo '<tr><td><input type="file" name="photo" id="fileSelect" value="fileSelect" accept="image/*,audio/*,text/*,application/*"></td>
 ';
-echo '<td>&nbsp;<input type="submit" name="Submit" value="Upload"></td>';
+  echo '<td>&nbsp;<input type="submit" name="Submit" value="Upload"></td>';
+}
 echo '</tr>';
 echo '</form>';
 echo '</table>';
