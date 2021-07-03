@@ -29,7 +29,7 @@ $logfile=$logdir.'/spoolnews.log';
 
 @mkdir($spooldir."/".$config_name,0755,'recursive');
 
-$lockfile = sys_get_temp_dir() . '/rslight-send.lock';
+$lockfile = $lockdir . '/rslight-send.lock';
 $pid = file_get_contents($lockfile);
 if (posix_getsid($pid) === false || !is_file($lockfile)) {
    print "Starting Send...\n";

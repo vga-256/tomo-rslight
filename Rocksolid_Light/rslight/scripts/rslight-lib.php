@@ -1,7 +1,7 @@
 <?php
     function interact($msgsock, $use_crypto=false)
     {
-	global $CONFIG,$logdir,$logfile,$installed_path,$config_path,$config_dir,$groupconfig,$workpath,$path, $spooldir,$nntp_group,$nntp_article,$auth_ok,$user,$pass;
+	global $CONFIG,$logdir,$lockdir,$logfile,$installed_path,$config_path,$config_dir,$groupconfig,$workpath,$path, $spooldir,$nntp_group,$nntp_article,$auth_ok,$user,$pass;
 
 	$workpath=$spooldir."/";
 	$path=$workpath."articles/";
@@ -29,7 +29,7 @@
 set_time_limit(30);
 	$buf = fgets($msgsock, 2048);
         if(file_exists($config_dir."/nntp.disable")) {
-           $parent_pid = file_get_contents(sys_get_temp_dir().'/rslight-nntp.lock', IGNORE_NEW_LINES);
+           $parent_pid = file_get_contents($lockdir.'/rslight-nntp.lock', IGNORE_NEW_LINES);
            posix_kill($parent_pid, SIGTERM);
            exit;
         }
@@ -953,9 +953,9 @@ function encode_subject($line) {
 
 function insert_article($section,$nntp_group,$filename,$subject_i,$from_i,$article_date,
 $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i,$body) {
-  global $enable_rslight,$spooldir,$CONFIG,$logdir,$logfile;
+  global $enable_rslight,$spooldir,$CONFIG,$logdir,$lockdir,$logfile;
 
-  $sn_lockfile = sys_get_temp_dir() . '/'.$section.'-spoolnews.lock';
+  $sn_lockfile = $lockdir . '/'.$section.'-spoolnews.lock';
   $sn_pid = file_get_contents($sn_lockfile);
   if (posix_getsid($sn_pid) === false || !is_file($sn_lockfile)) {
     file_put_contents($sn_lockfile, getmypid()); // create lockfile

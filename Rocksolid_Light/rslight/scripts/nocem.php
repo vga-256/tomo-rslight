@@ -7,7 +7,7 @@
     exit;
   }
 
-  $lockfile = sys_get_temp_dir() . '/rslight-spoolnews.lock';
+  $lockfile = $lockdir . '/rslight-spoolnews.lock';
   $pid = file_get_contents($lockfile);
   if (posix_getsid($pid) === false || !is_file($lockfile)) {
     print "Starting nocem...\n";

@@ -28,6 +28,7 @@ $script_path = $config_dir."/scripts/";
 $CONFIG = include($config_file);
 
 $logdir=$spooldir.'/log';
+$lockdir=$spooldir.'/lock';
 
 ini_set('error_reporting', E_ERROR );
 

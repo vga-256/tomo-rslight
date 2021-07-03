@@ -46,7 +46,7 @@ if(!isset($CONFIG['enable_nntp']) || $CONFIG['enable_nntp'] != true) {
 $workpath=$spooldir."/";
 $path=$workpath."articles/";
 
-$lockfile = sys_get_temp_dir() . '/'.$config_name.'-spoolnews.lock';
+$lockfile = $lockdir . '/'.$config_name.'-spoolnews.lock';
 $pid = file_get_contents($lockfile);
 if (posix_getsid($pid) === false || !is_file($lockfile)) {
    print "Starting Spoolnews...\n";
