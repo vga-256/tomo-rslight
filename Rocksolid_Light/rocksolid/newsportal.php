@@ -1494,6 +1494,9 @@ $logfile=$logdir.'/newsportal.log';
     if(!isset($_SESSION['throttled'])) {
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Too many requests from ".$_SERVER['REMOTE_ADDR']." throttling", FILE_APPEND);
       $_SESSION['throttled'] = true;
+      if(isset($_SESSION['rsactive'])) {
+        unset($_SESSION['rsactive']);
+      }
     }
     exit(0);
   }
