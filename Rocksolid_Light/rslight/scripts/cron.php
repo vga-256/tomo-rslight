@@ -38,7 +38,8 @@
   change_identity($uinfo["uid"],$uinfo["gid"]);
 /* Everything below runs as $CONFIG['webserver_user'] */
 
-  @mkdir($spooldir."/log/",0755,'recursive');
+  @mkdir($logdir,0755,'recursive');
+  @mkdir($lockdir,0755,'recursive');
 
 if(isset($CONFIG['enable_nocem']) && $CONFIG['enable_nocem'] == true) {
   @mkdir($spooldir."nocem",0755,'recursive');
