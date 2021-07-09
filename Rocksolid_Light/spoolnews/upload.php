@@ -47,7 +47,7 @@ if(isset($_FILES)) {
 // Check auth here
     if(isset($_POST['key']) && password_verify($CONFIG['thissitekey'].$_POST['username'], $_POST['key'])) {
       if(check_bbs_auth($_POST['username'], $_POST['password'])) {
-	$userdir = '/var/spool/rslight/upload/'.strtolower($_POST[username]);
+	$userdir = $spooldir.'/upload/'.strtolower($_POST[username]);
 	$upload_to = $userdir.'/'.$_FILES[photo][name];
 	if(is_file($upload_to)) {
 	  echo $_FILES[photo][name].' already exists in your folder';
