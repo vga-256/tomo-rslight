@@ -10,6 +10,7 @@
   include "$file_newsportal";
 
   $logfile=$logdir.'/newsportal.log';
+  $accessfile=$logdir.'/access.log';
   throttle_hits();
 
   // register parameters
@@ -33,7 +34,7 @@
 //  $_SESSION['return_page'] = $location.'#'.$hash[1];
   $_SESSION['return_page'] = $location.'#'.$id;
 
-  file_put_contents('/var/spool/rslight/log/access.log', "\n".format_log_date()." ".$config_name." ".$group.":".$id, FILE_APPEND);  
+  file_put_contents($accessfile, "\n".format_log_date()." ".$config_name." ".$group.":".$id, FILE_APPEND);  
  
 if(isset($frames_on) && $frames_on === true) {
 ?>
