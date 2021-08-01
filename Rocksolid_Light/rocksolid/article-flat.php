@@ -30,16 +30,18 @@
       $articles_dbh = article_db_open($database);
       $articles_query = $articles_dbh->prepare('SELECT * FROM articles WHERE msgid=:messageid');
       $articles_query->execute(['messageid' => $id]);
+      $found = 0;
       while ($row = $articles_query->fetch()) {
         $id = $row['number'];
+        $found = 1;
         break;
       }
       $dbh = null;
-      $newurl = 'article-flat.php?id='.$id.'&group='.$group.'#'.$id;
-//      $newurl.='#'.$id;
-
-      header("Location: $newurl");
-      die();
+      if($found) {
+        $newurl = 'article-flat.php?id='.$id.'&group='.$group.'#'.$id;
+        header("Location: $newurl");
+        die();
+      }
     }
   }
 
