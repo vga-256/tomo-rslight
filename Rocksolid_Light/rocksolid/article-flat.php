@@ -24,14 +24,31 @@
     die();
   }
 
+  if(strpos($id, '@') !== false) {
+    if($CONFIG['article_database'] == '1') {
+      $database = $spooldir.'/'.$group.'-articles.db3';
+      $articles_dbh = article_db_open($database);
+      $articles_query = $articles_dbh->prepare('SELECT * FROM articles WHERE msgid=:messageid');
+      $articles_query->execute(['messageid' => $id]);
+      while ($row = $articles_query->fetch()) {
+        $id = $row['number'];
+        break;
+      }
+      $dbh = null;
+      $newurl = 'article-flat.php?id='.$id.'&group='.$group.'#'.$id;
+//      $newurl.='#'.$id;
+
+      header("Location: $newurl");
+      die();
+    }
+  }
+
   if(isset($_REQUEST["first"]))
     $first=$_REQUEST["first"];
 
   $_SESSION['rsactive'] = true;
 
   $location = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
-//  preg_match('/id=(.*)&/', $location, $hash);
-//  $_SESSION['return_page'] = $location.'#'.$hash[1];
   $_SESSION['return_page'] = $location.'#'.$id;
 
   file_put_contents($accessfile, "\n".format_log_date()." ".$config_name." ".$group.":".$id, FILE_APPEND);  
