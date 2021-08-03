@@ -26,10 +26,10 @@
 
   if(strpos($id, '@') !== false) {
     if($CONFIG['article_database'] == '1') {
-      $database = $spooldir.'/'.$group.'-articles.db3';
-      $articles_dbh = article_db_open($database);
-      $articles_query = $articles_dbh->prepare('SELECT * FROM articles WHERE msgid=:messageid');
-      $articles_query->execute(['messageid' => $id]);
+      $database = $spooldir.'/articles-overview.db3';
+      $articles_dbh = rslight_db_open($database);
+      $articles_query = $articles_dbh->prepare('SELECT * FROM overview WHERE msgid=:messageid AND newsgroup=:group');
+      $articles_query->execute(['messageid' => $id, 'group' => $group]);
       $found = 0;
       while ($row = $articles_query->fetch()) {
         $id = $row['number'];
