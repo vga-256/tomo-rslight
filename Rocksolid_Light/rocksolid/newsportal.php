@@ -885,6 +885,9 @@ function html_parse($text) {
     if(preg_match('/(https?|ftp|news|gopher|telnet)\:\/\/[^\",]+/i', $word)) {
       $nlink = trim($word, '().,');
       $nlink = preg_replace('/(\&lt|\&gt|\&nbsp);/', '', $nlink);
+      $nlink = preg_replace('/\[url=/', '', $nlink);
+      $bbnlink = explode(']', $nlink);
+      $nlink = $bbnlink[0];
       $nword = '<a '.$target.' href="'.$nlink.'">'.$word.'</a>';
       if($nword!=$word && substr($nlink, strlen($nlink) - 3) != "://") { 
         $word=$nword;
