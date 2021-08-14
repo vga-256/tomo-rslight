@@ -880,15 +880,20 @@ function html_parse($text) {
   // split every line into it's words
   $words=explode(" ",$text);
   $n=count($words);
+  $is_link = 0;
   for($i=0; $i<$n; $i++) {
     $word=$words[$i];
     if(preg_match('/(https?|ftp|news|gopher|telnet)\:\/\/[^\",]+/i', $word)) {
+      $is_link = 1;
       $nlink = trim($word, '().,');
       $nlink = preg_replace('/(\&lt|\&gt|\&nbsp);/', '', $nlink);
       $nlink = preg_replace('/\[url=/', '', $nlink);
       $bbnlink = explode(']', $nlink);
       $nlink = $bbnlink[0];
-      $nword = '<a '.$target.' href="'.$nlink.'">'.$word.'</a>';
+      $nword = '<a '.$target.' href="'.$nlink.'">'.$nlink.'</a>';
+      if(isset($bbnlink[1])) {
+        $nword.=' '.$bbnlink[1];
+      }
       if($nword!=$word && substr($nlink, strlen($nlink) - 3) != "://") { 
         $word=$nword;
       }
@@ -896,6 +901,9 @@ function html_parse($text) {
     // add the spaces between the words
     if($i>0)
       $ntext.=" ";
+    if($is_link) {
+      $word = preg_replace('/\[\/url\]/', '', $word);
+    }
     $ntext.=$word;
   }
   return($ntext);
