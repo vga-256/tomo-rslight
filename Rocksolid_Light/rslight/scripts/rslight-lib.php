@@ -82,7 +82,7 @@ set_time_limit(0);
 		$buf = fgets($msgsock, 2048);
 	    }
 	    fclose($tempfilehandle);
-	    $msg = process_post($tempfilename);
+	    $msg = prepare_post($tempfilename);
 	    fwrite($msgsock, $msg, strlen($msg));     
 	    continue;
 	}
@@ -237,9 +237,46 @@ set_time_limit(0);
         }
     }
 
-function process_post($filename) {
-    global $logfile,$spooldir,$config_dir,$CONFIG,$nntp_group;
+function prepare_post($filename) {
+    global $logdir;
+    $logfile = $logdir.'/nntp.log';
     $message = file($filename, FILE_IGNORE_NEW_LINES);
+    $lines = 0;
+    $is_header = 1;
+    foreach($message as $line) {
+      if(trim($line) == "" || $lines > 0) {
+        $is_header=0;
+        $lines++;
+      }
+      if($lines > 0 && $is_header = 0) {
+        $break;
+      }
+      if(stripos($line, "Newsgroups: ") === 0) {
+        $ngroups=explode(': ', $line);
+        $newsgroups=$ngroups[1];
+      }
+    }
+    $ngroups = preg_split("/(\ |\,)/", trim($newsgroups));
+// DEBUG
+    file_put_contents($logfile, "\n".format_log_date(). " DEBUG process_post: ".$newsgroups. " ".$ngroups[0], FILE_APPEND);
+    $ok = 0;
+    foreach($ngroups as $group) {
+      $result = process_post($message, $group);
+      if (substr($result,0,3) == "240") {
+        $ok = 1;
+      }
+    }
+    if($ok == 1) {
+      $response="240 Article received OK\r\n";
+    } else {
+      $response="441 Posting failed\r\n";
+    }
+    return $response;
+}
+
+function process_post($message, $group) {
+    global $logfile,$spooldir,$config_dir,$CONFIG,$nntp_group;
+//    $message = file($filename, FILE_IGNORE_NEW_LINES);
     $no_mid=1;
     $no_date=1;
     $no_org=1;
@@ -314,6 +351,7 @@ function process_post($filename) {
   if($res === 1) {
     $orig_newsgroups = $newsgroups;
     $newsgroups=$CONFIG['spamgroup'];
+    $group = $newsgroups;
   }
 /* Find section for posting */
     $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -326,7 +364,7 @@ function process_post($filename) {
       $section="";
       while($gl=fgets($glfp)) {
 	$group_name = preg_split("/( |\t)/", $gl, 2);
-	if(stripos(trim($newsgroups), trim($group_name[0])) !== false) {
+	if(strcasecmp($group, trim($group_name[0])) == 0) {
           $section=$menuitem[0];
 	  break 2;
         }
@@ -344,7 +382,7 @@ function process_post($filename) {
       $date_rep = $finddate[1];
     }
     if($no_mid == 1) {
-      $identity = $subject[1].",".$from[1].",".$newsgroups[1].",".$references.",".$body;
+      $identity = $subject[1].",".$from[1].",".$ngroups[1].",".$references.",".$body;
       $msgid='<'.md5($identity).'$1@'.trim($CONFIG['email_tail'],'@').'>';
       fputs($postfilehandle, "Message-ID: ".$msgid."\r\n");
     } else {
@@ -369,12 +407,12 @@ function process_post($filename) {
       $response="441 Posting failed (group not found)\r\n";
     } else {
       if($response == "") {
-	$post_group=explode(' ', str_replace(',', ' ', $newsgroups));
-
-	foreach($post_group as $onegroup) {
+//        $post_group=explode(' ', str_replace(',', ' ', $newsgroups));
+        
+//        foreach($post_group as $onegroup) {
 // Check for duplicate msgid
            $duplicate=0;
-           $group_overviewfp=fopen($spooldir."/".$onegroup."-overview", 'r');
+           $group_overviewfp=fopen($spooldir."/".$group."-overview", 'r');
            while($group_overview=fgets($group_overviewfp, 2048)) {
              $overview_msgid = explode("\t", $group_overview);
              if(strpos($overview_msgid[4], $msgid) !== false) {
@@ -385,9 +423,9 @@ function process_post($filename) {
              } 
 	   }
 	   fclose($group_overviewfp);
-      }
+//      }
       if($duplicate == 0) {
-	insert_article($section,$onegroup,$postfilename,$subject[1],$from[1],$article_date,$date_rep,$msgid,$references,$bytes,$lines,$xref,$body);	
+	insert_article($section,$group,$postfilename,$subject[1],$from[1],$article_date,$date_rep,$msgid,$references,$bytes,$lines,$xref,$body);	
         $response="240 Article received OK\r\n";
       } else {
 	$response="441 Posting failed\r\n";
