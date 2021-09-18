@@ -1425,6 +1425,9 @@ function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
 	$closeme = 0;
     $database = $spooldir.'/'.$group.'-articles.db3';
     if(!$dbh) {
+	  if(!is_file($database)) {
+	    return FALSE;
+	  }
 	  $dbh = article_db_open($database);
 	  $closeme = 1;
     }
