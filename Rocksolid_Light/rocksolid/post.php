@@ -230,6 +230,7 @@ if ($type=="post") {
 	    }
         }
 	if(isset($_FILES["photo"]) && $_FILES["photo"]["error"] == 0) { 
+		$_FILES[photo][name] = preg_replace('/[^a-zA-Z0-9\.]/', '_', $_FILES[photo][name]);
 // There is an attachment to handle 
 		$message=message_post_with_attachment(quoted_printable_encode($subject),
                  $nemail." (".quoted_printable_encode($name).")",
