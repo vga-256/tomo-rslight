@@ -71,6 +71,9 @@ if (file_exists($rootdir.'common/mods/images/rocksolidlight.png')) {
 				  echo '<a href="'.trim($linkitem[1]).'">'.trim($linkitem[0]).'</a>&nbsp;&nbsp';
 				}
 			}
+                        if(isset($_COOKIE['mail_name'])) {
+                                echo '('.$_COOKIE['mail_name'].')';
+                        }
 ?>
 		</td>
 	</tr>
