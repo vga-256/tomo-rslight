@@ -478,39 +478,35 @@ function show_header($head,$group,$local_poster=false) {
   echo '</div>';
 }
 
-function display_full_headers($id,$group,$name,$from) {
+function display_full_headers($article,$group,$name,$from,$getface=false) {
   global $spoolpath, $CONFIG;
   if($CONFIG['article_database'] == '1') {
-    $message = np_get_db_article($id, $group, 1);
+    $message = np_get_db_article($article, $group, 1);
+  } else {
+    $thisgroup = $spoolpath."/".preg_replace('/\./', '/', $group);
+    if(!file_exists($group."/".$article)) {
+      // Return something useful
+    }
+    $message=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
+  }
+   unlink($sendface);
+   $isface = 0;
    foreach($message as $line) {
     if(trim($line) == '') {
       break;
     }
-    if(stripos($line, 'Xref: ') === 0) {
+    if((strpos($line, ': ') === false) && $isface) {
+      $sendface.=$line;
       continue;
     }
-    if(stripos($line, 'From: ') === 0) {
-      $return.='From: ';
-      if(isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) {
-        $return.=truncate_email($from);
-      } else {
-        $return.=htmlspecialchars($from);
-      }
-      if ($name != "") {
-        $return.=' ('.htmlspecialchars($name).')';
-      }
-      $return.='<br />';
+    if((stripos($line, 'X-Face: ') === 0) && $getface) {
+      $face = explode(': ', $line);
+      $sendface=$face[1];
+      $isface = 1;
       continue;
-     }
-     $return.=mb_decode_mimeheader(htmlspecialchars($line)).'<br />';
-   }
-  } else {
-    $thisgroup = preg_replace('/\./', '/', $group);  
-    $message=fopen($spoolpath.$thisgroup.'/'.$id, 'r');
-
-   while($line=fgets($message)) {
-    if(trim($line) == '') { 
-      break;
+    }
+    if(stripos($line, ': ') !== false) {
+      $isface = 0;
     }
     if(stripos($line, 'Xref: ') === 0) {
       continue;
@@ -530,11 +526,15 @@ function display_full_headers($id,$group,$name,$from) {
      }
      $return.=mb_decode_mimeheader(htmlspecialchars($line)).'<br />';
    }
-   fclose($message);
+  if($getface) {
+    if($sendface) {
+      return($sendface);
+    } else {
+      return FALSE;
+    }
   }
   return($return);
 }
-
 /*
  * decodes a body. Splits the content of $body into an array of several
  * lines, respecting the special decoding issues of format=flowed
@@ -622,6 +622,27 @@ function message_show($group,$id,$attachment=0,$article_data=false,$maxlen=false
     if (($head->content_type[$attachment]=="text/plain") &&
         ($attachment==0)) {
       show_header($head,$group,$local_poster);
+// X-Face
+  if ($face = display_full_headers($head->number,$group,$head->name,$head->from,true)) {
+      $pngfile = '../tmp/face-'.preg_replace("/[^A-Za-z0-9 ]/", '', $head->id); 
+    if(file_exists($pngfile)) {
+      echo '<img align="right" src="'.$pngfile.'">';
+    } else {
+      $facefile = tempnam('../tmp', 'face-');
+      file_put_contents($facefile, $face);
+      $xbmfile = $facefile.'.xbm';
+      $uncompface = 'uncompface -X '.$facefile.' '.$xbmfile;
+      shell_exec($uncompface);
+      if (($xbm = imagecreatefromxbm($xbmfile)) !== false) {
+        imagepng($xbm, $pngfile);
+        imagedestroy($xbm);
+        echo '<img align="right" src="'.$pngfile.'">';
+        unlink($facefile);
+        unlink($xbmfile);
+      }
+    }
+  }
+
 //RSLIGHT Encryption
       $encrypted=false;
       if((isset($article_data->header->rslight_to)) && (password_verify($CONFIG['thissitekey'].$head->id, $head->rslight_site))) {
