@@ -281,6 +281,13 @@ textarea.postbody {
   width: calc(1em * 1.5 * 40);
 }
 
+textarea.configuration {
+  background-color: var(--color-medium);
+  border: none;
+  color: var(--color-title);
+  resize: none;
+}
+
 /* Mobile Styles */
 @media only screen and (max-device-width: 480px) {
   body {

@@ -71,9 +71,13 @@ if (file_exists($rootdir.'common/mods/images/rocksolidlight.png')) {
 				  echo '<a href="'.trim($linkitem[1]).'">'.trim($linkitem[0]).'</a>&nbsp;&nbsp';
 				}
 			}
+			echo '<a href="../spoolnews/user.php">';
                         if(isset($_COOKIE['mail_name'])) {
                                 echo '('.$_COOKIE['mail_name'].')';
-                        }
+                        } else {
+				echo 'login';
+			}
+			echo '</a>';
 ?>
 		</td>
 	</tr>

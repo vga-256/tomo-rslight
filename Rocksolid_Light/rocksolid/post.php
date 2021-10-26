@@ -234,11 +234,11 @@ if ($type=="post") {
 // There is an attachment to handle 
 		$message=message_post_with_attachment(quoted_printable_encode($subject),
                  $nemail." (".quoted_printable_encode($name).")",
-                 $newsgroups,$references_array,addslashes($body),$_POST['encryptthis'],$_POST['encryptto']);
+                 $newsgroups,$references_array,addslashes($body),$_POST['encryptthis'],$_POST['encryptto'],strtolower($name));
 	} else {
 	  $message=message_post(quoted_printable_encode($subject),
                  $nemail." (".quoted_printable_encode($name).")",
-                 $newsgroups,$references_array,addslashes($body),$_POST['encryptthis'],$_POST['encryptto']);
+                 $newsgroups,$references_array,addslashes($body),$_POST['encryptthis'],$_POST['encryptto'],strtolower($name));
 	}
 	  // Article sent without errors, or duplicate?
       if ((substr($message,0,3)=="240") ||

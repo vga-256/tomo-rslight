@@ -194,11 +194,14 @@ function check_rate_limit($name,$set=0,$gettime=0) {
  * $ref: The references of the article
  * $body: The article itself
  */
-function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryptto) {
+function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryptto,$authname) {
   global $server,$port,$send_poster_host,$text_error,$CONFIG;
   global $www_charset,$config_dir,$spooldir;
   global $msgid_generate,$msgid_fqdn;
   flush();
+  if(file_exists($config_dir.'/userconfig/'.$authname.'.config')) {
+    $userconfig = unserialize(file_get_contents($config_dir.'/userconfig/'.$authname.'.config'));  
+  }
   if(isset($encryptthis)) {
     $workpath = $config_dir."users/";
     $username = trim(strtolower($encryptto));
@@ -281,11 +284,18 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
     if (isset($CONFIG['organization']))
       fputs($ns,'Organization: '.quoted_printable_encode($CONFIG['organization'])."\r\n");
     $body=trim($body);
-    if ((isset($CONFIG['postfooter'])) && ($CONFIG['postfooter']!="")) {
-      $postfooter = preg_replace('/\{DOMAIN\}/', "\n".$_SERVER['HTTP_HOST'], $CONFIG['postfooter']);
-      $body.="\n-- \n".$postfooter; 
+    if ($userconfig['signature'] !== '') {
+      $body.="\n-- \n".$userconfig['signature'];
+    } else { 
+      if ((isset($CONFIG['postfooter'])) && ($CONFIG['postfooter']!="")) {
+        $postfooter = preg_replace('/\{DOMAIN\}/', "\n".$_SERVER['HTTP_HOST'], $CONFIG['postfooter']);
+        $body.="\n-- \n".$postfooter; 
+      }
     }
     fputs($ns,'Message-ID: '.$msgid."\r\n");
+    if ($userconfig['xface'] !== '') {
+      fputs($ns,'X-Face: '.$userconfig[xface]."\r\n");
+    }
     $body=str_replace("\n.\r","\n..\r",$body);
     $body=str_replace("\r",'',$body);
     $body=stripSlashes($body);
@@ -312,12 +322,15 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
   }
   return $message;
 }
-function message_post_with_attachment($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryptto) {
+function message_post_with_attachment($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryptto,$authname) {
   global $server,$port,$send_poster_host,$CONFIG,$text_error;
-  global $file_footer,$www_charset,$spooldir;
+  global $config_dir,$www_charset,$spooldir;
   global $msgid_generate,$msgid_fqdn;
   global $CONFIG;
   flush();
+  if(file_exists($config_dir.'/userconfig/'.$authname.'.config')) {
+    $userconfig = unserialize(file_get_contents($config_dir.'/userconfig/'.$authname.'.config')); 
+  }
   $msgid=generate_msgid($subject.",".$from.",".$newsgroups.",".$ref.",".$body);
 /*
  * SPAM CHECK
@@ -370,14 +383,27 @@ function message_post_with_attachment($subject,$from,$newsgroups,$ref,$body,$enc
     }
     if (isset($CONFIG['organization']))
       fputs($ns,'Organization: '.quoted_printable_encode($CONFIG['organization'])."\r\n");
+    if ($userconfig['signature'] !== '') {
+      $body.="\n-- \n".$userconfig['signature'];
+    } else {
+      if ((isset($CONFIG['postfooter'])) && ($CONFIG['postfooter']!="")) {
+        $postfooter = preg_replace('/\{DOMAIN\}/', "\n".$_SERVER['HTTP_HOST'], $CONFIG['postfooter']);
+        $body.="\n-- \n".$postfooter;
+      }
+    }
+/*
     if ((isset($file_footer)) && ($file_footer!="")) {
       $footerfile=fopen($file_footer,"r");
       $body.="\n".fread($footerfile,filesize($file_footer));
       fclose($footerfile);
-	}
+        }
+*/
 	$boundary=uniqid('', true);
 	$body.="\r\n--------------".$boundary."\r\n";
     fputs($ns,'Message-ID: '.$msgid."\r\n");
+    if ($userconfig['xface'] !== '') {
+      fputs($ns,'X-Face: '.$userconfig[xface]."\r\n");
+    }
     fputs($ns,'Content-Type: multipart/mixed;boundary="------------'.$boundary.'"');
     fputs($ns,"\r\n");
     $contenttype = shell_exec('file -b --mime-type '.$spooldir.'/upload/'.$_FILES[photo][name]);
