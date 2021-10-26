@@ -199,8 +199,10 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
   global $www_charset,$config_dir,$spooldir;
   global $msgid_generate,$msgid_fqdn;
   flush();
+  $myconfig = false;
   if(file_exists($config_dir.'/userconfig/'.$authname.'.config')) {
     $userconfig = unserialize(file_get_contents($config_dir.'/userconfig/'.$authname.'.config'));  
+    $myconfig = true;
   }
   if(isset($encryptthis)) {
     $workpath = $config_dir."users/";
@@ -284,7 +286,7 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
     if (isset($CONFIG['organization']))
       fputs($ns,'Organization: '.quoted_printable_encode($CONFIG['organization'])."\r\n");
     $body=trim($body);
-    if ($userconfig['signature'] !== '') {
+    if ($userconfig['signature'] !== '' && $myconfig) {
       $body.="\n-- \n".$userconfig['signature'];
     } else { 
       if ((isset($CONFIG['postfooter'])) && ($CONFIG['postfooter']!="")) {
@@ -293,7 +295,7 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
       }
     }
     fputs($ns,'Message-ID: '.$msgid."\r\n");
-    if ($userconfig['xface'] !== '') {
+    if ($userconfig['xface'] !== '' && $myconfig) {
       fputs($ns,'X-Face: '.$userconfig[xface]."\r\n");
     }
     $body=str_replace("\n.\r","\n..\r",$body);
@@ -328,8 +330,10 @@ function message_post_with_attachment($subject,$from,$newsgroups,$ref,$body,$enc
   global $msgid_generate,$msgid_fqdn;
   global $CONFIG;
   flush();
+  $myconfig = false;
   if(file_exists($config_dir.'/userconfig/'.$authname.'.config')) {
     $userconfig = unserialize(file_get_contents($config_dir.'/userconfig/'.$authname.'.config')); 
+    $myconfig = true;
   }
   $msgid=generate_msgid($subject.",".$from.",".$newsgroups.",".$ref.",".$body);
 /*
@@ -383,7 +387,7 @@ function message_post_with_attachment($subject,$from,$newsgroups,$ref,$body,$enc
     }
     if (isset($CONFIG['organization']))
       fputs($ns,'Organization: '.quoted_printable_encode($CONFIG['organization'])."\r\n");
-    if ($userconfig['signature'] !== '') {
+    if ($userconfig['signature'] !== '' && $myconfig) {
       $body.="\n-- \n".$userconfig['signature'];
     } else {
       if ((isset($CONFIG['postfooter'])) && ($CONFIG['postfooter']!="")) {
@@ -401,7 +405,7 @@ function message_post_with_attachment($subject,$from,$newsgroups,$ref,$body,$enc
 	$boundary=uniqid('', true);
 	$body.="\r\n--------------".$boundary."\r\n";
     fputs($ns,'Message-ID: '.$msgid."\r\n");
-    if ($userconfig['xface'] !== '') {
+    if ($userconfig['xface'] !== '' && $myconfig) {
       fputs($ns,'X-Face: '.$userconfig[xface]."\r\n");
     }
     fputs($ns,'Content-Type: multipart/mixed;boundary="------------'.$boundary.'"');
