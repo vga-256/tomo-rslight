@@ -33,6 +33,13 @@
 # Generate user count file (must be root)
   exec($CONFIG['php_exec']." ".$config_dir."/scripts/count_users.php");
   echo "Updated user count\n";
+
+  $cwd = getcwd();
+  $webtmp = preg_replace('/spoolnews/','tmp',$cwd);
+  @mkdir($webtmp,0755,'recursive');
+  @chown($webtmp, $CONFIG['webserver_user']);
+  @chgrp($webtmp, $CONFIG['webserver_user']);
+
 /* Change to non root user */
   $uinfo=posix_getpwnam($CONFIG['webserver_user']);
   change_identity($uinfo["uid"],$uinfo["gid"]);
