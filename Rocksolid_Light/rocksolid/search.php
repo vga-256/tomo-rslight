@@ -284,6 +284,9 @@ function get_body_search($group, $terms) {
       $name = explode(':', $thisgroup);
       $group=$name[0];
       $database = $spooldir.'/'.$group.'-articles.db3';
+      if(!is_file($database)) {
+	    continue;
+      }
       $dbh = article_db_open($database);
       $stmt = $dbh->prepare("SELECT snippet(search_fts, 6, '<strong><font class=search_result><i>', '</i></font></strong>', '...', $snippet_size) as snippet, newsgroup, number, name, date, subject, rank FROM search_fts WHERE search_fts MATCH 'search_snippet:$terms' ORDER BY rank");
       $stmt->execute();
