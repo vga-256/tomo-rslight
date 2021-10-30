@@ -287,11 +287,11 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
       fputs($ns,'Organization: '.quoted_printable_encode($CONFIG['organization'])."\r\n");
     $body=trim($body);
     if ($userconfig['signature'] !== '' && $myconfig) {
-      $body.="\n-- \n".$userconfig['signature'];
+      $body.="\n\n-- \n".$userconfig['signature'];
     } else { 
       if ((isset($CONFIG['postfooter'])) && ($CONFIG['postfooter']!="")) {
         $postfooter = preg_replace('/\{DOMAIN\}/', "\n".$_SERVER['HTTP_HOST'], $CONFIG['postfooter']);
-        $body.="\n-- \n".$postfooter; 
+        $body.="\n\n-- \n".$postfooter; 
       }
     }
     fputs($ns,'Message-ID: '.$msgid."\r\n");
