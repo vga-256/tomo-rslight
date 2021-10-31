@@ -624,6 +624,7 @@ function message_show($group,$id,$attachment=0,$article_data=false,$maxlen=false
       show_header($head,$group,$local_poster);
 // X-Face
   if ($face = display_full_headers($head->number,$group,$head->name,$head->from,true)) {
+//      $pngfile = '../tmp/face-'.preg_replace("/[^A-Za-z0-9 ]/", '', $head->id); 
       $pngfile = '../tmp/face-'.hash('ripemd160', $face);
     if(file_exists($pngfile)) {
       echo '<img align="right" src="'.$pngfile.'">';
@@ -637,9 +638,9 @@ function message_show($group,$id,$attachment=0,$article_data=false,$maxlen=false
         imagepng($xbm, $pngfile);
         imagedestroy($xbm);
         echo '<img align="right" src="'.$pngfile.'">';
-        unlink($facefile);
-        unlink($xbmfile);
       }
+      unlink($facefile);
+      unlink($xbmfile);
     }
   }
 
