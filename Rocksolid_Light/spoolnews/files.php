@@ -50,14 +50,14 @@ include "head.inc";
 
   $directory = $spooldir.'/upload/';
   $users = array();
-  if(is_dir($directory)) {
-    if($users_list = opendir($directory)) {
-      while(($user_dir = readdir($users_list)) !== false) {
-	if($user_dir == '.' || $user_dir == '..') {
-	  continue;
+  if(is_dir($directory)) {  
+    if($user_dir = opendir($directory)) {
+      while(($user_list = readdir($user_dir)) !== false) {
+        if($user_list == '.' || $user_list == '..') {
+          continue;
         }
-	$users[] = $user_dir;
-      }
+        $users[] = $user_list;
+      } 
       closedir($user_dir);
     }
   }
