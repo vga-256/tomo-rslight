@@ -1,16 +1,3 @@
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=<?=$www_charset?>">
-<?php
-if (file_exists('../common/mods/style.css')) {
-  echo '<link rel="stylesheet" type="text/css" href="../common/mods/style.css">';
-} else {
-  echo '<link rel="stylesheet" type="text/css" href="../common/style.css">';
-}
-?>
-</head>
-<body>
 <?php
   
 include "config.inc.php";

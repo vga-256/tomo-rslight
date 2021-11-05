@@ -16,12 +16,5 @@ if (file_exists('mods/header.php')) {
   include "header.php";
 }
 
-if (file_exists('mods/'.$style_css)) {
-    echo '<link rel="stylesheet" type="text/css" href="mods/'.$style_css.'">';
-} else {
-    echo '<link rel="stylesheet" type="text/css" href="'.$style_css.'">';
-}
-?>
-<hr>
-</head>
-<body textcolor="black" bgcolor="white">
+echo '<hr>';
+echo '</head>';
