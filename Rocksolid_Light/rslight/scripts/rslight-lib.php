@@ -392,7 +392,9 @@ function process_post($message, $group) {
       fputs($postfilehandle, "Organization: ".$CONFIG['organization']."\r\n");
     }
     if($res === 1) {
-      fputs($postfilehandle,"X-Rslight-Original-Group: ".$orig_newsgroups."\r\n");
+      if($orig_newsgroups !== $CONFIG['spamgroup']) {
+        fputs($postfilehandle,"X-Rslight-Original-Group: ".$orig_newsgroups."\r\n");
+      }
     }
     foreach($message as $line) {
       if(stripos($line, "Newsgroups: ") === 0) {
