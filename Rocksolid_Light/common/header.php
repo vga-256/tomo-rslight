@@ -1,6 +1,7 @@
 <html>
 	<head>
 <?php
+session_start();
 if (basename(getcwd()) == 'mods') {
   $rootdir = "../../";
 } else {
@@ -20,17 +21,23 @@ $CONFIG = include $config_file;
 $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES);
 $linklist = file($config_dir."links.conf", FILE_IGNORE_NEW_LINES);
 
-if (file_exists($rootdir.'common/mods/style.css')) {
-  echo '<link rel="stylesheet" type="text/css" href="'.$rootdir.'common/mods/style.css">';
-} else {
-  echo '<link rel="stylesheet" type="text/css" href="'.$rootdir.'common/style.css">';
+$user = strtolower($_COOKIE['mail_name']);
+if(!isset($_SESSION['theme']) && file_exists($config_dir.'/userconfig/'.$user.'.config')) {
+  $user_config = unserialize(file_get_contents($config_dir.'/userconfig/'.$user.'.config'));
+  $_SESSION['theme'] = $user_config['theme'];
 }
+
+if(trim($_SESSION['theme']) !== '') {
+  echo '<link rel="stylesheet" type="text/css" href="../common/themes/'.$_SESSION[theme].'/style.css">';
+} else {
+  echo '<link rel="stylesheet" type="text/css" href="'.$rootdir.'common/themes/Default Theme/style.css">';
+}
+
 if (file_exists($rootdir.'common/mods/images/rocksolidlight.png')) {
   $header_image=$rootdir.'common/mods/images/rocksolidlight.png';
 } else {
   $header_image=$rootdir.'common/images/rocksolidlight.png';
 }
-
 ?>
 	</head>
 	<body>

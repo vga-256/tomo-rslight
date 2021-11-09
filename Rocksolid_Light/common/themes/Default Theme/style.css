@@ -42,19 +42,19 @@
 .title {
   font-size: 2em;
   text-decoration: none;
-  color: var(--color-title);
+  color: var(--color-text);
 }
 
 .title_small {
   font-size: 0em;
   text-decoration: none;
-  color: var(--color-title);
+  color: var(--color-text);
 }
 
 .header_menu {
   font-size: 1em;
   text-decoration: none;
-  color: var(--color-title);
+  color: var(--color-text);
 }
 
 .content {
@@ -72,13 +72,21 @@
 }
 
 .search_result {
-  color: var(--color-search-result); 
+  color: var(--color-highlight); 
+}
+
+.theme_listbox {
+  border: none;
+  padding: 0.2em;
+  width: 200px !important;
+  background-color: var(--color-medium);
+  color: var(--color-text);
 }
 
 /* Title */
 .np_title {
   text-decoration: none;
-  color: var(--color-title);
+  color: var(--color-text);
   font-size: 1.5em;
 }
 
@@ -120,8 +128,8 @@
 .np_button_hidden {
   padding-left: 5px;
   padding-right: 5px;
-  border: 1px solid var(--color-title);
-  color: var(--color-text-alt);
+  border: 1px solid var(--color-text);
+  color: var(--color-visited);
   white-space: nowrap;
   font-family: Arial, Helvetica, sans-serif;
   background: var(--color-dark);
@@ -132,7 +140,7 @@
   padding-left: 5px;
   padding-right: 5px;
   border: none;
-  color: var(--color-text-alt);
+  color: var(--color-visited);
   white-space: nowrap;
   font-family: Arial, Helvetica, sans-serif;
   background: var(--color-dark);
@@ -145,7 +153,7 @@
   padding-left: 5px;
   padding-right: 5px;
   border: none;
-  color: var(--color-text-alt);
+  color: var(--color-visited);
   white-space: nowrap;
   font-family: Arial, Helvetica, sans-serif;
   background: var(--color-dark);
@@ -157,7 +165,7 @@
   padding-left: 5px;
   padding-right: 5px;
   border: none;
-  color: var(--color-text-alt);
+  color: var(--color-visited);
   white-space: nowrap;
   font-family: Arial, Helvetica, sans-serif;
   background: var(--color-dark);
@@ -168,12 +176,12 @@
  
 .np_mail_button_link:hover {
   color: var(--color-dark);
-  background: var(--color-text-alt);
+  background: var(--color-visited);
 }
 
 .np_mail_button_read:hover {
   color: var(--color-dark);
-  background: var(--color-text-alt);
+  background: var(--color-visited);
 }
 
 /* Filename buttons */
@@ -181,7 +189,7 @@
   padding-left: 5px;
   padding-right: 5px;
   border: none;
-  color: var(--color-text-alt);
+  color: var(--color-visited);
   white-space: nowrap;
   font-family: Arial, Helvetica, sans-serif;
   background: var(--color-dark);
@@ -191,7 +199,7 @@
 
 .np_filename_button_link:hover {
   color: var(--color-dark);
-  background: var(--color-text-alt);
+  background: var(--color-visited);
 }
 
 /* Username buttons */
@@ -199,7 +207,7 @@
   padding-left: 5px;
   padding-right: 5px;
   border: none;
-  color: var(--color-text-alt);
+  color: var(--color-visited);
   white-space: nowrap;
   font-family: Arial, Helvetica, sans-serif;
   background: var(--color-dark);
@@ -209,12 +217,12 @@
 
 .np_header_button_link:hover {
   color: var(--color-dark);
-  background: var(--color-text-alt);
+  background: var(--color-visited);
 }
 
 .np_username_button_link:hover {
   color: var(--color-dark);
-  background: var(--color-text-alt);
+  background: var(--color-visited);
 }
 
 .np_header_bar_large {
@@ -270,13 +278,13 @@ div.ellipsis {
 input {
   background-color: var(--color-medium);
   border: none;
-  color: var(--color-title);
+  color: var(--color-text);
 }
 
 textarea.postbody {
   background-color: var(--color-medium);
   border: none;
-  color: var(--color-title);
+  color: var(--color-text);
   height: calc(1em * 1.5 * 20);
   width: calc(1em * 1.5 * 40);
 }
@@ -284,15 +292,15 @@ textarea.postbody {
 textarea.configuration {
   background-color: var(--color-medium);
   border: none;
-  color: var(--color-title);
+  color: var(--color-text);
   resize: none;
 }
 
 /* Mobile Styles */
 @media only screen and (max-device-width: 480px) {
   body {
-    color: var(--color-title);
-    background: var(--color-bg-alt);
+    color: var(--color-text);
+    background: var(--color-light);
     font-family: Arial, Helvetica, sans-serif;
     font-size: calc(1em + 2vw);
   }
@@ -340,8 +348,8 @@ textarea.configuration {
 /* Tablet Styles */
 @media only screen and (min-device-width: 481px) and (max-device-width: 820px) {
   body {
-    color: var(--color-title);
-    background: var(--color-bg-alt);
+    color: var(--color-text);
+    background: var(--color-light);
     font-family: Arial, Helvetica, sans-serif;
     font-size: calc(1em + 1vw);
   }
@@ -378,8 +386,8 @@ textarea.configuration {
   body {
     margin-left: 10px;
     margin-right: 10px;
-    color: var(--color-title);
-    background: var(--color-bg-alt);
+    color: var(--color-text);
+    background: var(--color-light);
     font-family: Arial, Helvetica, sans-serif;
     font-size: calc(1em + 1vw);
     }
@@ -451,7 +459,7 @@ table.np_groups_table {
   border: solid 1px #26598f;
 /*  background: #26598f; */
   background: var(--color-dark);
-  color: var(--color-title);
+  color: var(--color-text);
   font-size: 0.7em;
   font-style: italic;
 }
@@ -468,7 +476,7 @@ span.np_group_line_text {
   font-size: 1.2em;
   font-weight: bold;
   font-family: Arial, Helvetica, sans-serif;
-  color: var(--color-text-alt) !important;
+  color: var(--color-visited) !important;
 }
 
 /* =========== Thread Layout ============== */
@@ -486,7 +494,7 @@ table.np_thread_table {
   width: 100%;
   table-layout: fixed;
 /*  border: solid 1px #26598f; */
-  border: solid 1px var(--color-text-alt);
+  border: solid 1px var(--color-visited);
   border-spacing: 0px;
   margin: 0px;
   padding: 0px;
@@ -495,7 +503,7 @@ table.np_thread_table {
 
 /* Head of the table */
 tr.np_thread_head,td.np_thread_head {
-  color: var(--color-text-alt);
+  color: var(--color-visited);
   background: var(--color-light);
   margin: 0px;
 }
@@ -510,7 +518,7 @@ tr.np_thread_line1,td.np_thread_line1 {
   padding-bottom: 3px;
   background: var(--color-dark);
 //  border-top: 1px solid var(--color-medium); 
-//  border-bottom: 1px solid var(--color-text-alt);
+//  border-bottom: 1px solid var(--color-visited);
   border-right: 1px solid var(--color-row-border);
   margin: 0px;
 }
@@ -621,7 +629,7 @@ table.np_results_table {
   margin-top: 0;
   margin-bottom: 0;
   text-decoration: none;
-  color: var(--color-ob-date);
+  color: var(--color-highlight);
   text-align: left;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.8em;
@@ -634,7 +642,7 @@ table.np_results_table {
   margin-bottom: 0;
   margin-right: 10;
   text-decoration: none;
-  color: var(--color-ob-date);
+  color: var(--color-highlight);
   text-align: right;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.8em;
@@ -649,7 +657,7 @@ table.np_results_table {
   margin-right: 10;
   margin-left: 10;
   text-decoration: none;
-  color: var(--color-ob-date);
+  color: var(--color-highlight);
   text-align: left;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.8em;
@@ -667,7 +675,7 @@ table.np_results_table {
   margin-bottom: 10;
   margin-right: 10;
   text-decoration: none;
-  color: var(--color-ob-date);
+  color: var(--color-highlight);
   text-align: left;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.9em;
@@ -679,23 +687,12 @@ table.np_results_table {
   margin-bottom: 10;
   margin-right: 10;
   text-decoration: none;
-  color: var(--color-ob-date);
+  color: var(--color-highlight);
   text-align: left;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1em;
 }
 
-/* header */
-.np_ob_header {
-  margin-top: 0;
-  margin-bottom: 15;
-  margin-left: 20%;
-  text-decoration: none;
-  color: var(--color-ob-title);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 1em;
-  font-style: italic;
-}
 .np_ob_group {
   margin-top: 0;
   margin-bottom: 0;
@@ -760,18 +757,18 @@ table.np_results_table {
   padding-right: 5px;
   border: none;
   margin-right: 10px;
-  color: var(--color-text-alt);
+  color: var(--color-visited);
   white-space: nowrap;
   font-family: Arial, Helvetica, sans-serif;
   background: var(--color-dark);
   border-radius: 5px;
-  border: 1px solid var(--color-ob-date);
+  border: 1px solid var(--color-highlight);
   font-size: 1em;
 }
 
 .np_button_link:hover {
   color: var(--color-dark);
-  background: var(--color-text-alt);
+  background: var(--color-visited);
 }
 
 td.np_button {
@@ -793,44 +790,44 @@ a.np_button {
 }
 
 .np_pages {
-  color: var(--color-text-alt);
+  color: var(--color-visited);
 }
 
 .np_pages_selected {
-  color: var(--color-ob-date) !important;
+  color: var(--color-highlight) !important;
   text-weight: bold;
   margin-left: 5px;
   font-size: 110%;
 }
 
 .np_pages_unselected {
-  color: var(--color-text-alt) !important;
+  color: var(--color-visited) !important;
   text-decoration: underline;
   margin-left: 5px;
 }
 
 input[type=submit] {
     padding:5px; 
-    border:1px solid var(--color-title); 
+    border:1px solid var(--color-text); 
     -webkit-border-radius: 5px;
     border-radius: 5px;
 }
 
 input[type=submit]:hover {
     color: var(--color-medium);
-    background: var(--color-title);
+    background: var(--color-text);
 }
 
 input[type=button] {
     padding:5px;
-    border:1px solid var(--color-title);
+    border:1px solid var(--color-text);
     -webkit-border-radius: 5px;
     border-radius: 5px;
 }
 
 input[type=button]:hover {
     color: var(--color-medium);
-    background: var(--color-title);
+    background: var(--color-text);
 }
 
 a:link {

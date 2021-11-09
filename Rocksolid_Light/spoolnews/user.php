@@ -12,7 +12,6 @@ include "newsportal.php";
 
 $keyfile = $spooldir.'/keys.dat';
 $keys = unserialize(file_get_contents($keyfile));
-
 if($_POST['command'] == 'Logout') {
   unset($_COOKIE['mail_name']); 
   setcookie('mail_name', null, -1, '/');
@@ -20,6 +19,7 @@ if($_POST['command'] == 'Logout') {
   setcookie('mail_auth', null, -1, '/');
   unset($_COOKIE['cookie_name']);
   setcookie('cookie_name', null, -1, '/');
+  unset($_SESSION['theme']);
   unset($_POST['username']);
   include "head.inc";
   echo 'You have been logged out';
@@ -115,6 +115,7 @@ echo '</table>';
       	}
 
   $user = strtolower($_POST['username']);
+  $_SESSION['username'] = $user;
   unset($user_config);
 
 // Apply Config
@@ -122,27 +123,59 @@ echo '</table>';
 	$user_config['signature'] = $_POST['signature'];
         $user_config['xface'] = $_POST['xface'];
         $user_config['timezone'] = $_POST['timezone'];
+	$user_config['theme'] = $_POST['listbox'];
 	file_put_contents($config_dir.'/userconfig/'.$user.'.config', serialize($user_config));
+	$_SESSION['theme'] = $user_config['theme'];
 	echo 'Configuration Saved for '.$_POST[username];
     } else {
 	$user_config = unserialize(file_get_contents($config_dir.'/userconfig/'.$user.'.config'));
     }
-
+// Get themes
+  $themedir = $rootdir.'/common/themes';
+  if(is_dir($themedir)) {
+    if($theme_list = opendir($themedir)) {
+      while(($theme_dir = readdir($theme_list)) !== false) {
+        if($theme_dir == '.' || $theme_dir == '..') {
+          continue;
+        }
+        $themes[] = $theme_dir;
+      }
+      closedir($theme_dir);
+    }
+  }
+  sort($themes);
 // Show Config 
     echo '<hr><h1 class="np_thread_headline">Configuration:</h1>';
     echo '<table cellspacing="0" width="100%" class="np_results_table">';
     echo '<tr class="np_thread_head"><td class="np_thread_head">Settings for '.$_POST[username].' (leave blank for none):</td></tr>';
     echo '<form method="post" action="user.php">';
     echo '<tr class="np_result_line1">';
+// Signature
       echo '<td class="np_result_line1" style="word-wrap:break-word";>Signature:</td>';
         echo '</tr><tr><td class="np_result_line1" style="word-wrap:break-word";><textarea class="configuration" id="signature" name="signature" rows="6" cols="70">'.$user_config[signature];
 	echo '</textarea></td>'; 
 	echo '</tr>';
+// X-Face
       echo '<td class="np_result_line1" style="word-wrap:break-word";>X-Face:</td>';
         echo '</tr><tr><td class="np_result_line1" style="word-wrap:break-word";><textarea class="configuration" id="xface" name="xface" rows="4" cols="80">'.$user_config[xface];
         echo '</textarea></td>';	
         echo '</tr>';
+// Theme
+      echo '<td class="np_result_line1" style="word-wrap:break-word";>Theme: ('.$user_config['theme'].')</td>';
+        echo '</tr><tr><td class="np_result_line1" style="word-wrap:break-word">';
+	echo '<select name="listbox" class="theme_listbox" size="10">';
+	foreach ($themes as $theme) {
+	  if($theme == $user_config['theme']) {
+	    echo '<option value="'.$theme.'" selected="selected">'.$theme.'</option>';
+	  } else {
+	    echo '<option value="'.$theme.'">'.$theme.'</option>';
+	  }
+	}
+	echo '</select>';
+	echo '</td>';
+        echo '</tr>';
 /*
+  // Timezone
       echo '<td class="np_result_line1" style="word-wrap:break-word";>Timezone offset (+/- hours from UTC):</td>';
 	echo '</tr><tr><td class="np_result_line1" style="word-wrap:break-word";><input type="text" name="timezone" value="'.$user_config[timezone].'"></td>';
         echo '</tr>';

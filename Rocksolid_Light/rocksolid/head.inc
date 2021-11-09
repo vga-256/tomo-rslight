@@ -16,11 +16,6 @@ if(isset($frames_on) && $frames_on === false) {
     include "../common/header.php";
   }
 }
-if (file_exists('../common/mods/'.$style_css)) {
-    echo '<link rel="stylesheet" type="text/css" href="../common/mods/'.$style_css.'">';
-} else {
-    echo '<link rel="stylesheet" type="text/css" href="../common/'.$style_css.'">';
-}
 echo '<hr></head>';
 echo '<body textcolor="black" bgcolor="white">';
 ?>

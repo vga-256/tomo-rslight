@@ -2,20 +2,14 @@
   --color-dark: #0C090A;
   --color-medium: #3E4147;
   --color-light: #101020;
-  --color-bg-alt: #101025;
-  --color-text-alt: #4488BB;
+
+  --color-text: #D0BDBD;
   --color-text-quote: teal;
-  --color-title: #D0BDBD;
+  --color-highlight: #9966CC;
+
   --color-link: #00B0DF;
   --color-visited: #6688BB;
+
   --color-border: #828282;
   --color-row-border: black;
-
-/* overboard title */
-  --color-ob-title: #9966CC;
-
-/* overboard date line */
-  --color-ob-date: #9966CC;
-
-  --color-search-result: #B266CC;
 }
