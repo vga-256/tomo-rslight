@@ -178,7 +178,7 @@ echo '</table>';
  
   }
         if (isset($_POST['sendMessage'])) {
-                if (isSet($_POST['to']) && $_POST['to'] != '' && isSet($_POST['from']) && $_POST['from'] != '' && isSet($_POST['message']) && $_POST['message'] != '') {
+                if (isset($_POST['to']) && $_POST['to'] != '' && isset($_POST['from']) && $_POST['from'] != '' && isset($_POST['message']) && $_POST['message'] != '') {
             if(($to = get_config_value('aliases.conf', strtolower($_POST['to']))) == false) {
               $to = strtolower($_POST['to']);
             }
