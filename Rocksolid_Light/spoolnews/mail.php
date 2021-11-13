@@ -13,7 +13,6 @@ include "newsportal.php";
 $keyfile = $spooldir.'/keys.dat';
 $keys = unserialize(file_get_contents($keyfile));
 
-include "head.inc";
 
 // How long should cookie allow user to stay logged in?
 // 14400 = 4 hours
@@ -42,6 +41,8 @@ include "head.inc";
       $logged_in = true;
     }
   }
+include "head.inc";
+
   echo '<h1 class="np_thread_headline">';
     
   echo '<a href="mail.php" target='.$frame['menu'].'>mail</a> / ';
@@ -77,7 +78,7 @@ if(isset($_POST['username'])) {
   $name = $_POST['username'];
 // Save name in cookie
   if ($setcookies==true) {
-    setcookie("mail_name",stripslashes($name),time()+(3600*24*90));
+    setcookie("mail_name",stripslashes($name),time()+(3600*24*90),"/");
   }
 } else {
   if ($setcookies) {
@@ -176,7 +177,7 @@ echo '</table>';
     $dbh = null;
  
   }
-        if (isSet($_POST['sendMessage'])) {
+        if (isset($_POST['sendMessage'])) {
                 if (isSet($_POST['to']) && $_POST['to'] != '' && isSet($_POST['from']) && $_POST['from'] != '' && isSet($_POST['message']) && $_POST['message'] != '') {
             if(($to = get_config_value('aliases.conf', strtolower($_POST['to']))) == false) {
               $to = strtolower($_POST['to']);

@@ -64,7 +64,7 @@ echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
     if($logged_in == true) {
       echo '<td>';
       echo '<form target="'.$frame['content'].'" method="post" action="mail.php">';
-      echo '<input name="command" type="hidden" id="command" value="Message" readonly="readonly">';
+      echo '<input name="command" type="hidden" id="command" value="Mail" readonly="readonly">';
       echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
       echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
       echo '<button class="np_button_link" type="submit">Mail</button>';
