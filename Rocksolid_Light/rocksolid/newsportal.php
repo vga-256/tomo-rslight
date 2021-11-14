@@ -584,11 +584,12 @@ function groups_show($gruppen) {
 
       echo '<tr class="'.$lineclass.'"><td style="text-align: center;" class="'.$lineclass.'">';
       echo '<a href="overboard.php?thisgroup='._rawurlencode($g->name).'">'; 
-      if(is_file("../common/mods/images/latest.png")) {
-        echo '<img src="../common/mods/images/latest.png">';
+      if (file_exists('../common/themes/'.$_SESSION['theme'].'/images/latest.png')) {
+        $latest_image='../common/themes/'.$_SESSION['theme'].'/images/latest.png';
       } else {
-        echo '<img src="../common/images/latest.png">';
+        $latest_image='../common/images/latest.png';
       }
+      echo '<img src="'.$latest_image.'">';
       echo '</a>';
       echo '</td>';
 

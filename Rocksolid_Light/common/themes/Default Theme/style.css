@@ -253,7 +253,7 @@
     display: none;  /* NEW */
     background: var(--color-dark);;
     padding: 3px;
-    border: solid 1px #26598f;
+    border: solid 1px var(--color-link);
     word-wrap: break-word;
     position: absolute;
     z-index: 1000;
@@ -432,7 +432,6 @@ h1.np_index_headline {
 table.np_groups_table {
   width: 100%;
   table-layout: fixed;
-/*  border: solid 1px #26598f; */
   border: none;
   border-spacing: 0px;
   margin: 0px;
@@ -442,10 +441,9 @@ table.np_groups_table {
 
 /* border around all groups */
 .np_index_groups {
-/*  background: #eeeeee; */
   background: var(--color-dark);
   padding: 0px;
-  border: solid 1px #26598f;
+  border: solid 1px var(--color-link);
 }
 
 /* a block of groups */
@@ -456,8 +454,7 @@ table.np_groups_table {
 
 /* headline of a group of blocks */
 .np_index_grouphead {
-  border: solid 1px #26598f;
-/*  background: #26598f; */
+  border: solid 1px var(--color-link);
   background: var(--color-dark);
   color: var(--color-text);
   font-size: 0.7em;
@@ -493,7 +490,6 @@ h1.np_thread_headline {
 table.np_thread_table {
   width: 100%;
   table-layout: fixed;
-/*  border: solid 1px #26598f; */
   border: solid 1px var(--color-visited);
   border-spacing: 0px;
   margin: 0px;
@@ -560,7 +556,7 @@ h1.np_article_headline {
 div.np_article_header {
   background: var(--color-dark);
   padding: 3px;
-  border: solid 1px #26598f;
+  border: solid 1px var(--color-link);
   font-size: 0.55em;
 }
 
@@ -582,7 +578,7 @@ div.np_article_body_synch {
 
 /* Layout of quoted text / graphic layout */
 blockquote.np_article_quote {
-  border-left: #002255 solid 1px;
+  border-left: var(--color-link) solid 1px;
   padding-left: 5px;
   color: var(--color-text-quote);
   margin: 0px;
@@ -600,14 +596,14 @@ h1.np_post_headline {
 .np_post_header {
   background: var(--color-dark);
   padding: 3px;
-  border: solid 1px #26598f;
+  border: solid 1px var(--color-link);
 }
 
 /* Body with the message-field and the post-button in it */
 .np_post_body {
   background: var(--color-light);
   padding: 3px;
-  border: solid 1px #26598f;
+  border: solid 1px var(--color-link);
   margin-top: 10px;
 }
 

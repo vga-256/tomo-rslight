@@ -33,8 +33,8 @@ if(trim($_SESSION['theme']) !== '') {
   echo '<link rel="stylesheet" type="text/css" href="'.$rootdir.'common/themes/Default Theme/style.css">';
 }
 
-if (file_exists($rootdir.'common/mods/images/rocksolidlight.png')) {
-  $header_image=$rootdir.'common/mods/images/rocksolidlight.png';
+if (file_exists($rootdir.'common/themes/'.$_SESSION['theme'].'/images/rocksolidlight.png')) {
+  $header_image=$rootdir.'common/themes/'.$_SESSION['theme'].'/images/rocksolidlight.png';
 } else {
   $header_image=$rootdir.'common/images/rocksolidlight.png';
 }
