@@ -1,0 +1,15 @@
+:root {
+  --color-dark: #9499A1;
+  --color-medium: #989CA2;
+  --color-light: #9AA3AF;
+
+  --color-text: black;
+  --color-text-quote: #014853;
+  --color-highlight: #50009A;
+
+  --color-link: #0D0FE0;
+  --color-visited: #1B3D8E;
+
+  --color-border: #828282;
+  --color-row-border: black;
+}
