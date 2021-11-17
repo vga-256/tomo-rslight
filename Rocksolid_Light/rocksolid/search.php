@@ -322,6 +322,9 @@ function get_header_search($group, $terms) {
       $name = explode(':', $thisgroup);
       $group=$name[0];
       $article_database = $spooldir.'/'.$group.'-articles.db3';
+      if(!is_file($article_database)) {
+            continue;
+      }
       $article_dbh = article_db_open($article_database);
       $article_stmt = $article_dbh->prepare("SELECT * FROM articles WHERE number=:number");
           if(is_multibyte($_POST['terms'])) {
