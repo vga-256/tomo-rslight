@@ -995,14 +995,16 @@ function insert_article($section,$nntp_group,$filename,$subject_i,$from_i,$artic
 $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i,$body) {
   global $enable_rslight,$spooldir,$CONFIG,$logdir,$lockdir,$logfile;
 
+ if($CONFIG['remote_server'] !== '') {
   $sn_lockfile = $lockdir . '/'.$section.'-spoolnews.lock';
   $sn_pid = file_get_contents($sn_lockfile);
   if (posix_getsid($sn_pid) === false || !is_file($sn_lockfile)) {
     file_put_contents($sn_lockfile, getmypid()); // create lockfile
-} else {
+  } else {
     file_put_contents($logfile, "\n".format_log_date()." ".$section." Queuing local post: ".$nntp_group, FILE_APPEND); 
-   return(1);
-}
+    return(1);
+  }
+ }
   $local_groupfile=$spooldir."/".$section."/local_groups.txt";
   $path=$spooldir."/articles/";
   $grouppath = $path.preg_replace('/\./', '/', $nntp_group);

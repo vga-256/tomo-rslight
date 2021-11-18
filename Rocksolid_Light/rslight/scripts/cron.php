@@ -60,6 +60,7 @@ foreach($menulist as $menu) {
   }
   $menuitem=explode(':', $menu);
   chdir("../".$menuitem[0]);
+ if($CONFIG['remote_server'] !== '') {
 # Send articles
   echo "Sending articles\n";
   echo exec($CONFIG['php_exec']." ".$config_dir."/scripts/send.php");
@@ -68,6 +69,7 @@ foreach($menulist as $menu) {
     exec($CONFIG['php_exec']." ".$config_dir."/scripts/spoolnews.php");
     echo "Refreshed spoolnews\n";
   }
+ }
 # Expire articles
   exec($CONFIG['php_exec']." ".$config_dir."/scripts/expire.php");
   echo "Expired articles\n";
