@@ -194,7 +194,7 @@ function check_rate_limit($name,$set=0,$gettime=0) {
  * $ref: The references of the article
  * $body: The article itself
  */
-function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryptto,$authname) {
+function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis=null,$encryptto=null,$authname=null,$followupto=null) {
   global $server,$port,$send_poster_host,$text_error,$CONFIG;
   global $www_charset,$config_dir,$spooldir;
   global $msgid_generate,$msgid_fqdn;
@@ -259,6 +259,9 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis,$encryp
 	}
     } 
     fputs($ns,'From: '.$from."\r\n");
+    if($followupto !== null) {
+      fputs($ns,'Followup-To: '.$followupto."\r\n");
+    }
     fputs($ns,'Newsgroups: '.$newsgroups."\r\n");
 	$sitekey=password_hash($CONFIG['thissitekey'].$msgid, PASSWORD_DEFAULT);
     fputs($ns,'X-Rslight-Site: '.$sitekey."\r\n");

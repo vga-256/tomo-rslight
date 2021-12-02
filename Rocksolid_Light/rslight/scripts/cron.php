@@ -74,6 +74,9 @@ foreach($menulist as $menu) {
   exec($CONFIG['php_exec']." ".$config_dir."/scripts/expire.php");
   echo "Expired articles\n";
 }
+# Run RSS Feeds
+  exec($CONFIG['php_exec']." ".$config_dir."/scripts/rss-feeds.php");
+  echo "RSS Feeds updated\n";
 # Rotate log files
   log_rotate();
   echo "Log files rotated\n";

@@ -260,7 +260,11 @@ if ($type=="post") {
        }
      }
 //     echo '<p><a href="'.$file_thread.'?group='.urlencode($returngroup[0]).'">'.$text_post["button_back"].'</a> '.$text_post["button_back2"].' '.group_display_name($returngroup[0]).'</p>';
-     echo '<p><a href="'.$_SESSION['return_page'].'">Back to Previous Page</a></p>';
+     if(isset($_REQUEST['returngroup']) && $_REQUEST['returngroup'] !== '') {
+       echo '<p><a href="'.$file_thread.'?group='.$_REQUEST['returngroup'].'">Your post will appear in '.group_display_name($_REQUEST['returngroup']).'</a></p>';
+     } else {
+       echo '<p><a href="'.$_SESSION['return_page'].'">Back to Previous Page</a></p>';
+     }
       } else {
         // article not accepted by the newsserver
         $type="retry";
@@ -342,7 +346,6 @@ if ($newsgroups == "") {
 } else {
   // show post form
   $fieldencrypt=md5(rand(1,10000000));
-
   echo '<h1 class="np_post_headline">'.$text_post["group_head"].group_display_name($newsgroups)
     .$text_post["group_tail"].'</h1>';
 
@@ -438,16 +441,16 @@ function quoten() {
   echo captcha::form($text_post["captchainfo1"],$text_post["captchainfo2"]);
   echo '</td></tr>';
 } ?>
+ 
   
-
 </table>
 </div>
 <input type="hidden" name="type" value="post">
 <input type="hidden" name="newsgroups" value="<?php echo htmlspecialchars($newsgroups); ?>">
 <input type="hidden" name="references" value="<?php echo htmlentities($references); ?>">
 <input type="hidden" name="group" value="<?php echo htmlspecialchars($newsgroups); ?>">
+<input type="hidden" name="returngroup" value="<?php echo htmlspecialchars($head->followup); ?>">
 <input type="hidden" name="fielddecrypt" value="<?php echo htmlspecialchars($fieldencrypt);?>">
 </form>
 
 <?php } } ?>
-

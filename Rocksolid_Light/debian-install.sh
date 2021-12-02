@@ -74,6 +74,7 @@ mkdir -p $spoolpath
 echo "done"
 echo -n "$configpath..."
 mkdir -p $configpath
+mkdir -p $configpath/rss
 mkdir -p $configpath/users
 mkdir -p $configpath/userconfig
 echo "done"
