@@ -1,0 +1,34 @@
+<?php
+return [   
+// Change 'enable' to '1' to enable this feed
+   'enable' => '0',
+
+// How often to process this feed (in seconds)
+   'timer' => '86400',
+
+// URL to get rss feed
+   'url' => 'http://feeds.bbci.co.uk/news/rss.xml',
+
+// URL prefix to add if links do not contain domain
+   'urlprefix' => '',
+
+// Subject line for posting to the newsgroup
+   'message_subject' => 'BBC News',
+
+// From name for newsgroup post
+   'postfrom' => 'invalid@example.com (unconfigured)',
+
+// Newsgroup to post feed
+   'newsgroup' => 'rocksolid.feeds.news',
+
+// Add FollowUp-To: to direct replies to this group
+   'followupto' => 'rocksolid.shared.news',
+
+// XML elements in feed. Configure per feed as necessary
+   'root' => 'channel',
+   'item' => 'item',
+   'title' => 'title',
+   'link'=> 'link',
+   'content' => 'description',
+   'date' => 'pubDate'
+];
