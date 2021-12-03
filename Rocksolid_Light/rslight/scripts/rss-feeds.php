@@ -1,5 +1,6 @@
 #!/usr/local/bin/php
 <?php
+   chdir('../rocksolid/');
    include "config.inc.php";
    include "newsportal.php";
 
