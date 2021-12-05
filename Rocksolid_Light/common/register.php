@@ -145,13 +145,13 @@ $keyFilename = $keypath.$username;
 # Check all input
 if (empty($_POST['username'])) {
   echo "Please enter a Username\r\n";
-  echo '<br /><a href="newuser.php">Back</a>';
+  echo '<br /><a href="register.php">Back</a>';
   exit(2);
 }
 
 if ($_POST['password'] !== $_POST['password2']) {
   echo "Your passwords entered do not match\r\n";
-  echo '<br /><a href="newuser.php">Back</a>';
+  echo '<br /><a href="register.php">Back</a>';
   exit(2);
 }
 
@@ -169,7 +169,7 @@ foreach($users as $user) {
 	if(stripos($buffer, $user_email) !== FALSE) {
 	  fclose($userFileHandle); 
 	  echo "Email exists in database\r\n";
-          echo '<br /><a href="newuser.php">Back</a>';
+          echo '<br /><a href="register.php">Back</a>';
           exit(2);
 	}
       }
@@ -180,7 +180,7 @@ foreach($users as $user) {
 
 if (!preg_match("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$^",$user_email)) {
   echo "Email must be in the form of an email address\r\n";
-  echo '<br /><a href="newuser.php">Back</a>';
+  echo '<br /><a href="register.php">Back</a>';
   exit(2);
 }
 
@@ -190,7 +190,7 @@ if (($userFileHandle = @fopen($userFilename, 'r')) || (get_config_value('aliases
     if ($command == "Create")
     {
         echo "User:".$thisusername." Already Exists\r\n";
-	echo '<br /><a href="newuser.php">Back</a>';
+	echo '<br /><a href="register.php">Back</a>';
 	exit(2);
     }
     $userFileInfo = fread($userFileHandle, filesize($userFilename));
