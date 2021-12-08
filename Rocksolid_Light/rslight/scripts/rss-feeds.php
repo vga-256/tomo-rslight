@@ -4,6 +4,7 @@
    include "config.inc.php";
    include "newsportal.php";
 
+   $maxlen = 500;
    $rssdir = $config_dir.'/rss/';
    $rssfiles = array();
    if(isset($argv[1])) {
@@ -27,7 +28,7 @@
        } 
      }
      $xmlData = file_get_contents($RSS['url']);
-     $xml = simplexml_load_string($xmlData);
+     $xml = simplexml_load_string($xmlData, 'SimpleXMLElement', LIBXML_NOCDATA);
      if($RSS['root'] != '') {
        $xmlstart = $xml->{$RSS['root']};
      } else {
@@ -66,7 +67,15 @@
          $body.=date("F j, Y, g:i A", strtotime($item->{$RSS['date']}));
        }
        $body.="\n";
-       $body.=trim($item->{$RSS['content']});
+       if(strlen($item->{$RSS['content']}) > $maxlen) {
+         $content=substr(trim(strip_tags($item->{$RSS['content']})),0,$maxlen);
+         $dots = '...';
+       } else {
+	 $content=trim(strip_tags($item->{$RSS['content']}));
+         $dots = '';
+       }
+       $content = preg_replace('#\R+#', "\n", $content);
+       $body.=$content.$dots;
        $body.="\n--------------------\n";
      }
      if(strpos($RSS['postfrom'], '@') === false) {
@@ -80,6 +89,7 @@
      $body = strip_tags($body);
 
      if(is_file($rssdir.'/debug')) {
+       print_r($xml);
        echo $body;
      } else {
        echo message_post($RSS['message_subject'], $RSS['postfrom'], $RSS['newsgroup'], null, $body, null, null, null, $followupto)."\n";
