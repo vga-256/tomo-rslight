@@ -232,6 +232,18 @@ foreach($files as $article) {
     preg_match('/Date:.*/', $header, $articledate);
     $dateoutput = explode("Date: ",$articledate[0]);
 
+    $local_poster=false;
+    if(preg_match('/X-Rslight-Site:.*/', $header, $site)) {
+      $site_match = explode("X-Rslight-Site: ", $site[0]);
+      preg_match('/Message-ID:.*/', $header, $mid);
+      $mid_match = explode("Message-ID: ",$mid[0]);
+      $rslight_site = $site_match[1];
+      $rslight_mid = $mid_match[1];
+      if(password_verify($CONFIG['thissitekey'].$rslight_mid, $rslight_site)) {
+        $local_poster=true;
+      }
+  }
+
     preg_match('/Content-Transfer-Encoding:.*/', $header, $te);
     $content_transfer_encoding = explode("Content-Transfer-Encoding: ", $te[0]); 
 
@@ -281,8 +293,11 @@ foreach($files as $article) {
     } else {
       $poster_name = $fromoutput[0]; 
     }
-
-    echo '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.create_name_link(mb_decode_mimeheader($poster_name)).'</p>';
+  if($local_poster) {
+    echo '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: <i>'.create_name_link(mb_decode_mimeheader($poster_name)).'</i></p>';
+  } else {
+    echo '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.create_name_link(mb_decode_mimeheader($poster_name)).'</p>'; 
+  }
 //    echo '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.mb_decode_mimeheader($fromoutput[0]).'</p>';
     # Try to display useful snippet
 	if($stop=strpos($body, "begin 644 "))
