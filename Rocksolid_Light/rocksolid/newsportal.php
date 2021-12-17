@@ -621,10 +621,43 @@ function groups_show($gruppen) {
     } else {
       $lastarticleinfo->date = 0;
     }
-      echo get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
+// Handle newsportal errors in lastarticleinfo.dat
+    if($lastarticleinfo->date == 0) {
+      $database = $spooldir.'/articles-overview.db3';
+      $table = 'overview';
+      $articles_dbh = rslight_db_open($database);
+      $articles_query = $articles_dbh->prepare('SELECT * FROM overview WHERE newsgroup=:group ORDER BY date DESC LIMIT 2');
+      $articles_query->execute(['group' => $g->name]);
+      $found = 0;
+      while ($row = $articles_query->fetch()) {
+        $found = 1;
+        break;
+      }
+      $dbh = null;
+      if($found) {
+	$lastarticleinfo->date = $row['date'];
+// Put this in a function already!
+        $fromoutput = explode("<", html_entity_decode($row['name']));
+// Just an email address?
+        if(strlen($fromoutput[0]) < 2) {
+          preg_match("/\<([^\)]*)\@/", html_entity_decode($row['name']), $fromaddress);
+          $fromoutput[0] = $fromaddress[1];
+        }
+        if(strpos($fromoutput[0], "(")) {
+          preg_match("/\(([^\)]*)\)/", html_entity_decode($row['name']), $fromaddress);
+          $fromoutput[0] = $fromaddress[1];
+        }
+        if((isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) && (strpos($fromoutput[0], '@') !== false)) {
+          $lastarticleinfo->name = truncate_email($fromoutput[0]);
+        } else {
+          $lastarticleinfo->name = $fromoutput[0];
+        }
+      }
+    }
+    echo get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
     echo '<table><tr><td>';
     echo '<font class="np_last_posted_date">by: ';
-    echo create_name_link($lastarticleinfo->name);             
+    echo create_name_link(mb_decode_mimeheader($lastarticleinfo->name));             
     echo '</td></tr></table>';
     }
     echo "\n";
