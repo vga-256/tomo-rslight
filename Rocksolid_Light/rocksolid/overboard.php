@@ -232,6 +232,11 @@ foreach($files as $article) {
     preg_match('/Date:.*/', $header, $articledate);
     $dateoutput = explode("Date: ",$articledate[0]);
 
+    $thisdate = strtotime($dateoutput[1]);
+    if(($thisdate > time()) || ($thisdate < $oldest)) {
+      continue;
+    }
+
     $local_poster=false;
     if(preg_match('/X-Rslight-Site:.*/', $header, $site)) {
       $site_match = explode("X-Rslight-Site: ", $site[0]);
