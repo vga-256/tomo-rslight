@@ -158,6 +158,9 @@ krsort($files);
 echo '<table cellspacing="0" width="100%" class="np_results_table">';
 
 foreach($files as $article) {
+    if(!isset($cachedate)) {
+      $cachedate = time();
+    }
     if($CONFIG['article_database'] == '1') {
       $data = explode(':', $article);
       $articledata = np_get_db_article($data[1], $data[0], 0);
@@ -200,9 +203,6 @@ foreach($files as $article) {
     if(($thisdate > time()) || ($thisdate < $oldest)) {
       continue;
     }
-    if(!isset($cachedate)) {
-      $cachedate = time();
-    }
     $local_poster=false;
     if(preg_match('/X-Rslight-Site:.*/', $header, $site)) {
       $site_match = explode("X-Rslight-Site: ", $site[0]);
@@ -214,6 +214,10 @@ foreach($files as $article) {
         $local_poster=true;
       }
   }
+
+    preg_match('/Message-ID:.*/i', $header, $articleid);
+    $getid = explode(": ", $articleid[0]);
+    $thismsgid = hash('crc32', serialize($getid[1]));
 
     preg_match('/Content-Transfer-Encoding:.*/', $header, $te);
     $content_transfer_encoding = explode("Content-Transfer-Encoding: ", $te[0]); 
@@ -252,13 +256,11 @@ foreach($files as $article) {
     } else {
 	$this_output = '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
     }
-
     $this_output = '<p class=np_ob_subject>';
     $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1])."</a></b>\r\n";
     $this_output.= '</p><p class=np_ob_group>';
     $this_output.= '<a href="'.$groupurl.'"><span class="visited">'.$groupname.'</span></a>';
     $this_output.= '</p>';
-
     if((isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) && (strpos($fromoutput[0], '@') !== false)) {
       $poster_name = truncate_email($fromoutput[0]);
     } else {
@@ -294,7 +296,8 @@ foreach($files as $article) {
 	}
     $this_output.= "<p class=np_ob_body>".htmlspecialchars($mysnippet, ENT_QUOTES)."</p>\r\n";
     $this_output.= '</td></tr>';
-    $this_overboard[] = $this_output;
+    $this_overboard[$thismsgid] = $this_output;
+
     if($results++ > ($maxdisplay - 2))
 	  break;
 }
