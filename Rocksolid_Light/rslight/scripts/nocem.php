@@ -149,7 +149,9 @@ function delete_message_from_overboard($config_name, $group, $messageid) {
     $cached_overboard = unserialize(file_get_contents($cachefile));
     if(isset($cached_overboard[$delkey])) {
       unset($cached_overboard[$delkey]);
+      $stats = stat($cachefile);
       file_put_contents($cachefile, serialize($cached_overboard));
+      touch($cachefile, $stats[9]);
     }
   }
   $cachefile=$spooldir."/".$group."-overboard.dat";
@@ -157,7 +159,9 @@ function delete_message_from_overboard($config_name, $group, $messageid) {
     $cached_overboard = unserialize(file_get_contents($cachefile));
     if(isset($cached_overboard[$delkey])) {
       unset($cached_overboard[$delkey]);
+      $stats = stat($cachefile);
       file_put_contents($cachefile, serialize($cached_overboard));
+      touch($cachefile, $stats[9]);
     }
   }
 }
