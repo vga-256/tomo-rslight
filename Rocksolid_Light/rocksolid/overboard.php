@@ -303,6 +303,7 @@ foreach($files as $article) {
 }
     if(isset($cached_overboard) && isset($this_overboard)) {
       $new_overboard = array_merge($this_overboard, $cached_overboard);
+      $new_overboard = array_slice($new_overboard, 0, $maxdisplay);
       file_put_contents($cachefile, serialize($new_overboard));
     } elseif(isset($this_overboard)) {
       $new_overboard = $this_overboard;
