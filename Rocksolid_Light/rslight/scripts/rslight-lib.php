@@ -86,6 +86,22 @@ set_time_limit(0);
 	    fwrite($msgsock, $msg, strlen($msg));     
 	    continue;
 	}
+		if ($command[0] == 'capabilities') {
+		  $msg = "101 Capability list:\r\n";
+		  $msg.= "VERSION 2\r\n";
+		  $msg.= "AUTHINFO USER\r\n";
+		  $msg.= "HDR\r\n";
+		  $msg.= "LIST ACTIVE NEWSGROUPS OVERVIEW.FMT\r\n";
+	      if($auth_ok == '1') {
+			$msg.= "POST\r\n";
+		  }
+          $msg.= "OVER\r\n";
+          $msg.= "READER\r\n";
+          $msg.= ".\r\n";
+          fwrite($msgsock, $msg, strlen($msg));
+          continue;
+        }
+	
 	if ($command[0] == 'newgroups') {
             $msg = get_newgroups($command);
             fwrite($msgsock, $msg, strlen($msg));
@@ -182,12 +198,12 @@ set_time_limit(0);
             fwrite($msgsock, $msg, strlen($msg));
             continue;
         }	
-	if ($command[0] == 'xover') {
+	if (($command[0] == 'xover') || ($command[0] == 'over')) {
 	    $msg = get_xover($command[1], $msgsock);
 	    fwrite($msgsock, $msg, strlen($msg));
 	    continue;
 	}
-	if ($command[0] == 'xhdr') {
+	if (($command[0] == 'xhdr') || ($command[0] == 'hdr')) {
             $msg = get_xhdr($command[1], $command[2]);
             fwrite($msgsock, $msg, strlen($msg));
             continue;
@@ -506,10 +522,14 @@ function get_xhdr($header, $articles) {
       $found = find_article_by_msgid($articles);
       $tmpgroup = $found['newsgroup'];
       $articles = $found['number'];
+      if($tmpgroup == '') {
+        $msg="430 No article with that message-id\r\n";
+        return $msg;
+      }
     }
-    if($tmpgroup == '') {
-      $msg="412 no newsgroup selected\r\n";
-      return $msg;
+    if(!isset($tmpgroup)) {
+        $msg="412 no newsgroup selected\r\n";
+        return $msg;
     }
     $thisgroup = $path."/".preg_replace('/\./', '/', $tmpgroup);
     $article_num = explode('-', $articles);
@@ -585,35 +605,54 @@ function get_title($mode) {
 
 function get_xover($articles, $msgsock) {
     global $nntp_group,$nntp_article,$workpath,$path;
-    if($nntp_group == '') {
-        $msg="412 no newsgroup selected\r\n";
-        return $msg;
-    }
 // Use article pointer
     if(!isset($articles) && is_numeric($nntp_article)) {
       $articles = $nntp_article;
+    }
+// By Message-ID
+    if(strpos($articles, "@") !== false) {
+      $found = find_article_by_msgid($articles);
+      $nntp_group = $found['newsgroup'];
+      $first = $found['number'];
+      $last = $first;
+      $this_id = $found['msgid'];
+      $articles = $found['number'];
+      if(!isset($articles)) {
+        $output="430 No article with that message-id\r\n";
+        return $output;
+      }
+      $output="224 Overview information follows for ".$this_id."\r\n";
+    }
+    if($nntp_group == '') {
+        $msg="412 no newsgroup selected\r\n";
+        return $msg;
     }
     if(!isset($articles)) {
 	$msg="420 no article(s) selected\r\n";
 	return $msg;
     }
     $overviewfile=$workpath.$nntp_group."-overview";
+  if(!isset($this_id)) {
     $article_num = explode('-', $articles);
     $first = $article_num[0];
-    if(isset($article_num[1]) && is_numeric($article_num[1]))
+    if(isset($article_num[1]) && is_numeric($article_num[1])) {
         $last = $article_num[1];
-    else {
-    if(strpos($articles, "-")) {
-      $ok_article = get_article_list($nntp_group);
-      sort($ok_article);
-      $last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
-      if(!is_numeric($last))
-          $last = 0;
+        $output="224 Overview information follows for articles ".$first." through ".$last."\r\n";
     } else {
-      $last = $first;
-    }
+      if(strpos($articles, "-")) {
+        $ok_article = get_article_list($nntp_group);
+        sort($ok_article);
+        $last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
+        if(!is_numeric($last)) {
+            $last = 0;
+        }
+        $output="224 Overview information follows for articles ".$first." through ".$last."\r\n";    
+      } else {
+        $last = $first;
+        $output="224 Overview information follows for ".$first."\r\n";
+      }
    }
-    $output="224 Overview information follows for articles ".$first." through ".$last."\r\n";
+  }
     fwrite($msgsock, $output, strlen($output));
     $overviewfp=fopen($overviewfile, 'r');
     while($overviewline=fgets($overviewfp)) {
