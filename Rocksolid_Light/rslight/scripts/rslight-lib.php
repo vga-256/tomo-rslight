@@ -91,7 +91,7 @@ set_time_limit(0);
 		  $msg.= "VERSION 2\r\n";
 		  $msg.= "AUTHINFO USER\r\n";
 		  $msg.= "HDR\r\n";
-		  $msg.= "LIST ACTIVE NEWSGROUPS OVERVIEW.FMT\r\n";
+		  $msg.= "LIST ACTIVE HEADERS NEWSGROUPS OVERVIEW.FMT\r\n";
 	      if($auth_ok == '1') {
 			$msg.= "POST\r\n";
 		  }
@@ -514,9 +514,13 @@ function get_last($nntp_group) {
 }
 
 function get_xhdr($header, $articles) {
-    global $config_dir,$spooldir,$nntp_group,$workpath,$path;
+    global $config_dir,$spooldir,$nntp_group,$nntp_article,$workpath,$path;
     $tmpgroup=$nntp_group;
     $mid=false;
+// Use article pointer
+    if(!isset($articles) && is_numeric($nntp_article)) {
+      $articles = $nntp_article;
+    }    
 // By Message-ID
     if(!is_numeric($articles)) {
       $found = find_article_by_msgid($articles);
@@ -975,6 +979,12 @@ function get_list($mode) {
     global $path,$spooldir,$groupconfig;
     $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
   $mode = strtolower($mode);
+  if($mode == "headers") {
+    $msg = "215 metadata items supported:\r\n";
+    $msg.= ":\r\n";
+    $msg.= ":lines\r\n";
+    $msg.= ":bytes\r\n";
+  }
   if($mode == "active") {  
     $msg = '215 list of newsgroups follows'."\r\n";
     foreach($grouplist as $findgroup) {
