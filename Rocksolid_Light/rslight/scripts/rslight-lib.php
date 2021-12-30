@@ -59,9 +59,9 @@ set_time_limit(0);
         }
 	if ($command[0] == 'list') {
 	    if(isset($command[1])) {
-	        $msg = get_list($command[1]);
+	        $msg = get_list($command[1], $msgsock);
             } else {
-		$msg = get_list("active");
+		$msg = get_list("active", $msgsock);
             } 
             fwrite($msgsock, $msg, strlen($msg));
 	    continue;
@@ -862,6 +862,10 @@ function get_body($article, $nntp_group) {
 function get_listgroup($nntp_group, $msgsock) {
     global $spooldir,$path,$nntp_group,$groupconfig;
     $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if($nntp_group == '') {
+      $msg="412 no newsgroup selected\r\n";
+      return $msg;
+    }
     $ok_group=false;
     $count=0;
     foreach($grouplist as $findgroup) {
@@ -908,7 +912,7 @@ function get_group($change_group) {
 	}
     }
     if($ok_group == false) {
-      $response = "411 No such group ".$change_group.";\r\n";
+      $response = "411 No such group ".$change_group."\r\n";
       return $response;
     }
     $nntp_group = $change_group;
@@ -975,7 +979,7 @@ function get_newgroups($mode) {
   }
 }
 
-function get_list($mode) {
+function get_list($mode, $msgsock) {
     global $path,$spooldir,$groupconfig;
     $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
   $mode = strtolower($mode);
@@ -987,20 +991,25 @@ function get_list($mode) {
   }
   if($mode == "active") {  
     $msg = '215 list of newsgroups follows'."\r\n";
+    fwrite($msgsock, $msg, strlen($msg));
     foreach($grouplist as $findgroup) {
-	$name = preg_split("/( |\t)/", $findgroup, 2);
-	if($name[0][0] === ':')
+	  $name = preg_split("/( |\t)/", $findgroup, 2);
+	  if($name[0][0] === ':')
 	    continue;
-	$ok_article = get_article_list($findgroup);
-	sort($ok_article);
-	$last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
-	$first = $ok_article[0];
-	if(!is_numeric($last))
+	  $ok_article = get_article_list($findgroup);
+	  sort($ok_article);
+	  $last = $ok_article[key(array_slice($ok_article, -1, 1, true))];
+	  $first = $ok_article[0];
+	  if(!is_numeric($last)) {
 	    $last = 0;
-	if(!is_numeric($first))
+	  }
+	  if(!is_numeric($first)) {
 	    $first = 0;
-        $msg.=$name[0]." ".$last." ".$first." y\r\n";
-    }
+	  }
+      $output=$name[0]." ".$last." ".$first." y\r\n";
+      fwrite($msgsock, $output, strlen($output));
+      }
+    return ".\r\n";
   }
   if($mode == "newsgroups") {
     $msg = '215 list of newsgroups and descriptions follows'."\r\n";
@@ -1191,7 +1200,7 @@ function get_article_list($thisgroup) {
   $database = $spooldir."/articles-overview.db3";
   $table = 'overview';
   $dbh = rslight_db_open($database, $table);
-  $stmt = $dbh->prepare("SELECT * FROM overview WHERE newsgroup=:thisgroup ORDER BY number");
+  $stmt = $dbh->prepare("SELECT * FROM $table WHERE newsgroup=:thisgroup ORDER BY number");
   $stmt->execute(['thisgroup' => $thisgroup]);
   $ok_article=array();
   while($found = $stmt->fetch()) {
