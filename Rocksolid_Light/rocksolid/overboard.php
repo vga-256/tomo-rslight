@@ -62,7 +62,7 @@ if (isset($_GET['thisgroup'])) {
 $cachetime = 60;
 
 # Maximum number of articles to show
-$maxdisplay = 1000;
+$maxdisplay = 500;
 
 # How many characters of the body to display per article
 $snippetlength = 240;
@@ -219,6 +219,14 @@ foreach($files as $article) {
     $getid = explode(": ", $articleid[0]);
     $thismsgid = hash('crc32', serialize($getid[1]));
 
+    preg_match('/References:.*/i', $header, $ref);
+    $getrefs = explode(': ', $ref[0]);
+    $ref = preg_split("/[\s]+/", $getrefs[1]);
+    if($getrefs[1] && $refid = get_data_from_msgid($ref[0])) {
+      $threadref = $ref[0];
+    } else {
+      $threadref = false;
+    }
     preg_match('/Content-Transfer-Encoding:.*/', $header, $te);
     $content_transfer_encoding = explode("Content-Transfer-Encoding: ", $te[0]); 
 
@@ -257,7 +265,12 @@ foreach($files as $article) {
 	$this_output = '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
     }
     $this_output = '<p class=np_ob_subject>';
-    $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1])."</a></b>\r\n";
+    if($threadref) {
+      $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1]).'"</a></b><font class="np_ob_group"><a href="article-flat.php?id='.$refid[number].'&group='.$groupname.'#'.$refid[number].'"> (thread)</a></font>'."\r\n"; 
+//      $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1]).'"</a></b><font class="np_ob_group"><a href="article-flat.php?group='.$groupname.'&id='.$threadref.'"> (thread)</a></font>'."\r\n";
+    } else {
+      $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1])."</a></b>\r\n";
+    }
     $this_output.= '</p><p class=np_ob_group>';
     $this_output.= '<a href="'.$groupurl.'"><span class="visited">'.$groupname.'</span></a>';
     $this_output.= '</p>';

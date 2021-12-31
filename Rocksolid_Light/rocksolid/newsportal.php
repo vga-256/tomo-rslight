@@ -1403,6 +1403,8 @@ function rslight_db_open($database, $table='overview') {
   $stmt->execute();
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_newsgroup on overview(newsgroup)');
   $stmt->execute();
+  $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_msgid on overview(msgid)');
+  $stmt->execute();
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_newsgroup_number on overview(newsgroup,number)');
   $stmt->execute();
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS id_name on overview(name)');
@@ -1431,6 +1433,8 @@ function article_db_open($database) {
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS db_number on articles(number)');
   $stmt->execute();
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS db_date on articles(date)');
+  $stmt->execute();
+  $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS db_msgid on articles(msgid)');
   $stmt->execute();
   $stmt = $dbh->query('CREATE INDEX IF NOT EXISTS db_name on articles(name)');
   $stmt->execute();
@@ -1548,5 +1552,24 @@ $logfile=$logdir.'/newsportal.log';
     }
     exit(0);
   }
+}
+
+function get_data_from_msgid($msgid) {
+      global $spooldir;
+      $database = $spooldir.'/articles-overview.db3';
+      $articles_dbh = rslight_db_open($database);
+      $articles_query = $articles_dbh->prepare('SELECT * FROM overview WHERE msgid=:messageid');
+      $articles_query->execute(['messageid' => $msgid]);
+      $found = 0;
+      while ($row = $articles_query->fetch()) {
+        $found = 1;
+        break;
+      }
+      $dbh = null;
+      if($found) {
+        return $row;
+      } else {
+        return false;
+      }
 }
 ?>

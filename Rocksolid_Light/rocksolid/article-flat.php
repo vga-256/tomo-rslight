@@ -88,6 +88,12 @@ if(isset($frames_on) && $frames_on === true) {
   echo '<a href="'.$file_index.'" target='.$frame['menu'].'>'.basename(getcwd()).'</a> / ';
   echo '<a href="'.$file_thread.'?group='.rawurlencode($group).'" target='.$frame["content"].'>'.htmlspecialchars(group_display_name($group)).'</a> / '.$subject.'</h1>';
 
+if(!$message) {
+  echo "Article not found";
+  include "tail.inc";
+  exit(0);
+}
+ 
 if($message) {
   // load thread-data and get IDs of the actual subthread
   $thread=thread_load($group);
