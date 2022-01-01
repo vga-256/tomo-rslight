@@ -266,7 +266,7 @@ foreach($files as $article) {
     }
     $this_output = '<p class=np_ob_subject>';
     if($threadref) {
-      $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1]).'"</a></b><font class="np_ob_group"><a href="article-flat.php?id='.$refid[number].'&group='.$groupname.'#'.$refid[number].'"> (thread)</a></font>'."\r\n"; 
+      $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1]).'"</a></b><font class="np_ob_group"><a href="article-flat.php?id='.$refid[number].'&group='.$refid[newsgroup].'#'.$refid[number].'"> (thread)</a></font>'."\r\n"; 
 //      $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1]).'"</a></b><font class="np_ob_group"><a href="article-flat.php?group='.$groupname.'&id='.$threadref.'"> (thread)</a></font>'."\r\n";
     } else {
       $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1])."</a></b>\r\n";
