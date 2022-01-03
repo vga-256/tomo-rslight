@@ -223,7 +223,14 @@ foreach($files as $article) {
     $getrefs = explode(': ', $ref[0]);
     $ref = preg_split("/[\s]+/", $getrefs[1]);
     if($getrefs[1] && $refid = get_data_from_msgid($ref[0])) {
-      $threadref = $ref[0];
+      // Check that article to link is new enough for newsportal to display
+      $groupinfo = file($spooldir.'/'.$refid[newsgroup].'-info.txt');
+      $range = explode(' ', $groupinfo[1]);
+      if($refid[number] > ($range[0] - 1)) {
+        $threadref = $ref[0];
+      } else {
+        $threadref = false;
+      }
     } else {
       $threadref = false;
     }
@@ -267,7 +274,6 @@ foreach($files as $article) {
     $this_output = '<p class=np_ob_subject>';
     if($threadref) {
       $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1]).'"</a></b><font class="np_ob_group"><a href="article-flat.php?id='.$refid[number].'&group='.$refid[newsgroup].'#'.$refid[number].'"> (thread)</a></font>'."\r\n"; 
-//      $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1]).'"</a></b><font class="np_ob_group"><a href="article-flat.php?group='.$groupname.'&id='.$threadref.'"> (thread)</a></font>'."\r\n";
     } else {
       $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1])."</a></b>\r\n";
     }
