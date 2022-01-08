@@ -67,25 +67,7 @@ if(isset($frames_on) && $frames_on === true) {
     echo '<button class="np_button_link" type="submit">'.htmlspecialchars(group_display_name($group)).'</button>';
     echo '</form>';
     echo '</td>';
-// Pages
-    echo '<td class="np_pages" width="100%" align="right">';
-    echo articleflat_pageselect($group,$id,count($subthread),$first);
-    echo '</td></tr></table>';
-  foreach($pageids as $subid) {
-    flush();
-    $message=message_read($subid,0,$group);
-    echo '<a name="'.$subid.'"> </a>';
-    message_show($group,$subid,0,$message,$articleflat_chars_per_articles);
-    if ((!$CONFIG['readonly']) && ($message)) {
-      echo '<form action="'.$file_post.'">'.
-           '<input type="hidden" name="id" value="'.urlencode($subid).'">'.
-           '<input type="hidden" name="type" value="reply">'.
-           '<input type="hidden" name="group" value="'.urlencode($group).'">'.           
-           '<input type="submit" value="'.$text_article["button_answer"].
-           '">'.
-           '</form>';
-    }
-  }
+    echo '</tr></table>';
 
   if (!$message)
     // article not found
