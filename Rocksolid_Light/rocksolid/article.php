@@ -56,38 +56,37 @@ if(isset($frames_on) && $frames_on === true) {
     die("access denied");
   }
 
-
-?>
-
-
-
-<h1 class="np_article_headline"><?php echo htmlspecialchars(group_display_name($group)." / ".$subject) ?></h1>
-
-<table cellpadding="0" cellspacing="0" width="100%" class="np_buttonbar"><tr>
-<?php 
-  if(!$frames_on) {
-    echo '<td class="np_button"><a class="np_button" href="'.
-         $file_index.'">'.$text_thread["button_grouplist"].'</a></td>';
-  }
-  echo '<td class="np_button"><a class="np_button" href="'.
-       $file_thread.'?group='.urlencode($group).'">'.$text_article["back_to_group"].'</a></td>';
-  if ((!$CONFIG['readonly']) && ($message) &&
-      (!function_exists("npreg_group_has_write_access") ||
-             npreg_group_has_write_access($group)))
-    echo '<td class="np_button"> <a class="np_button" href="'.
-         $file_post.'?type=reply&id='.urlencode($id).
-         '&group='.urlencode($group).'">'.$text_article["button_answer"].
-         '</a></td>';
-
-   if(function_exists(npreg_user_is_moderator) && npreg_user_is_moderator($group)) {
-     echo '<td class="np_button"><a class="np_button" href="'.$file_cancel.'?type=reply&id='.urlencode($id).
-          '&group='.urlencode($group).'">'.$text_article["button_cancel"].'</a></td>';
+  echo '<h1 class="np_thread_headline">';
+  echo '<a href="'.$file_index.'" target='.$frame['menu'].'>'.basename(getcwd()).'</a> / ';
+  echo '<a href="'.$file_thread.'?group='.rawurlencode($group).'" target='.$frame["content"].'>'.htmlspecialchars(group_display_name($group)).'</a> / '.$subject.'</h1>';
+  echo '<table cellpadding="0" cellspacing="0" width="100%" class="np_buttonbar"><tr>';
+// Article List button
+    echo '<td>';
+    echo '<form action="'.$file_thread.'">';
+    echo '<input type="hidden" name="group" value="'.rawurlencode($group).'"/>';
+    echo '<button class="np_button_link" type="submit">'.htmlspecialchars(group_display_name($group)).'</button>';
+    echo '</form>';
+    echo '</td>';
+// Pages
+    echo '<td class="np_pages" width="100%" align="right">';
+    echo articleflat_pageselect($group,$id,count($subthread),$first);
+    echo '</td></tr></table>';
+  foreach($pageids as $subid) {
+    flush();
+    $message=message_read($subid,0,$group);
+    echo '<a name="'.$subid.'"> </a>';
+    message_show($group,$subid,0,$message,$articleflat_chars_per_articles);
+    if ((!$CONFIG['readonly']) && ($message)) {
+      echo '<form action="'.$file_post.'">'.
+           '<input type="hidden" name="id" value="'.urlencode($subid).'">'.
+           '<input type="hidden" name="type" value="reply">'.
+           '<input type="hidden" name="group" value="'.urlencode($group).'">'.           
+           '<input type="submit" value="'.$text_article["button_answer"].
+           '">'.
+           '</form>';
     }
+  }
 
-?>
-<td width="100%">&nbsp;</td></tr></table>
-
-<?php 
   if (!$message)
     // article not found
     echo $text_error["article_not_found"];
@@ -98,7 +97,6 @@ if(isset($frames_on) && $frames_on === true) {
     message_show($group,$id,0,$message);
     if($article_showthread)
       message_thread($message->header->id,$group,$thread); 
-
   }
   include "tail.inc";
 ?>
