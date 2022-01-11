@@ -28,7 +28,11 @@
   include "$file_newsportal";
 
   throttle_hits();
-
+  if(isset($_COOKIE['mail_name'])) {
+    $user = strtolower($_COOKIE['mail_name']);
+    $userfile=$spooldir.'/'.$user.'-articleviews.dat';
+    $userdata = unserialize(file_get_contents($userfile));
+  }
 if(isset($frames_on) && $frames_on === true) {
 ?>
 <script>
@@ -78,6 +82,10 @@ if (isset($_GET['thisgroup'])) {
   $grouplist = array();
   $grouplist[0] = _rawurldecode(_rawurldecode($_GET['thisgroup']));
   $cachefile=$spooldir."/".$grouplist[0]."-overboard.dat";
+  if($user) {
+    $userdata[$grouplist[0]] = time();
+    file_put_contents($userfile, serialize($userdata));
+  }
 } else {
   $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES);
 }

@@ -26,6 +26,11 @@ if(isset($_REQUEST["last"]))
     die();
   }
 
+if(isset($_COOKIE['mail_name'])) {
+  $user = strtolower($_COOKIE['mail_name']);
+  $userfile=$spooldir.'/'.$user.'-articleviews.dat';
+  $userdata = unserialize(file_get_contents($userfile));
+}
 $thread_show["latest"]=true;
 $title.= ' - '.$group;
 include "head.inc";
@@ -50,7 +55,11 @@ if(isset($frames_on) && $frames_on === true) {
 </script>
 <?php 
 }
-
+  if($user) {
+    $userdata[$group] = time();
+    file_put_contents($userfile, serialize($userdata));
+  }
+  
   $_SESSION['return_page'] = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
 
   echo '<a name="top"></a>';

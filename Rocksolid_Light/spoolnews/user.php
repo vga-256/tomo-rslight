@@ -117,6 +117,9 @@ echo '</table>';
   $user = strtolower($_POST['username']);
   $_SESSION['username'] = $user;
   unset($user_config);
+  $userfile=$spooldir.'/'.$user.'-articleviews.dat';
+  $userdata = unserialize(file_get_contents($userfile));
+  ksort($userdata);
 
 // Apply Config
     if(isset($_POST['command']) && $_POST['command'] == 'SaveConfig') {
@@ -126,6 +129,20 @@ echo '</table>';
 	$user_config['theme'] = $_POST['listbox'];
 	file_put_contents($config_dir.'/userconfig/'.$user.'.config', serialize($user_config));
 	$_SESSION['theme'] = $user_config['theme'];
+	$mysubs = explode("\n", $_POST['subscribed']);
+	foreach($mysubs as $sub) {
+	  if(trim($sub) == '') {
+	    continue;
+	  }
+          $sub = trim($sub);
+          if(!isset($userdata[$sub])) {
+            $userdata[$sub] = 0;
+          }
+          $newsubs[$sub] = $userdata[$sub];
+	}
+	file_put_contents($spooldir.'/'.$user.'-articleviews.dat', serialize($newsubs));
+	$userdata = unserialize(file_get_contents($userfile));
+	ksort($userdata);
 	echo 'Configuration Saved for '.$_POST[username];
     } else {
 	$user_config = unserialize(file_get_contents($config_dir.'/userconfig/'.$user.'.config'));
@@ -144,6 +161,7 @@ echo '</table>';
     }
   }
   sort($themes);
+
 // Show Config 
     echo '<hr><h1 class="np_thread_headline">Configuration:</h1>';
     echo '<table cellspacing="0" width="100%" class="np_results_table">';
@@ -174,6 +192,14 @@ echo '</table>';
 	echo '</select>';
 	echo '</td>';
         echo '</tr>';
+// Subscriptions
+      echo '<td class="np_result_line1" style="word-wrap:break-word";>Subscribed:</td>';
+        echo '</tr><tr><td class="np_result_line1" style="word-wrap:break-word";><textarea class="configuration" id="subscribed" name="subscribed" rows="10" cols="40">';
+        foreach($userdata as $key => $value) {
+          echo $key."\n";
+        }
+        echo '</textarea></td>';	
+        echo '</tr>';
 /*
   // Timezone
       echo '<td class="np_result_line1" style="word-wrap:break-word";>Timezone offset (+/- hours from UTC):</td>';
@@ -182,6 +208,7 @@ echo '</table>';
 */
       echo '<td class="np_result_line2" style="word-wrap:break-word";>';
 	echo '<button class="np_button_link" type="submit">Save Configuration</button>';
+	echo '<a href="'.$_SERVER['PHP_SELF'].'">Cancel</a>';
       echo '</td></tr>';
       echo '<input name="command" type="hidden" id="command" value="SaveConfig" readonly="readonly">';
     echo '</form>';

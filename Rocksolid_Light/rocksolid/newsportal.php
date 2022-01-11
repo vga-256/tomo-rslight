@@ -569,7 +569,10 @@ function groups_show($gruppen) {
   $acttype="keins";
   echo '<table class="np_groups_table" cellspacing="0"><tr class="np_thread_head"><td width="45px" class="np_thread_head">';
   echo 'Latest</td><td style="text-align: center;">Newsgroup</td><td width="8%" class="np_thread_head">Messages</td><td width="20%" class="np_thread_head" >Last Message</td></tr>';
+  $subs =  array();
+  $nonsubs = array();
   for($i = 0 ; $i < $c ; $i++) {
+    unset($groupdisplay);
     $g = $gruppen[$i];
     if(isset($g->text)) {
       if($acttype!="text") {
@@ -579,41 +582,50 @@ function groups_show($gruppen) {
       if($acttype!="group") {
         $acttype="group";
       }
+      $user = null;
+      if(isset($_COOKIE['mail_name'])) {
+        $user = strtolower($_COOKIE['mail_name']);
+        $userfile=$spooldir.'/'.$user.'-articleviews.dat';
+        $userdata = unserialize(file_get_contents($userfile));
+      }
 /* Display group name and description */
-      $lineclass="np_thread_line".(($i%2)+1);
-
-      echo '<tr class="'.$lineclass.'"><td style="text-align: center;" class="'.$lineclass.'">';
-      echo '<a href="overboard.php?thisgroup='._rawurlencode($g->name).'">'; 
+      if(isset($userdata[$g->name])) {
+        $lineclass="np_thread_line2";
+      } else {
+        $lineclass="np_thread_line1";
+      }
+      $groupdisplay = '<tr class="'.$lineclass.'"><td style="text-align: center;" class="'.$lineclass.'">';
+      $groupdisplay.='<a href="overboard.php?thisgroup='._rawurlencode($g->name).'">'; 
       if (file_exists('../common/themes/'.$_SESSION['theme'].'/images/latest.png')) {
         $latest_image='../common/themes/'.$_SESSION['theme'].'/images/latest.png';
       } else {
         $latest_image='../common/images/latest.png';
       }
-      echo '<img src="'.$latest_image.'">';
-      echo '</a>';
-      echo '</td>';
+      $groupdisplay.='<img src="'.$latest_image.'">';
+      $groupdisplay.='</a>';
+      $groupdisplay.='</td>';
 
-      echo '<td class="'.$lineclass.'">';
-      echo '<span class="np_group_line_text">';
-      echo '<a ';
-        echo 'target="'.$frame['content'].'" ';
-        echo 'href="'.$file_thread.'?group='._rawurlencode($g->name).'"><span class="np_group_line_text">'.group_display_name($g->name)."</span></a>\n";
+      $groupdisplay.='<td class="'.$lineclass.'">';
+      $groupdisplay.='<span class="np_group_line_text">';
+      $groupdisplay.='<a ';
+        $groupdisplay.='target="'.$frame['content'].'" ';
+        $groupdisplay.='href="'.$file_thread.'?group='._rawurlencode($g->name).'"><span class="np_group_line_text">'.group_display_name($g->name)."</span></a>\n";
 	if($g->description!="-")
-        echo '</span><br><p class="np_group_desc">'.$g->description.'</p>';
+        $groupdisplay.='</span><br><p class="np_group_desc">'.$g->description.'</p>';
 
 /* Display article count */
-      echo '</td><td class="'.$lineclass.'">';
+      $groupdisplay.='</td><td class="'.$lineclass.'">';
       if($gl_age)
         $datecolor=thread_format_date_color($g->age);
-      echo '<small>';
+      $groupdisplay.='<small>';
       if($datecolor!="")
-        echo '<font color="'.$datecolor.'">'.$g->count.'</font>';
+        $groupdisplay.='<font color="'.$datecolor.'">'.$g->count.'</font>';
       else
-        echo $g->count;
-      echo '</small>';
+        $groupdisplay.=$g->count;
+      $groupdisplay.='</small>';
 
 /* Display latest article info */
-    echo '</td><td class="'.$lineclass.'"><div class="np_last_posted_date">';
+    $groupdisplay.='</td><td class="'.$lineclass.'"><div class="np_last_posted_date">';
     $filename = $spooldir."/".$g->name."-lastarticleinfo.dat";
     if($file=@fopen($filename,"r")) {
       $lastarticleinfo=unserialize(fread($file,filesize($filename)));
@@ -654,14 +666,30 @@ function groups_show($gruppen) {
         }
       }
     }
-    echo get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
-    echo '<table><tr><td>';
-    echo '<font class="np_last_posted_date">by: ';
-    echo create_name_link(mb_decode_mimeheader($lastarticleinfo->name));             
-    echo '</td></tr></table>';
+    if(isset($userdata[$g->name])) {
+      if($userdata[$g->name] < $lastarticleinfo->date) {
+        $groupdisplay.='(<b>new</b>) ';
+      }
+    }  
+    $groupdisplay.=get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
+    $groupdisplay.='<table><tr><td>';
+    $groupdisplay.='<font class="np_last_posted_date">by: ';
+    $groupdisplay.=create_name_link(mb_decode_mimeheader($lastarticleinfo->name));             
+    $groupdisplay.='</td></tr></table>';
     }
-    echo "\n";
+    $groupdisplay.="\n";
     flush();
+    if(isset($userdata[$g->name])) {
+      $subs[] = $groupdisplay;
+    } else {
+      $nonsubs[] = $groupdisplay;
+    }
+  } // END
+  foreach($subs as $sub) {
+    echo $sub;
+  } 
+  foreach($nonsubs as $nonsub) {
+    echo $nonsub;
   }
   echo "</td></div></table>\n";
 }

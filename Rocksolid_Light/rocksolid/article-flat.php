@@ -12,7 +12,11 @@
   $logfile=$logdir.'/newsportal.log';
   $accessfile=$logdir.'/access.log';
   throttle_hits();
-
+  if(isset($_COOKIE['mail_name'])) {
+    $user = strtolower($_COOKIE['mail_name']);
+    $userfile=$spooldir.'/'.$user.'-articleviews.dat';
+    $userdata = unserialize(file_get_contents($userfile));
+  }
   // register parameters
   $id=$_REQUEST["id"];
   $group=_rawurldecode($_REQUEST["group"]);
@@ -23,7 +27,7 @@
     header("Location: $newurl");
     die();
   }
-
+  
   if(strpos($id, '@') !== false) {
     if($CONFIG['article_database'] == '1') {
       $database = $spooldir.'/articles-overview.db3';
@@ -54,8 +58,12 @@
   $location = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
   $_SESSION['return_page'] = $location.'#'.$id;
 
-  file_put_contents($accessfile, "\n".format_log_date()." ".$config_name." ".$group.":".$id, FILE_APPEND);  
- 
+  file_put_contents($accessfile, "\n".format_log_date()." ".$config_name." ".$group.":".$id, FILE_APPEND); 
+  if($user) {
+    $userdata[$group] = time();
+    file_put_contents($userfile, serialize($userdata));
+  }
+  
 if(isset($frames_on) && $frames_on === true) {
 ?>
 <script>
