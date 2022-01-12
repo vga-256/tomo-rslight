@@ -40,6 +40,8 @@ include "head.inc";
   } else {
     if(check_bbs_auth($_POST['username'], $_POST['password'])) {
       $authkey = password_hash($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), PASSWORD_DEFAULT);
+      $pkey = hash('crc32', get_user_config($_POST['username'],'encryptionkey'));
+      set_user_config(strtolower($_POST['username']), "pkey", $pkey);
 ?>
       <script type="text/javascript">
        if (navigator.cookieEnabled)
@@ -47,8 +49,10 @@ include "head.inc";
          var savename = "<?php echo stripslashes($name); ?>";
 	 var auth_expire = "<?php echo $auth_expire; ?>";
 	 var name_expire = "7776000";
+	 var pkey = "<?php echo $pkey; ?>";
          document.cookie = "mail_auth="+authcookie+"; max-age="+auth_expire+"; path=/";
          document.cookie = "mail_name="+savename+"; max-age="+name_expire+"; path=/";
+         document.cookie = "pkey="+pkey+"; max-age="+name_expire+"; path=/";
       </script>
 <?php
       $logged_in = true;

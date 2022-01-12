@@ -571,6 +571,16 @@ function groups_show($gruppen) {
   echo 'Latest</td><td style="text-align: center;">Newsgroup</td><td width="8%" class="np_thread_head">Messages</td><td width="20%" class="np_thread_head" >Last Message</td></tr>';
   $subs =  array();
   $nonsubs = array();
+  $user = null;
+  $pkey_config = get_user_config(strtolower($_COOKIE['mail_name']), "pkey");
+  $pkey_cookie = $_COOKIE['pkey'];
+  if(isset($_COOKIE['mail_name'])) {
+    if($pkey_config == $pkey_cookie) {
+      $user = strtolower($_COOKIE['mail_name']);
+      $userfile=$spooldir.'/'.$user.'-articleviews.dat';
+      $userdata = unserialize(file_get_contents($userfile));
+    }
+  }
   for($i = 0 ; $i < $c ; $i++) {
     unset($groupdisplay);
     $g = $gruppen[$i];
@@ -581,12 +591,6 @@ function groups_show($gruppen) {
     } else {
       if($acttype!="group") {
         $acttype="group";
-      }
-      $user = null;
-      if(isset($_COOKIE['mail_name'])) {
-        $user = strtolower($_COOKIE['mail_name']);
-        $userfile=$spooldir.'/'.$user.'-articleviews.dat';
-        $userdata = unserialize(file_get_contents($userfile));
       }
 /* Display group name and description */
       if(isset($userdata[$g->name])) {
@@ -1208,7 +1212,7 @@ function get_user_config($username,$request) {
         $userdataline=$buffer;
         fclose($userFileHandle);
         $userdatafound = explode(':',$userdataline);
-        return $userdatafound[1];
+        return trim($userdatafound[1]);
       }
     }
     fclose($userFileHandle);
