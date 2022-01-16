@@ -672,7 +672,7 @@ function groups_show($gruppen) {
     }
     if(isset($userdata[$g->name])) {
       if($userdata[$g->name] < $lastarticleinfo->date) {
-        $groupdisplay.='(<b>new</b>) ';
+        $groupdisplay.='<a href="overboard.php?thisgroup='._rawurlencode($g->name).'"><font class="search_result">(<b>new</b>)</font></a> ';
       }
     }  
     $groupdisplay.=get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
