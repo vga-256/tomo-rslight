@@ -56,7 +56,7 @@ if(isset($frames_on) && $frames_on === true) {
 </script>
 <?php 
 }
-  if($user) {
+  if($userdata) {
     $userdata[$group] = time();
     file_put_contents($userfile, serialize($userdata));
   }

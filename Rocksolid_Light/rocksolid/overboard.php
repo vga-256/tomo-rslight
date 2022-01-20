@@ -83,7 +83,7 @@ if (isset($_GET['thisgroup'])) {
   $grouplist = array();
   $grouplist[0] = _rawurldecode(_rawurldecode($_GET['thisgroup']));
   $cachefile=$spooldir."/".$grouplist[0]."-overboard.dat";
-  if($user) {
+  if($userdata) {
     $userdata[$grouplist[0]] = time();
     file_put_contents($userfile, serialize($userdata));
   }

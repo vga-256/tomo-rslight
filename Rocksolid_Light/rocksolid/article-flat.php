@@ -59,7 +59,7 @@
   $_SESSION['return_page'] = $location.'#'.$id;
 
   file_put_contents($accessfile, "\n".format_log_date()." ".$config_name." ".$group.":".$id, FILE_APPEND); 
-  if($user) {
+  if($userdata) {
     $userdata[$group] = time();
     file_put_contents($userfile, serialize($userdata));
   }
