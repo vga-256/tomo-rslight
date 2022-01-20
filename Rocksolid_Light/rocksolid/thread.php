@@ -26,11 +26,12 @@ if(isset($_REQUEST["last"]))
     die();
   }
 
-if(isset($_COOKIE['mail_name'])) {
-  $user = strtolower($_COOKIE['mail_name']);
-  $userfile=$spooldir.'/'.$user.'-articleviews.dat';
-  $userdata = unserialize(file_get_contents($userfile));
-}
+  if(isset($_COOKIE['mail_name'])) {
+    if($userdata = get_user_mail_auth_data($_COOKIE['mail_name'])) {
+      $userfile=$spooldir.'/'.strtolower($_COOKIE['mail_name']).'-articleviews.dat';
+    }
+  }
+  
 $thread_show["latest"]=true;
 $title.= ' - '.$group;
 include "head.inc";

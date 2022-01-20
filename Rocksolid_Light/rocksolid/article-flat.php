@@ -13,9 +13,9 @@
   $accessfile=$logdir.'/access.log';
   throttle_hits();
   if(isset($_COOKIE['mail_name'])) {
-    $user = strtolower($_COOKIE['mail_name']);
-    $userfile=$spooldir.'/'.$user.'-articleviews.dat';
-    $userdata = unserialize(file_get_contents($userfile));
+    if($userdata = get_user_mail_auth_data($_COOKIE['mail_name'])) {
+      $userfile=$spooldir.'/'.strtolower($_COOKIE['mail_name']).'-articleviews.dat';
+    }
   }
   // register parameters
   $id=$_REQUEST["id"];

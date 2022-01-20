@@ -572,13 +572,9 @@ function groups_show($gruppen) {
   $subs =  array();
   $nonsubs = array();
   $user = null;
-  $pkey_config = get_user_config(strtolower($_COOKIE['mail_name']), "pkey");
-  $pkey_cookie = $_COOKIE['pkey'];
   if(isset($_COOKIE['mail_name'])) {
-    if($pkey_config == $pkey_cookie) {
-      $user = strtolower($_COOKIE['mail_name']);
-      $userfile=$spooldir.'/'.$user.'-articleviews.dat';
-      $userdata = unserialize(file_get_contents($userfile));
+    if($userdata = get_user_mail_auth_data($_COOKIE['mail_name'])) {
+      $userfile=$spooldir.'/'.strtolower($_COOKIE['mail_name']).'-articleviews.dat';
     }
   }
   for($i = 0 ; $i < $c ; $i++) {
@@ -1584,6 +1580,19 @@ $logfile=$logdir.'/newsportal.log';
     }
     exit(0);
   }
+}
+
+function get_user_mail_auth_data($user) {
+  global $spooldir;
+  $user = strtolower($user);
+  $pkey_config = get_user_config($user, "pkey");
+  $pkey_cookie = $_COOKIE['pkey'];
+  if($pkey_config == $pkey_cookie) {
+    $userfile=$spooldir.'/'.$user.'-articleviews.dat';
+    $userdata = unserialize(file_get_contents($userfile));
+    return $userdata;
+  }
+  return false;
 }
 
 function get_data_from_msgid($msgid) {
