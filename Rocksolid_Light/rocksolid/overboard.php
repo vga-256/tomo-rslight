@@ -79,6 +79,15 @@ $groupconfig=$file_groups;
 $cachefile=$spooldir."/".$config_name."-overboard.dat";
 $oldest = (time() - (86400 * $article_age));
 
+if (isset($_GET['time'])) {
+  $user_time = $_GET['time'];
+  if(is_numeric($user_time)) {
+    if(($user_time > time()) || ($user_time < $oldest)) {
+      unset($user_time);
+    }
+  }
+}
+
 if (isset($_GET['thisgroup'])) {
   $grouplist = array();
   $grouplist[0] = _rawurldecode(_rawurldecode($_GET['thisgroup']));
@@ -99,19 +108,21 @@ if(is_file($cachefile)) {
   $stats = stat($cachefile);
   $oldest = $stats[9];
   $cached_overboard = unserialize(file_get_contents($cachefile));
-  if($stats[9] > (time() - $cachetime)) {
-    echo '<table cellspacing="0" width="100%" class="np_results_table">';
-    foreach($cached_overboard as $result) {
-      if(($results % 2) != 0){
-        echo '<tr class="np_result_line1"><td class="np_result_line1" style="word-wrap:break-word";>';
-      } else {
-        echo '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
+  if(!isset($user_time)) {
+    if($stats[9] > (time() - $cachetime)) {
+      echo '<table cellspacing="0" width="100%" class="np_results_table">';
+      foreach($cached_overboard as $result) {
+        if(($results % 2) != 0){
+          echo '<tr class="np_result_line1"><td class="np_result_line1" style="word-wrap:break-word";>';
+        } else {
+          echo '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
+        }
+        echo $result;
+        $results++;
       }
-      echo $result;
-      $results++;
+      show_overboard_footer($stats, $results, true);
+      exit(0);
     }
-    show_overboard_footer($stats, $results, true);
-    exit(0);
   }
 }
 //ob_start();
@@ -332,17 +343,23 @@ foreach($files as $article) {
     if(isset($cached_overboard) && isset($this_overboard)) {
       $new_overboard = array_merge($this_overboard, $cached_overboard);
       $new_overboard = array_slice($new_overboard, 0, $maxdisplay);
-      file_put_contents($cachefile, serialize($new_overboard));
+      if (!isset($user_time)) {
+        file_put_contents($cachefile, serialize($new_overboard));
+      }
     } elseif(isset($this_overboard)) {
       $new_overboard = $this_overboard;
-      file_put_contents($cachefile, serialize($new_overboard));
+      if (!isset($user_time)) {
+        file_put_contents($cachefile, serialize($new_overboard));
+      }
     } else {
       $new_overboard = $cached_overboard;
     }
     if(isset($cachedate)) {
-      touch($cachefile, $cachedate);
+      if (!isset($user_time)) {
+        touch($cachefile, $cachedate);
+      }
     }
-    $results = 0;
+    $results = 1;
 
     foreach($new_overboard as $result) {
 
@@ -352,6 +369,14 @@ foreach($files as $article) {
         echo '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
       }
       echo $result;
+      if (isset($user_time)) {
+        preg_match('/Posted:.*/i', $result, $posted_date);
+        $get_date = explode(': ', $posted_date[0]);
+        $showme = strtotime(trim(substr($get_date[1], 0, -2)));
+        if(($showme > time()) || ($showme < $user_time)) {
+          break;
+        }
+      }
       if($results++ > ($maxdisplay - 2))
 	    break;
     }
@@ -416,8 +441,14 @@ if (isset($_GET['thisgroup'])) {
 }
 
 function show_overboard_footer($stats, $results, $iscached) {
+    global $user_time;
+    if(isset($user_time)) {
+      $recent = 'new';
+    } else {
+      $recent = 'recent';
+    }
     echo '</table>';
-    echo "<p class=np_ob_tail><b>".$results."</b> recent articles found.</p>\r\n";
+    echo "<p class=np_ob_tail><b>".$results."</b> ".$recent." articles found.</p>\r\n";
     #echo "<center><i>Rocksolid Overboard</i> version ".$version;
     include "tail.inc";
     if($iscached) {
