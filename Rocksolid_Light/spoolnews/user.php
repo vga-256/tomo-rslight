@@ -19,6 +19,8 @@ if($_POST['command'] == 'Logout') {
   setcookie('mail_auth', null, -1, '/');
   unset($_COOKIE['cookie_name']);
   setcookie('cookie_name', null, -1, '/');
+  unset($_COOKIE['pkey']);
+  setcookie('pkey', null, -1, '/');
   unset($_SESSION['theme']);
   unset($_POST['username']);
   include "head.inc";
@@ -35,7 +37,7 @@ include "head.inc";
     $_POST['username'] = $_COOKIE['mail_name'];
   }
   $name = $_POST['username'];
-  if((password_verify($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['mail_auth'])) || (password_verify($_POST['username'].$keys[1].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['mail_auth']))) {
+  if(((get_user_mail_auth_data($_COOKIE['mail_name'])) && password_verify($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['mail_auth'])) || (password_verify($_POST['username'].$keys[1].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['mail_auth']))) {
     $logged_in = true;
   } else {
     if(check_bbs_auth($_POST['username'], $_POST['password'])) {

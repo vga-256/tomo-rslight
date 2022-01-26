@@ -21,7 +21,11 @@ $CONFIG = include $config_file;
 $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES);
 $linklist = file($config_dir."links.conf", FILE_IGNORE_NEW_LINES);
 
-$user = strtolower($_COOKIE['mail_name']);
+if(isset($_COOKIE['mail_name']) && isset($_COOKIE['pkey'])) {
+  $user = strtolower($_COOKIE['mail_name']);
+} else {
+  unset($user);
+}
 if(!isset($_SESSION['theme']) && file_exists($config_dir.'/userconfig/'.$user.'.config')) {
   $user_config = unserialize(file_get_contents($config_dir.'/userconfig/'.$user.'.config'));
   $_SESSION['theme'] = $user_config['theme'];
@@ -57,7 +61,7 @@ if (file_exists($rootdir.'common/themes/'.$_SESSION['theme'].'/images/rocksolidl
 		</td>
 		<td align="right">
 <?php
-		if(check_unread_mail() == true) {
+		if($user && check_unread_mail() == true) {
 			$unread = true;
 		} else {
 			$unread = false;
@@ -79,7 +83,7 @@ if (file_exists($rootdir.'common/themes/'.$_SESSION['theme'].'/images/rocksolidl
 				}
 			}
 			echo '<a href="../spoolnews/user.php">';
-                        if(isset($_COOKIE['mail_name'])) {
+                        if(isset($user)) {
                                 echo '('.$_COOKIE['mail_name'].')';
                         } else {
 				echo 'login';
