@@ -259,9 +259,7 @@ foreach($files as $article) {
 
     preg_match('/.*charset=.*/', $header, $te);
     $content_type = explode("Content-Type: text/plain; charset=", $te[0]);
-
-    $date_interval = $dateoutput[1];
-    
+    $date_interval = date("D, j M Y H:i T", strtotime($dateoutput[1]));
     preg_match('/Content-Transfer-Encoding:.*/', $header, $encoding);
     $this_encoding = explode("Content-Transfer-Encoding: ", $encoding[0]);
     if(trim($this_encoding[1]) == "base64") {
@@ -368,15 +366,16 @@ foreach($files as $article) {
       } else {
         echo '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
       }
-      echo $result;
       if (isset($user_time)) {
         preg_match('/Posted:.*/i', $result, $posted_date);
         $get_date = explode(': ', $posted_date[0]);
         $showme = strtotime(trim(substr($get_date[1], 0, -2)));
         if(($showme > time()) || ($showme < $user_time)) {
+          $results--;
           break;
         }
       }
+      echo $result;
       if($results++ > ($maxdisplay - 2))
 	    break;
     }
@@ -447,8 +446,13 @@ function show_overboard_footer($stats, $results, $iscached) {
     } else {
       $recent = 'recent';
     }
+    if($results == '1') {
+      $arts = 'article';
+    } else {
+      $arts = 'articles';
+    }
     echo '</table>';
-    echo "<p class=np_ob_tail><b>".$results."</b> ".$recent." articles found.</p>\r\n";
+    echo "<p class=np_ob_tail><b>".$results."</b> ".$recent." ".$arts." found.</p>\r\n";
     #echo "<center><i>Rocksolid Overboard</i> version ".$version;
     include "tail.inc";
     if($iscached) {
