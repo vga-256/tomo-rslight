@@ -612,7 +612,19 @@ function groups_show($gruppen) {
         $groupdisplay.='href="'.$file_thread.'?group='._rawurlencode($g->name).'"><span class="np_group_line_text">'.group_display_name($g->name)."</span></a>\n";
 	if($g->description!="-")
         $groupdisplay.='</span><br><p class="np_group_desc">'.$g->description.'</p>';
-
+// Subscribed features
+    $filename = $spooldir."/".$g->name."-lastarticleinfo.dat";
+    if($file=@fopen($filename,"r")) {
+      $lastarticleinfo=unserialize(fread($file,filesize($filename)));
+      fclose($file);
+    } else {
+      $lastarticleinfo->date = 0;
+    }
+    if(isset($userdata[$g->name])) {
+      if($userdata[$g->name] < $lastarticleinfo->date) {
+	    $groupdisplay.='</span><p class="np_group_desc"><a href="overboard.php?thisgroup='._rawurlencode($g->name).'&time='.$userdata[$g->name].'">(new)</a></p>';
+      }   
+    }
 /* Display article count */
       $groupdisplay.='</td><td class="'.$lineclass.'">';
       if($gl_age)
@@ -626,13 +638,7 @@ function groups_show($gruppen) {
 
 /* Display latest article info */
     $groupdisplay.='</td><td class="'.$lineclass.'"><div class="np_last_posted_date">';
-    $filename = $spooldir."/".$g->name."-lastarticleinfo.dat";
-    if($file=@fopen($filename,"r")) {
-      $lastarticleinfo=unserialize(fread($file,filesize($filename)));
-      fclose($file);
-    } else {
-      $lastarticleinfo->date = 0;
-    }
+
 // Handle newsportal errors in lastarticleinfo.dat
     if($lastarticleinfo->date == 0) {
       $database = $spooldir.'/articles-overview.db3';
@@ -666,11 +672,6 @@ function groups_show($gruppen) {
         }
       }
     }
-    if(isset($userdata[$g->name])) {
-      if($userdata[$g->name] < $lastarticleinfo->date) {
-        $groupdisplay.='<a href="overboard.php?thisgroup='._rawurlencode($g->name).'&time='.$userdata[$g->name].'"><font class="search_result">(<b>new</b>)</font></a> ';
-      }
-    }  
     $groupdisplay.=get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
     $groupdisplay.='<table><tr><td>';
     $groupdisplay.='<font class="np_last_posted_date">by: ';
