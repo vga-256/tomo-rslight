@@ -621,9 +621,12 @@ function groups_show($gruppen) {
       $lastarticleinfo->date = 0;
     }
     if(isset($userdata[$g->name])) {
+      $groupdisplay.='</span><p class="np_group_desc">';
+      $groupdisplay.='<a class="np_group_desc" href="index.php?unsub='.$g->name.'">(unsubscribe)</a>';
       if($userdata[$g->name] < $lastarticleinfo->date) {
-	    $groupdisplay.='</span><p class="np_group_desc"><a href="overboard.php?thisgroup='._rawurlencode($g->name).'&time='.$userdata[$g->name].'">(new)</a></p>';
-      }   
+	    $groupdisplay.='<a href="overboard.php?thisgroup='._rawurlencode($g->name).'&time='.$userdata[$g->name].'">(new)</a> ';
+      }
+      $groupdisplay.='</p';   
     }
 /* Display article count */
       $groupdisplay.='</td><td class="'.$lineclass.'">';

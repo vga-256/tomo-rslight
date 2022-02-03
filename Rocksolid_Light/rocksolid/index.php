@@ -41,6 +41,22 @@ echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
 
 include("$file_newsportal");
 flush();
+if(isset($_GET['unsub'])) {
+  if(isset($_COOKIE['mail_name'])) {
+    if($userdata = get_user_mail_auth_data($_COOKIE['mail_name'])) {
+      $userfile=$spooldir.'/'.strtolower($_COOKIE['mail_name']).'-articleviews.dat';
+      $newsubs = array();
+      foreach($userdata as $key => $usertime) {
+        if($key !== $_GET['unsub']) {
+          $newsubs[$key] = $usertime;
+        }
+      }
+      $userfile=$spooldir.'/'.strtolower($_COOKIE['mail_name']).'-articleviews.dat';
+      file_put_contents($userfile, serialize($newsubs));
+    }
+  }
+}
+
 $newsgroups=groups_read($server,$port);
 echo '<div class="np_index_groups">';
 if(isset($frames_on) && $frames_on === true) {
