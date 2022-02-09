@@ -28,6 +28,7 @@
   include "$file_newsportal";
 
   throttle_hits();
+  write_access_log();
   if(isset($_COOKIE['mail_name'])) {
     if($userdata = get_user_mail_auth_data($_COOKIE['mail_name'])) {
       $userfile=$spooldir.'/'.strtolower($_COOKIE['mail_name']).'-articleviews.dat';

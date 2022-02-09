@@ -11,6 +11,7 @@ include "auth.inc";
 
 $logfile=$logdir.'/newsportal.log';
 throttle_hits();
+write_access_log();
 
 // register parameters
 $group=_rawurldecode($_REQUEST["group"]);

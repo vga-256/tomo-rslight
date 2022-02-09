@@ -10,8 +10,8 @@
   include "$file_newsportal";
 
   $logfile=$logdir.'/newsportal.log';
-  $accessfile=$logdir.'/access.log';
   throttle_hits();
+  write_access_log();
   if(isset($_COOKIE['mail_name'])) {
     if($userdata = get_user_mail_auth_data($_COOKIE['mail_name'])) {
       $userfile=$spooldir.'/'.strtolower($_COOKIE['mail_name']).'-articleviews.dat';
@@ -58,7 +58,7 @@
   $location = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
   $_SESSION['return_page'] = $location.'#'.$id;
 
-  file_put_contents($accessfile, "\n".format_log_date()." ".$config_name." ".$group.":".$id, FILE_APPEND); 
+//  file_put_contents($accessfile, "\n".format_log_date()." ".$config_name." ".$group.":".$id, FILE_APPEND); 
   if($userdata) {
     $userdata[$group] = time();
     file_put_contents($userfile, serialize($userdata));

@@ -565,6 +565,7 @@ function groups_show($gruppen) {
   global $gl_age,$frame,$spooldir,$CONFIG,$spoolnews;
   if ($gruppen == false) return;
   global $file_thread,$text_groups;
+  write_access_log();
   $c = count($gruppen);
   $acttype="keins";
   echo '<table class="np_groups_table" cellspacing="0"><tr class="np_thread_head"><td width="45px" class="np_thread_head">';
@@ -678,7 +679,7 @@ function groups_show($gruppen) {
     $groupdisplay.=get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
     $groupdisplay.='<table><tr><td>';
     $groupdisplay.='<font class="np_last_posted_date">by: ';
-    $groupdisplay.=create_name_link(mb_decode_mimeheader($lastarticleinfo->name));             
+    $groupdisplay.=create_name_link($lastarticleinfo->name);
     $groupdisplay.='</td></tr></table>';
     }
     $groupdisplay.="\n";
@@ -1597,6 +1598,13 @@ function get_user_mail_auth_data($user) {
     return $userdata;
   }
   return false;
+}
+
+function write_access_log() {
+  global $logdir;
+  $accessfile=$logdir.'/access.log';
+  $currentPageUrl = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
+  file_put_contents($accessfile, "\n".format_log_date()." ".$currentPageUrl, FILE_APPEND);
 }
 
 function get_data_from_msgid($msgid) {
