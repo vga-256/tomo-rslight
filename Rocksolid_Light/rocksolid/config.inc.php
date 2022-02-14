@@ -118,9 +118,8 @@ $thread_show["threadsize"]=true;
 $thread_show["latest"]=true;
 $thread_maxSubject=70;
 $maxfetch=1000;
-// If increasing $maxarticles over 10000 uncomment ini_set('memory_limit') above
-$maxarticles=50000;
-$maxarticles_extra=500000;
+$maxarticles=0;
+$maxarticles_extra=0;
 $age_count=3;
 $age_time[1]=86400; //24 hours
 $age_color[1]="red";
