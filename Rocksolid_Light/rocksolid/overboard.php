@@ -273,18 +273,25 @@ foreach($files as $article) {
       $isfrom = explode("From: ", $articlefrom[0]);    
       $articlefrom[0] = $isfrom[1];
     }
-    $fromoutput = explode("<", html_entity_decode($articlefrom[0]));
-
-// Just an email address?
-    if(strlen($fromoutput[0]) < 2) {
-	preg_match("/\<([^\)]*)\@/", html_entity_decode($articlefrom[0]), $fromaddress);
-	$fromoutput[0] = $fromaddress[1];
-    }
-    if(strpos($fromoutput[0], "(")) {
-	preg_match("/\(([^\)]*)\)/", html_entity_decode($articlefrom[0]), $fromaddress);
-	$fromoutput[0] = $fromaddress[1];
-    }
-
+      $fromline = address_decode($articlefrom[0],"nirgendwo");
+          if (!isset($fromline[0]["host"])) $fromline[0]["host"]="";
+          $name_from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
+          $name_username=$fromline[0]["mailbox"];
+          if (!isset($fromline[0]["personal"])) {
+            $poster_name=$fromline[0]["mailbox"];
+          } else {
+            $poster_name=$fromline[0]["personal"];
+          }
+       if(trim($poster_name) == '') {
+         $fromoutput = explode("<", html_entity_decode($c->name));
+         if(strlen($fromoutput[0]) < 1) {
+           $poster_name = $fromoutput[1];
+         } else {
+           $poster_name = $fromoutput[0];
+         }
+       }
+    $fromoutput[0] = $poster_name;
+    
     if(($results % 2) != 0){
 	$this_output = '<tr class="np_result_line1"><td class="np_result_line1" style="word-wrap:break-word";>';
     } else {
@@ -305,9 +312,9 @@ foreach($files as $article) {
       $poster_name = $fromoutput[0]; 
     }
   if($local_poster) {
-    $this_output.= '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: <i>'.create_name_link(mb_decode_mimeheader($poster_name)).'</i></p>';
+    $this_output.= '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: <i>'.create_name_link(mb_decode_mimeheader($poster_name), $name_from).'</i></p>';
   } else {
-    $this_output.= '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.create_name_link(mb_decode_mimeheader($poster_name)).'</p>'; 
+    $this_output.= '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.create_name_link(mb_decode_mimeheader($poster_name), $name_from).'</p>'; 
   }
     # Try to display useful snippet
 	if($stop=strpos($body, "begin 644 "))

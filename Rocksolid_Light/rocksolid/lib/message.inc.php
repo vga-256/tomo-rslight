@@ -396,7 +396,7 @@ function show_header($head,$group,$local_poster=false) {
 	echo '<i>';
       }
       if ($head->name != "") {
-         echo create_name_link($head->name);
+         echo create_name_link($head->name, $head->from);
       } else {
          if(isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) {
             echo truncate_email($head->from);

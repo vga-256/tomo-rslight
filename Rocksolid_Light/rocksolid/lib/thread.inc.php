@@ -727,7 +727,7 @@ function thread_format_subject($c,$group,$highlightids=false) {
       $started = $fromoutput[0];
     }
     $return.='<div id="datebox">';
-    $return.='<p class=np_posted_date_left>By: '.create_name_link($started).' on <i>'.date("D, j M Y",$newdate).'</i></p>';
+    $return.='<p class=np_posted_date_left>By: '.create_name_link($started, $c->from).' on <i>'.date("D, j M Y",$newdate).'</i></p>';
     $return.='</div>';
   }
   return($return);
@@ -848,29 +848,7 @@ function thread_format_lastmessage($c,$group='') {
     } else {
       $return.='<p class=np_posted_date_left>'.get_date_interval(date("D, j M Y H:i T",$c->date_thread)).'</p>';
     }
-    $return.='<p class=np_posted_date_left>By: '.create_name_link($poster_name).'</p>';
-/*
-  // if the address the anonymous address, only return the name
-  if($c->from==$anonym_address)
-    return $c->name;
-  $return="";
-  if($thread_show["authorlink"])
-    $return .= '<a href="mailto:'.trim($c->from).'">';
-  if (trim($c->name)!="") { 
-    $return .= htmlspecialchars(trim($c->name));
-  } else {
-    if (isset($c->username)) {
-      $s = strpos($c->username,"%");
-      if ($s != false) {
-        $return .= htmlspecialchars(substr($c->username,0,$s));
-      } else {
-        $return .= htmlspecialchars($c->username);
-      }
-    }
-  }
-  if($thread_show["authorlink"])
-    $return .= "</a>";
-*/
+    $return.='<p class=np_posted_date_left>By: '.create_name_link($poster_name, $name_from).'</p>';
   return($return);
 }
 

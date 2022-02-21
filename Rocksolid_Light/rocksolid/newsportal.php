@@ -679,7 +679,7 @@ function groups_show($gruppen) {
     $groupdisplay.=get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
     $groupdisplay.='<table><tr><td>';
     $groupdisplay.='<font class="np_last_posted_date">by: ';
-    $groupdisplay.=create_name_link($lastarticleinfo->name);
+    $groupdisplay.=create_name_link($lastarticleinfo->name, $lastarticleinfo->from);
     $groupdisplay.='</td></tr></table>';
     }
     $groupdisplay.="\n";
@@ -1275,13 +1275,16 @@ function format_log_date() {
     return date('M d H:i:s');
 }
 
-function create_name_link($name) {
+function create_name_link($name, $data=null) {
     global $CONFIG; 
     $name = preg_replace('/\"/', '', $name);
-    if(strpos($name, '...@') !== false && (isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true)) {
-	$return = '<span class="visited">'.substr(htmlspecialchars($name),0,20).'</span>';
+    if($data) {
+      $data = urlencode(base64_encode($data));
+    }
+    if (strpos($name, '...@') !== false && (isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true)) {
+      $return = '<span class="visited">'.substr(htmlspecialchars($name),0,20).'</span>';
     } else {
-    	$return = '<a href="search.php?command=search&searchpoint=Poster&terms='.$name.'"><span class="visited">'.substr(htmlspecialchars($name),0,20).'</span></a>';
+      $return = '<a href="search.php?command=search&searchpoint=Poster&terms='.$name.'&data='.$data.'"><span class="visited">'.substr(htmlspecialchars($name),0,20).'</span></a>';
     }
     return($return);
 }

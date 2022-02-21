@@ -8,6 +8,7 @@ include "newsportal.php";
 throttle_hits();
 
 $snippet_size = 100;
+//echo $_REQUEST['data']." :: ".base64_decode(urldecode($_REQUEST['data']));
 
 if(!isset($_POST['key']) || !password_verify($CONFIG['thissitekey'], $_POST['key'])) {
 include "head.inc"; 
@@ -15,17 +16,7 @@ include "head.inc";
   echo '<h1 class="np_thread_headline">';
   echo '<a href="'.$file_index.'" target='.$frame['menu'].'>'.basename(getcwd()).'</a> / ';
   echo 'search</h1>';
-echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
-// View Latest button
-  if (isset($overboard) && ($overboard == true)) {
-    echo '<td>';
-    echo '<form target="'.$frame['content'].'" action="overboard.php">';
-    echo '<button class="np_button_link" type="submit">'.$text_thread["button_overboard"].'</button>';
-    echo '</form>';
-    echo '</td>';
-  } else {
-//    echo htmlspecialchars($CONFIG['title_full']);
-  }
+  echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
   if(isset($_GET['group'])) {
     $searching = $_GET['group'];
   } else {
@@ -68,6 +59,9 @@ if ($_GET['searchpoint'] == 'Poster') {
     echo '<input type="hidden" name="group" value="'.$_GET['group'].'">';
   }
   echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'], PASSWORD_DEFAULT).'">';
+  if(isset($_GET['data'])) {
+    echo '<input type="hidden" name="data" value="'.$_GET['data'].'">';
+  }
 
 ?>
 </tr>
@@ -158,7 +152,11 @@ $results=0;
   if($_POST['searchpoint'] == 'body') {
     $overview = get_body_search($group, $_POST['terms']);
   } else { 
-    $overview = get_header_search($group, $_POST['terms']);
+    if(isset($_REQUEST['data'])) {
+      $overview = get_header_search($group, base64_decode(urldecode($_REQUEST['data'])));
+    } else {
+      $overview = get_header_search($group, $_POST['terms']);
+    }
   }
   foreach($overview as $overviewline) {
 /* Find section for links */
