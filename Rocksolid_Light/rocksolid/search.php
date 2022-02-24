@@ -8,7 +8,10 @@ include "newsportal.php";
 throttle_hits();
 
 $snippet_size = 100;
-//echo $_REQUEST['data']." :: ".base64_decode(urldecode($_REQUEST['data']));
+
+if(isset($_REQUEST['data']) && $_REQUEST['data'] == '') {
+  unset($_REQUEST['data']);
+}
 
 if(!isset($_POST['key']) || !password_verify($CONFIG['thissitekey'], $_POST['key'])) {
 include "head.inc"; 
@@ -62,25 +65,11 @@ if ($_GET['searchpoint'] == 'Poster') {
   if(isset($_GET['data'])) {
     echo '<input type="hidden" name="data" value="'.$_GET['data'].'">';
   }
-
-?>
-</tr>
-<tr></tr>
-<tr>
-<td><input type="submit" name="Submit" value="Search"></td>
-</tr>
-<tr><td>
-<td></td><td></td>
-</td></tr>
-</table>
-</td>
-</form>
-</tr>
-</table>
-</body>
-</html>
-
-<?php exit(0); } 
+  echo '</tr><tr></tr><tr>';
+  echo '<td><input type="submit" name="Submit" value="Search"></td>';
+  echo '</tr><tr><td><td></td><td></td></table></td></form></tr></table></body></html>';
+  exit(0); 
+} 
 
 if(isset($frames_on) && $frames_on === true) {
 ?>
