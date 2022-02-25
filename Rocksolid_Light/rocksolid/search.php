@@ -226,7 +226,7 @@ $results=0;
            $poster_name = $fromoutput[0];
          }
        }
-    
+       $poster_name = trim(mb_decode_mimeheader($poster_name), " \n\r\t\v\0\"");
 	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.create_name_link($poster_name, $name_from).'</p>';
 		    if($_POST['searchpoint'] == 'body') {
 			$snip = strip_tags(quoted_printable_decode($overviewline['snippet']), '<strong><font><i>');
