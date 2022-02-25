@@ -13,7 +13,7 @@ if(isset($_REQUEST['data']) && $_REQUEST['data'] == '') {
   unset($_REQUEST['data']);
 }
 
-if((!isset($_POST['key']) || !password_verify($CONFIG['thissitekey'], $_POST['key'])) || strlen(trim($_REQUEST['terms'])) < 2) {
+if((!isset($_POST['key']) || !password_verify($CONFIG['thissitekey'], $_POST['key'])) || ((strlen(trim($_REQUEST['terms'])) < 2) && !$_REQUEST['data'])) {
 include "head.inc"; 
 
   echo '<h1 class="np_thread_headline">';
