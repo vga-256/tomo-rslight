@@ -36,7 +36,11 @@ include "head.inc";
   echo '</tr>';
   echo '<tr></tr>';
   echo '<tr>';
-  echo '<td>Search Terms:&nbsp';
+  if(!isset($_REQUEST['data'])) {
+    echo '<td>Search Terms:&nbsp';
+  } else {
+    echo '<td>Search Poster:&nbsp';
+  }
   echo '<input name="terms" type="text" id="terms" value="'.$_GET[terms].'"></td>';
   echo '</tr><tr></tr><tr><td>';
 
@@ -205,25 +209,25 @@ $results=0;
 		    echo '<a href="'.$groupurl.'">'.$overviewline['newsgroup'].'</a>';
 		    echo '</p>';
   
-
-    $articlefrom[0] = $overviewline['name'];
-    $fromoutput = explode("<", html_entity_decode($articlefrom[0]));
-// Just an email address?
-    if(strlen($fromoutput[0]) < 2) {
-        preg_match("/\<([^\)]*)\@/", html_entity_decode($articlefrom[0]), $fromaddress);
-        $fromoutput[0] = $fromaddress[1];
-    }
-    if(strpos($fromoutput[0], "(")) {
-        preg_match("/\(([^\)]*)\)/", html_entity_decode($articlefrom[0]), $fromaddress);
-        $fromoutput[0] = $fromaddress[1];
-    }
-		    if((isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) && (strpos($fromoutput[0], '@') !== false)) {
-      $poster_name = truncate_email($fromoutput[0]);
-    } else {
-      $poster_name = $fromoutput[0];
-    }
-    $poster_name = trim(mb_decode_mimeheader($poster_name), " \n\r\t\v\0\"");
-	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.create_name_link($poster_name).'</p>';
+      $fromline = address_decode($overviewline['name'],"nirgendwo");
+          if (!isset($fromline[0]["host"])) $fromline[0]["host"]="";
+          $name_from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
+          $name_username=$fromline[0]["mailbox"];
+          if (!isset($fromline[0]["personal"])) {
+            $poster_name=$fromline[0]["mailbox"];
+          } else {
+            $poster_name=$fromline[0]["personal"];
+          }
+       if(trim($poster_name) == '') {
+         $fromoutput = explode("<", html_entity_decode($c->name));
+         if(strlen($fromoutput[0]) < 1) {
+           $poster_name = $fromoutput[1];
+         } else {
+           $poster_name = $fromoutput[0];
+         }
+       }
+    
+	   	    echo '<p class=np_ob_posted_date>Posted: '.$newdate.' by: '.create_name_link($poster_name, $name_from).'</p>';
 		    if($_POST['searchpoint'] == 'body') {
 			$snip = strip_tags(quoted_printable_decode($overviewline['snippet']), '<strong><font><i>');
 		    } else {
@@ -234,7 +238,6 @@ $results=0;
 		    echo '</td></tr>';
 		    if($results++ > ($maxdisplay - 2))
                         break;
-//	  }
 }
 
 echo '</table>';
