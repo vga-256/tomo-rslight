@@ -338,11 +338,11 @@ function get_header_search($group, $terms) {
             $stmt = $dbh->prepare("SELECT * FROM $table WHERE newsgroup=:group AND ".$_POST['searchpoint']." like :terms ESCAPE '\' ORDER BY date DESC");
 	    $stmt->bindParam(':group', $group);
             $stmt->bindParam(':terms', $searchterms);
-            $check = "/(\s|\(|<)".trim($searchterms, '\%')."/i";
+            $check = "/([a-z]|[0-9]|\!|#|\$|\%|\&|\'|\*|\+|\-|\/|\=|\?|\^|\_|\"|\`|\{|\||\}|\~|\;)".trim($searchterms, '\%')."/i";
             $stmt->execute();
             while($found = $stmt->fetch()) {
               if(isset($_REQUEST['data']) && ($_REQUEST['searchpoint'] == 'name')) {
-                if(!preg_match($check, $found['name'])) {
+                if(preg_match($check, $found['name'])) {
                   continue;
                 }
               }
