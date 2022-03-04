@@ -366,10 +366,9 @@ foreach($files as $article) {
       }
     }
     $results = 1;
-
+ 
     foreach($new_overboard as $result) {
-
-    if(($results % 2) != 0){
+      if(($results % 2) == 0){
         echo '<tr class="np_result_line1"><td class="np_result_line1" style="word-wrap:break-word";>';
       } else {
         echo '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
@@ -393,19 +392,28 @@ foreach($files as $article) {
 echo '</body></html>';
 
 function show_overboard_header($grouplist) {
-  global $text_thread, $text_article, $file_index, $file_thread;
+  global $text_thread, $text_article, $file_index, $file_thread, $user_time;
 
 if (isset($_GET['thisgroup'])) {
     echo '<h1 class="np_thread_headline">';
     echo '<a href="'.$file_index.'" target='.$frame['menu'].'>'.basename(getcwd()).'</a> / ';
     echo '<a href="'.$file_thread.'?group='.rawurlencode($grouplist[0]).'" target='.$frame[content].'>'.htmlspecialchars(group_displaY_name($grouplist[0])).'</a> / ';
-    echo ' latest</h1>';
+    if (isset($user_time)) {
+      echo ' new messages</h1>';
+    } else {
+      echo ' latest</h1>';
+    }
     echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
 // Refresh button
     echo '<td>';
     echo '<form action="overboard.php">';
     echo '<input type="hidden" name="thisgroup" value="'.$_GET['thisgroup'].'"/>';
-    echo '<button class="np_button_link" type="submit">'.$text_article["refresh"].'</button>';
+    if (isset($user_time)) {
+      echo '<button class="np_button_link" type="submit">overboard</button>';
+    } else {
+      echo '<button class="np_button_link" type="submit">'.$text_article["refresh"].'</button>';
+    }
+    
     echo '</form>';
     echo '</td>';
 // Article List button
