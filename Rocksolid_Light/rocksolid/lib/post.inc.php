@@ -265,7 +265,7 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis=null,$e
     fputs($ns,'Newsgroups: '.$newsgroups."\r\n");
 	$sitekey=password_hash($CONFIG['thissitekey'].$msgid, PASSWORD_DEFAULT);
     fputs($ns,'X-Rslight-Site: '.$sitekey."\r\n");
-    fputs($ns,'X-Rslight-Posting-User: '.hash('sha1', $from.$CONFIG['thissitekey'])."\r\n");
+    fputs($ns,'X-Rslight-Posting-User: '.hash('sha1', $from.$_SERVER['HTTP_HOST'].$CONFIG['thissitekey'])."\r\n");
     if(isset($encryptthis)) {
       fputs($ns,'X-Rslight-To: '.$encryptto."\r\n"); 
       $CONFIG['postfooter']="";
@@ -368,7 +368,7 @@ function message_post_with_attachment($subject,$from,$newsgroups,$ref,$body,$enc
     }
     $sitekey=password_hash($CONFIG['thissitekey'].$msgid, PASSWORD_DEFAULT);
     fputs($ns,'X-Rslight-Site: '.$sitekey."\r\n");
-    fputs($ns,'X-Rslight-Posting-User: '.hash('sha1', $from.$CONFIG['thissitekey'])."\r\n");
+    fputs($ns,'X-Rslight-Posting-User: '.hash('sha1', $from.$_SERVER['HTTP_HOST'].$CONFIG['thissitekey'])."\r\n");
     if(isset($encryptthis))
       fputs($ns,'X-Rslight-To: '.$encryptto."\r\n");    
     fputs($ns,'From: '.$from."\r\n");
