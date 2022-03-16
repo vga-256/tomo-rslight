@@ -42,10 +42,12 @@
   $dbh = null;
   if($CONFIG['article_database'] == '1') {
     $database = $spooldir.'/'.$group.'-articles.db3';
-    $articles_dbh = article_db_open($database);
-    $articles_query = $articles_dbh->prepare('DELETE FROM articles WHERE newsgroup=:newsgroup AND date<:expireme');
-    $articles_query->execute([':newsgroup' => $group, ':expireme' => $expireme]);
-    $articles_dbh = null;
+    if(is_file($database)) {
+      $articles_dbh = article_db_open($database);
+      $articles_query = $articles_dbh->prepare('DELETE FROM articles WHERE newsgroup=:newsgroup AND date<:expireme');
+      $articles_query->execute([':newsgroup' => $group, ':expireme' => $expireme]);
+      $articles_dbh = null;
+    }
   }
     $grouppath = preg_replace('/\./', '/', $group); 
 

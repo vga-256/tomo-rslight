@@ -1592,12 +1592,18 @@ $logfile=$logdir.'/newsportal.log';
 
 function get_user_mail_auth_data($user) {
   global $spooldir;
+  $userdata = array("$user");
   $user = strtolower($user);
   $pkey_config = get_user_config($user, "pkey");
   $pkey_cookie = $_COOKIE['pkey'];
+  if($pkey_config == false || $pkey_cookie == false) {
+    return false;
+  }
   if($pkey_config == $pkey_cookie) {
     $userfile=$spooldir.'/'.$user.'-articleviews.dat';
-    $userdata = unserialize(file_get_contents($userfile));
+    if(is_file($userfile)) {
+      $userdata = unserialize(file_get_contents($userfile));
+    }
     return $userdata;
   }
   return false;
