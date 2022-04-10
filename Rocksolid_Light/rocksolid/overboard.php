@@ -34,7 +34,6 @@
       $userfile=$spooldir.'/'.strtolower($_COOKIE['mail_name']).'-articleviews.dat';
     }
   }
-  
 if(isset($frames_on) && $frames_on === true) {
 ?>
 <script>
@@ -56,6 +55,7 @@ if (isset($_GET['thisgroup'])) {
 }
 include "head.inc";
 $CONFIG = include($config_file);
+$logfile=$logdir.'/overboard.log';
 
 # How many days old should articles be displayed?
 if (isset($_GET['thisgroup'])) {
@@ -64,11 +64,13 @@ if (isset($_GET['thisgroup'])) {
   $article_age = 30;
 }
 
+$version = 1.1;
+
 # How long in seconds to cache results
 $cachetime = 60;
 
 # Maximum number of articles to show
-$maxdisplay = 500;
+$maxdisplay = 1000;
 
 # How many characters of the body to display per article
 $snippetlength = 240;
@@ -79,6 +81,7 @@ $thissite = '.';
 $groupconfig=$file_groups;
 $cachefile=$spooldir."/".$config_name."-overboard.dat";
 $oldest = (time() - (86400 * $article_age));
+$prune = false;
 
 if (isset($_GET['time'])) {
   $user_time = $_GET['time'];
@@ -86,6 +89,8 @@ if (isset($_GET['time'])) {
     if(($user_time > time()) || ($user_time < $oldest)) {
       unset($user_time);
     }
+  } else {
+    unset($user_time);
   }
 }
 
@@ -104,35 +109,28 @@ if (isset($_GET['thisgroup'])) {
 show_overboard_header($grouplist);
 
 $results=0;
-/* If cache is less than ? seconds old, use it */
+
 if(is_file($cachefile)) {
   $stats = stat($cachefile);
-  $oldest = $stats[9];
-  $cached_overboard = unserialize(file_get_contents($cachefile));
-  if(!isset($user_time)) {
-    if($stats[9] > (time() - $cachetime)) {
-      echo '<table cellspacing="0" width="100%" class="np_results_table">';
-      foreach($cached_overboard as $result) {
-        if(($results % 2) != 0){
-          echo '<tr class="np_result_line1"><td class="np_result_line1" style="word-wrap:break-word";>';
-        } else {
-          echo '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
-        }
-        echo $result;
-        $results++;
-      }
-      show_overboard_footer($stats, $results, true);
-      exit(0);
-    }
-  }
+  $this_overboard = unserialize(file_get_contents($cachefile));
+  $cachedate = ($this_overboard['lastmessage'] - 86400);
+  $oldest = $cachedate;
+} else {
+  $cachedate = ($oldest - 86400);
 }
-//ob_start();
+if($this_overboard['version'] !== $version) {
+  unset($this_overboard);
+  unlink($cachefile);
+  $this_overboard['version'] = $version;
+  $cachedate = ($oldest - 86400);
+}
+
 # Iterate through groups
 
 $database = $spooldir.'/articles-overview.db3';
 $table = 'overview';
 $dbh = rslight_db_open($database, $table);
-$query = $dbh->prepare('SELECT * FROM '.$table.' WHERE newsgroup=:findgroup AND date >= '.$oldest.' ORDER BY date DESC LIMIT '.$maxdisplay);
+$query = $dbh->prepare('SELECT * FROM '.$table.' WHERE newsgroup=:findgroup AND date >= '.$cachedate.' ORDER BY date DESC LIMIT '.$maxdisplay);
 $articles = array();
 $db_articles = array();
 foreach($grouplist as $findgroup) {
@@ -176,12 +174,8 @@ if($CONFIG['article_database'] == '1') {
   }
 }
 krsort($files);
-echo '<table cellspacing="0" width="100%" class="np_results_table">';
 
 foreach($files as $article) {
-    if(!isset($cachedate)) {
-      $cachedate = time();
-    }
     if($CONFIG['article_database'] == '1') {
       $data = explode(':', $article);
       $articledata = np_get_db_article($data[1], $data[0], 0);
@@ -189,16 +183,8 @@ foreach($files as $article) {
       $articledata = file_get_contents($article);
     }
     $bodystart = strpos($articledata, $localeol);
-
     $header = substr($articledata, 0, $bodystart);
-    $body = substr($articledata, $bodystart+1);
-    $body = substr($body, strpos($body, PHP_EOL));
 
-	if(($multi = strpos($body, 'Content-Type: text/plain')) != false) {
-		$bodystart = strpos($body, $localeol);
-		$body = substr($body, $bodystart+1);
-	    $body = substr($body, strpos($body, PHP_EOL));
-	}
     # Find group name and article number
     if($CONFIG['article_database'] == '1') {
       $group = $data[0];
@@ -211,35 +197,14 @@ foreach($files as $article) {
       $groupname = substr($group, 0, $findme);
       $articlenumber = substr($group, $findme+1);
     }
-    # Generate link
-    $url = $thissite."/article-flat.php?id=".$articlenumber."&group="._rawurlencode($groupname)."#".$articlenumber;
-    $groupurl = $thissite."/thread.php?group="._rawurlencode($groupname);
-    preg_match('/Subject:.*/', $header, $subject);
-    $output = explode("Subject: ",$subject[0], 2);
-
-    preg_match('/Date:.*/', $header, $articledate);
-    $dateoutput = explode("Date: ",$articledate[0]);
-    $thisdate = strtotime($dateoutput[1]);
-
-    if(($thisdate > time()) || ($thisdate < $oldest)) {
-      continue;
-    }
-    $local_poster=false;
-    if(preg_match('/X-Rslight-Site:.*/', $header, $site)) {
-      $site_match = explode("X-Rslight-Site: ", $site[0]);
-      preg_match('/Message-ID:.*/', $header, $mid);
-      $mid_match = explode("Message-ID: ",$mid[0]);
-      $rslight_site = $site_match[1];
-      $rslight_mid = $mid_match[1];
-      if(password_verify($CONFIG['thissitekey'].$rslight_mid, $rslight_site)) {
-        $local_poster=true;
-      }
-  }
 
     preg_match('/Message-ID:.*/i', $header, $articleid);
     $getid = explode(": ", $articleid[0]);
-    $thismsgid = hash('crc32', serialize($getid[1]));
-
+    $thismsgid = $getid[1];
+    if(isset($this_overboard['msgids'][$thismsgid])) {
+      continue;
+    }
+    
     preg_match('/References:.*/i', $header, $ref);
     $getrefs = explode(': ', $ref[0]);
     $ref = preg_split("/[\s]+/", $getrefs[1]);
@@ -255,141 +220,102 @@ foreach($files as $article) {
     } else {
       $threadref = false;
     }
-    preg_match('/Content-Transfer-Encoding:.*/', $header, $te);
-    $content_transfer_encoding = explode("Content-Transfer-Encoding: ", $te[0]); 
 
-    preg_match('/.*charset=.*/', $header, $te);
-    $content_type = explode("Content-Type: text/plain; charset=", $te[0]);
-    $date_interval = date("D, j M Y H:i T", strtotime($dateoutput[1]));
-    preg_match('/Content-Transfer-Encoding:.*/', $header, $encoding);
-    $this_encoding = explode("Content-Transfer-Encoding: ", $encoding[0]);
-    if(trim($this_encoding[1]) == "base64") {
-      $body=base64_decode($body);
+    $target = get_data_from_msgid($thismsgid);
+    if($target['date'] > time()) {
+      continue;
     }
-    if($CONFIG['article_database'] == '1') {
-      $articlefrom[0] = $data[3];
-    } else { 
-      preg_match('/From:.*/', htmlspecialchars($header), $articlefrom);
-      $isfrom = explode("From: ", $articlefrom[0]);    
-      $articlefrom[0] = $isfrom[1];
+    if($target['date'] > $this_overboard['lastmessage']) {
+      $this_overboard['lastmessage'] = $target['date'];
     }
-      $fromline = address_decode($articlefrom[0],"nirgendwo");
-          if (!isset($fromline[0]["host"])) $fromline[0]["host"]="";
-          $name_from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
-          $name_username=$fromline[0]["mailbox"];
-          if (!isset($fromline[0]["personal"])) {
-            $poster_name=$fromline[0]["mailbox"];
-          } else {
-            $poster_name=$fromline[0]["personal"];
-          }
-       if(trim($poster_name) == '') {
-         $fromoutput = explode("<", html_entity_decode($c->name));
-         if(strlen($fromoutput[0]) < 1) {
-           $poster_name = $fromoutput[1];
-         } else {
-           $poster_name = $fromoutput[0];
-         }
-       }
-    $fromoutput[0] = $poster_name;
-    
-    if(($results % 2) != 0){
-	$this_output = '<tr class="np_result_line1"><td class="np_result_line1" style="word-wrap:break-word";>';
-    } else {
-	$this_output = '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
+    if(!isset($this_overboard['threads'][$target['date']])) {
+      $this_overboard['threads'][$target['date']] = $thismsgid;
+      $this_overboard['msgids'][$thismsgid] = $target;
+      if($threadref) {
+        $this_overboard['threadlink'][$thismsgid] = $threadref;
+      }
+      if($results++ > ($maxdisplay - 2)) {
+  	    break;
+      }
     }
-    $this_output = '<p class=np_ob_subject>';
-    if($threadref) {
-      $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1]).'</a></b><font class="np_ob_group"><a href="article-flat.php?id='.$refid[number].'&group='.rawurlencode($refid[newsgroup]).'#'.$refid[number].'"> (thread)</a></font>'."\r\n"; 
-    } else {
-      $this_output.= '<b><a href="'.$url.'">'.mb_decode_mimeheader($output[1])."</a></b>\r\n";
-    }
-    $this_output.= '</p><p class=np_ob_group>';
-    $this_output.= '<a href="'.$groupurl.'"><span class="visited">'.$groupname.'</span></a>';
-    $this_output.= '</p>';
-    if((isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) && (strpos($fromoutput[0], '@') !== false)) {
-      $poster_name = truncate_email($fromoutput[0]);
-    } else {
-      $poster_name = $fromoutput[0]; 
-    }
-  if($local_poster) {
-    $this_output.= '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: <i>'.create_name_link(mb_decode_mimeheader($poster_name), $name_from).'</i></p>';
-  } else {
-    $this_output.= '<p class=np_ob_posted_date>Posted: '.$date_interval.' by: '.create_name_link(mb_decode_mimeheader($poster_name), $name_from).'</p>'; 
-  }
-    # Try to display useful snippet
-	if($stop=strpos($body, "begin 644 "))
-		$body=substr($body, 0, $stop);
-    $body = quoted_printable_decode($body);
-    $mysnippet = recode_charset($body, $content_type[1], "utf8");
-    if($bodyend=strrpos($mysnippet, "\n---\n")) {
-	$mysnippet = substr($mysnippet, 0, $bodyend);
-    } else {
-	    if($bodyend=strrpos($mysnippet, "\n-- ")) {
-		$mysnippet = substr($mysnippet, 0, $bodyend);
-		} else {
-			if($bodyend=strrpos($mysnippet, "\n.")) {
-				$mysnippet = substr($mysnippet, 0, $bodyend);
-			} 
-		}
-	}
-	$mysnippet = preg_replace('/\n.{0,5}>(.*)/', '', $mysnippet);
-	$snipstart = strpos($mysnippet, ":\n");
-	if(substr_count(trim(substr($mysnippet, 0, $snipstart)), "\n") < 2) {
-		$mysnippet = substr($mysnippet, $snipstart + 1, $snippetlength);
-	} else {
-		$mysnippet = substr($mysnippet, 0, $snippetlength);
-	}
-    $this_output.= "<p class=np_ob_body>".htmlspecialchars($mysnippet, ENT_QUOTES)."</p>\r\n";
-    $this_output.= '</td></tr>';
-    $this_overboard[$thismsgid] = $this_output;
-
-    if($results++ > ($maxdisplay - 2))
-	  break;
 }
-    if(isset($cached_overboard) && isset($this_overboard)) {
-      $new_overboard = array_merge($this_overboard, $cached_overboard);
-      $new_overboard = array_slice($new_overboard, 0, $maxdisplay);
-      if (!isset($user_time)) {
-        file_put_contents($cachefile, serialize($new_overboard));
-      }
-    } elseif(isset($this_overboard)) {
-      $new_overboard = $this_overboard;
-      if (!isset($user_time)) {
-        file_put_contents($cachefile, serialize($new_overboard));
-      }
-    } else {
-      $new_overboard = $cached_overboard;
-    }
-    if(isset($cachedate)) {
-      if (!isset($user_time)) {
-        touch($cachefile, $cachedate);
-      }
-    }
-    $results = 1;
- 
-    foreach($new_overboard as $result) {
-      if(($results % 2) == 0){
-        echo '<tr class="np_result_line1"><td class="np_result_line1" style="word-wrap:break-word";>';
-      } else {
-        echo '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
-      }
-      if (isset($user_time)) {
-        preg_match('/Posted:.*/i', $result, $posted_date);
-        $get_date = explode(': ', $posted_date[0]);
-        $showme = strtotime(trim(substr($get_date[1], 0, -2)));
-        if(($showme > time()) || ($showme < $user_time)) {
-          $results--;
-          break;
+
+file_put_contents($cachefile, serialize($this_overboard));
+if(isset($user_time)) {
+  $oldest = ($user_time - 900);
+} else {
+  $oldest = (time() - (86400 * $article_age));
+}
+$results = display_threads($this_overboard['threads'], $oldest);
+show_overboard_footer(null, $results, null);
+echo '</body></html>';
+expire_overboard($cachefile);
+
+function expire_overboard($cachefile) {
+  global $article_age, $logfile, $config_name, $prune, $this_overboard;
+    if($this_overboard['expire'] < (time() - 86400)) {
+      $prune = true;
+      foreach($this_overboard['msgids'] as $key => $value) {
+        $target = $this_overboard['msgids'][$key];
+        if($target['date'] < (time() - (86400 * $article_age))) {
+          file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Expiring: ".$key, FILE_APPEND);
+          unset($this_overboard['threads'][$target['date']]);
+          unset($this_overboard['msgids'][$key]);
+          unset($this_overboard['threadlink'][$key]);
         }
       }
-      echo $result;
-      if($results++ > ($maxdisplay - 2))
-	    break;
+      $this_overboard['expire'] = time();
     }
+    if($prune) {
+      file_put_contents($cachefile, serialize($this_overboard));
+    }
+}
 
-    show_overboard_footer(null, $results, null);
-
-echo '</body></html>';
+function display_threads($threads, $oldest) {
+    global $thissite, $logfile, $config_name, $snippetlength, $maxdisplay, $prune, $this_overboard;
+    echo '<table cellspacing="0" width="100%" class="np_results_table">';
+    krsort($threads);
+    $results = 0;
+    foreach($threads as $key => $value) {
+      $target = $this_overboard['msgids'][$value];
+      if(!isset($target['msgid'])) {
+        $target = get_data_from_msgid($value);
+      }
+      if($target['date'] < $oldest) {
+          continue;
+      }
+      if($results > $maxdisplay) {
+        $prune = true;
+        unset($this_overboard['threads'][$target['date']]);
+        unset($this_overboard['threadlink'][$value]);
+        file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Pruning: ".$value, FILE_APPEND);
+      }
+      $article = get_db_data_from_msgid($target['msgid'], $target['newsgroup'], 1);
+        $poster = get_poster_name(mb_decode_mimeheader($target['name']));
+        $groupurl = $thissite."/thread.php?group="._rawurlencode($target['newsgroup']);
+        if(($results % 2) == 0){
+          echo '<tr class="np_result_line2"><td class="np_result_line2" style="word-wrap:break-word";>';
+        } else {
+          echo '<tr class="np_result_line1"><td class="np_result_line1" style="word-wrap:break-word";>';
+        }
+        $url = $thissite."/article-flat.php?id=".$target['number']."&group="._rawurlencode($target['newsgroup'])."#".$target['number'];
+        echo '<p class=np_ob_subject>';
+        echo '<b><a href="'.$url.'"><span>'.mb_decode_mimeheader($target['subject']).'</span></a></b>';
+        if(isset($this_overboard['threadlink'][$value])) {
+          $thread = get_data_from_msgid($this_overboard['threadlink'][$value]);
+          echo '<font class="np_ob_group"><a href="article-flat.php?id='.$thread[number].'&group='.rawurlencode($thread[newsgroup]).'#'.$thread[number].'"> (thread)</a></font>';
+        } 
+        echo '</p>';
+        echo '</p><p class=np_ob_group>';
+        echo '<a href="'.$groupurl.'"><span class="visited">'.$target['newsgroup'].'</span></a>';
+        echo '</p>';
+        echo '<p class=np_ob_posted_date>Posted: '.get_date_interval(date("D, j M Y H:i T",$target['date'])).' by: '.create_name_link($poster['name'], $poster['from']).'</p>';
+	    echo htmlentities(substr($article['search_snippet'], 0, $snippetlength));
+	    $results++;
+    }
+    echo "</table>";
+    return($results);
+}
 
 function show_overboard_header($grouplist) {
   global $text_thread, $text_article, $file_index, $file_thread, $user_time;

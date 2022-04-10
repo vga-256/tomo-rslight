@@ -1543,6 +1543,29 @@ function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
     }
 }
 
+function get_poster_name($name) {
+        $fromline = address_decode($name,"nirgendwo");
+        if (!isset($fromline[0]["host"])) $fromline[0]["host"]="";
+          $name_from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
+          $name_username=$fromline[0]["mailbox"];
+          if (!isset($fromline[0]["personal"])) {
+            $poster_name=$fromline[0]["mailbox"];
+          } else {
+            $poster_name=$fromline[0]["personal"];
+          }
+       if(trim($poster_name) == '') {
+         $fromoutput = explode("<", html_entity_decode($name));
+         if(strlen($fromoutput[0]) < 1) {
+           $poster_name = $fromoutput[1];
+         } else {
+           $poster_name = $fromoutput[0];
+         }
+       }
+       $thisposter['name'] = $poster_name;
+       $thisposter['from'] = $name_from;
+       return($thisposter);
+}
+
 function get_config_value($configfile,$request) {
   global $config_dir;
     
@@ -1614,6 +1637,28 @@ function write_access_log() {
   $accessfile=$logdir.'/access.log';
   $currentPageUrl = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
   file_put_contents($accessfile, "\n".format_log_date()." ".$currentPageUrl, FILE_APPEND);
+}
+
+function get_db_data_from_msgid($msgid, $group) {
+      global $spooldir;
+      $database = $spooldir.'/'.$group.'-articles.db3';
+      if(!is_file($database)) {
+        return false;
+      }
+      $articles_dbh = rslight_db_open($database);
+      $articles_query = $articles_dbh->prepare('SELECT * FROM articles WHERE msgid=:messageid');
+      $articles_query->execute(['messageid' => $msgid]);
+      $found = 0;
+      while ($row = $articles_query->fetch()) {
+        $found = 1;
+        break;
+      }
+      $dbh = null;
+      if($found) {
+        return $row;
+      } else {
+        return false;
+      }
 }
 
 function get_data_from_msgid($msgid) {
