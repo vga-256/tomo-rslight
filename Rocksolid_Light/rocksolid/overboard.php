@@ -258,7 +258,7 @@ function expire_overboard($cachefile) {
       foreach($this_overboard['msgids'] as $key => $value) {
         $target = $this_overboard['msgids'][$key];
         if($target['date'] < (time() - (86400 * $article_age))) {
-          file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Expiring: ".$key, FILE_APPEND);
+          file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Expiring: ".$target['newsgroup'].":".$target['number'], FILE_APPEND);
           unset($this_overboard['threads'][$target['date']]);
           unset($this_overboard['msgids'][$key]);
           unset($this_overboard['threadlink'][$key]);
@@ -288,7 +288,7 @@ function display_threads($threads, $oldest) {
         $prune = true;
         unset($this_overboard['threads'][$target['date']]);
         unset($this_overboard['threadlink'][$value]);
-        file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Pruning: ".$value, FILE_APPEND);
+        file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Pruning: ".$target['newsgroup'].":".$target['number'], FILE_APPEND);
       }
       $article = get_db_data_from_msgid($target['msgid'], $target['newsgroup'], 1);
         $poster = get_poster_name(mb_decode_mimeheader($target['name']));
