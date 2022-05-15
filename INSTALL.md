@@ -12,6 +12,7 @@ openssl are required.
 php7.x-sqlite3 (php must support PDO, probably 5.1+ but all testing is on 7.x).
 phpmailer is required if email confirmation is to be used.
 compface and php-gd for X-Face support
+php-xml to work with RSS feeds
 These are the names for Debian packages. Other distributions should 
 also provide these in some way.
 
