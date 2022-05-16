@@ -40,6 +40,12 @@
   @chown($webtmp, $CONFIG['webserver_user']);
   @chgrp($webtmp, $CONFIG['webserver_user']);
 
+# Fix this. It shouldn't be necessary
+  $overview = $spooldir.'/articles-overview.db3';
+  touch($overview);
+  @chown($overview, $CONFIG['webserver_user']);
+  @chgrp($overview, $CONFIG['webserver_user']);
+
 /* Change to non root user */
   $uinfo=posix_getpwnam($CONFIG['webserver_user']);
   change_identity($uinfo["uid"],$uinfo["gid"]);

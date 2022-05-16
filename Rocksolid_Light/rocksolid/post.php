@@ -170,7 +170,7 @@ if ($type=="new") {
 if ($type=="post") {
   $show=0;
   if (!$CONFIG['synchronet']) {
-    if (check_bbs_auth(trim($name), $userpass)==FALSE) {
+    if (check_bbs_auth(trim($name), $userpass) == FALSE) {
       $type="retry";
       $error=$text_error["auth_error"];
     }
