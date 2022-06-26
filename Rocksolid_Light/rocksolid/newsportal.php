@@ -350,11 +350,11 @@ function get_section_by_group($groupname) {
       $glfp=fopen($config_dir.$menuitem[0]."/groups.txt", 'r');
       while($gl=fgets($glfp)) {
         $group_name = preg_split("/( |\t)/", $gl, 2);
-        if(stripos(trim($groupname), trim($group_name[0])) !== false) {
-          fclose($glfp);
-	  $section=$menuitem[0];
-	  fclose($glfp);
-	  return $section;
+		if(strtolower(trim($groupname)) == strtolower(trim($group_name[0]))) {
+	      fclose($glfp);
+       	  $section=$menuitem[0];
+	      fclose($glfp);
+	      return $section;
         }
       }
     }
