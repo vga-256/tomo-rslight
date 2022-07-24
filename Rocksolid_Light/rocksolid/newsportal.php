@@ -338,6 +338,9 @@ function testGroup($groupname) {
 function get_section_by_group($groupname) {
     global $CONFIG, $config_dir;
     $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+// Get first group in Newsgroups
+    $groupname = preg_split("/( |\,)/", $groupname, 2);
+    $groupname = $groupname[0];
     foreach($menulist as $menu) {
       if($menu[0] == '#') {
         continue;
