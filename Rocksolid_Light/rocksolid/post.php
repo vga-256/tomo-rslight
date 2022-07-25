@@ -70,6 +70,7 @@ if($testgroup) {
 } else {
   $newsgroups=$thisgroup;
 }
+$returngroup = preg_split("/( |\,)/", $newsgroups, 2);
   echo '<h1 class="np_thread_headline">';
   echo '<a href="'.$file_index.'" target='.$frame['menu'].'>'.basename(getcwd()).'</a> / ';
   echo '<a href="'.$file_thread.'?group='.rawurlencode($thisgroup).'" target='.$frame["content"].'>'.htmlspecialchars(group_display_name($thisgroup)).'</a>';
@@ -224,7 +225,6 @@ if ($type=="post") {
 	    if($postsremaining < 1) {
 	      $wait = check_rate_limit($name,0,1);
 	      echo 'You have reached the limit of '.$CONFIG['rate_limit'].' posts per hour.<br />Please wait '.round($wait).' minutes before posting again.';
-	      $returngroup=explode(',',$newsgroups);
 	      echo '<p><a href="'.$file_thread.'?group='.urlencode($returngroup[0]).'">'.$text_post["button_back"].'</a> '.$text_post["button_back2"].' '.group_display_name($returngroup[0]).'</p>';
 	      return;	
 	    }
@@ -245,9 +245,6 @@ if ($type=="post") {
           (substr($message,0,7)=="441 435")) {
 	  echo '<h1 class="np_post_headline"><'.$text_post["message_posted"].'></h1>';
 	  echo '<p>'.$text_post["message_posted2"].'</p>';
-// This returns to multiple groups if crossposting, which does not work. FIXME
-// Try to return to just the first group in the list
-     $returngroup=explode(',',$newsgroups); 
      if(isset($CONFIG['auto_return']) && ($CONFIG['auto_return'] == true)) {
   	echo '<meta http-equiv="refresh" content="0;url='.$file_thread.'?group='.urlencode($returngroup[0]).'"';
      }
@@ -262,8 +259,11 @@ if ($type=="post") {
 //     echo '<p><a href="'.$file_thread.'?group='.urlencode($returngroup[0]).'">'.$text_post["button_back"].'</a> '.$text_post["button_back2"].' '.group_display_name($returngroup[0]).'</p>';
      if(isset($_REQUEST['returngroup']) && $_REQUEST['returngroup'] !== '') {
        echo '<p><a href="'.$file_thread.'?group='.$_REQUEST['returngroup'].'">Your post will appear in '.group_display_name($_REQUEST['returngroup']).'</a></p>';
+	 }
+	 if(isset($_SESSION['return_page'])) {
+	   echo '<p><a href="'.$_SESSION['return_page'].'">Back to Previous Page</a></p>';
      } else {
-       echo '<p><a href="'.$_SESSION['return_page'].'">Back to Previous Page</a></p>';
+       echo '<p><a href="'.$file_thread.'?group='.$_REQUEST['returngroup'].'">Back</a></p>';
      }
       } else {
         // article not accepted by the newsserver
