@@ -92,8 +92,7 @@ function delete_message($messageid, $group) {
       $section="";
       while($gl=fgets($glfp)) {
         $group_name = preg_split("/( |\t)/", $gl, 2);
-		  if(strtolower(trim($group)) == strtolower(trim($group_name[0]))) {
-//        if(stripos(trim($group_name[0]), $group) !== false) {
+	if(strtolower(trim($group)) == strtolower(trim($group_name[0]))) {
           $config_name=$menuitem[0];
 	  file_put_contents($logfile, "\n".format_log_date()." ".$config_name." FOUND: ".$messageid." IN: ".$config_name.'/'.$group, FILE_APPEND);
           break 2;
@@ -106,7 +105,7 @@ function delete_message($messageid, $group) {
   $query = $dbh->prepare('DELETE FROM overview WHERE msgid=:messageid');
   $query->execute(['messageid' => $messageid]);
   $dbh = null; 
-  thread_cache_removearticle($group,$messageid);
+//  thread_cache_removearticle($group,$messageid);
  }
   if($CONFIG['article_database'] == '1') {
     $database = $spooldir.'/'.$group.'-articles.db3';
