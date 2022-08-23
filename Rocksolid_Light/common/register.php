@@ -257,7 +257,7 @@ $mail->Username   = $mailer['username'];
 $mail->Password   = $mailer['password'];;
 $mail->SMTPSecure = 'tls';
 
-$mail->setFrom('no-reply@'.$mailer['host'], 'no-reply');
+$mail->setFrom($mailer['username'].'@'.$mailer['host'], $mailer['username']);
 $mail->addAddress($user_email);
 
 $mail->Subject = "Confirmation code for ".$_SERVER['HTTP_HOST']; 
