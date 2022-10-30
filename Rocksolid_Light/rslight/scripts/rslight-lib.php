@@ -1044,10 +1044,12 @@ function get_list($mode, $msgsock) {
     return $msg.".\r\n";
   }
 }
+/*
 function encode_subject($line) {
         $newstring=mb_encode_mimeheader(quoted_printable_decode($line));
         return $newstring;
 }
+*/
 
 function insert_article($section,$nntp_group,$filename,$subject_i,$from_i,$article_date,
 $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i,$body) {
