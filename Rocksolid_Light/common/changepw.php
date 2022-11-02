@@ -3,6 +3,16 @@
 include "config.inc.php";
 include "head.inc";
 
+$keyfile = $spooldir.'/keys.dat';
+$keys = unserialize(file_get_contents($keyfile));
+
+if((password_verify($keys[0],$_POST['key'])) || (password_verify($keys[1],$_POST['key']))) {
+  $auth_ok = true;
+} else {
+  $auth_ok = false;
+  unset($_POST['command']);
+}
+
 if(!isset($_POST['command']) || $_POST['command'] !== 'Change') {
 
   echo '<table border="0" align="center" cellpadding="0" cellspacing="1">';
@@ -25,6 +35,7 @@ if(!isset($_POST['command']) || $_POST['command'] !== 'Change') {
   echo '</tr><tr>';
   echo '<td><input name="command" type="hidden" id="command" value="Change" readonly="readonly"></td>';
   echo '</tr><tr>';
+  echo '<input name="key" type="hidden" value="'.password_hash($keys[0], PASSWORD_DEFAULT).'">';
   echo '<td>&nbsp;</td>';
   echo '<td><input type="submit" name="Submit" value="Change Password"></td>';
   echo '</tr></td></form></tr></table>';
