@@ -300,10 +300,14 @@ $mail->Username   = $mailer['username'];
 $mail->Password   = $mailer['password'];;
 $mail->SMTPSecure = 'tls';
 
-$mail->setFrom($mailer['username'].'@'.$mailer['host'], $mailer['username']);
+$mail->setFrom($mail_user.'@'.$mail_domain, $mail_name);
 $mail->addAddress($user_email);
 
 $mail->Subject = "Confirmation code for ".$_SERVER['HTTP_HOST']; 
+
+foreach($mail_custom_header as $key => $value) {
+  $mail->addCustomHeader($key, $value);
+}
 
 $mycode = create_code($username);
 $msg="A request to create an account on ".$_SERVER['HTTP_HOST'];
