@@ -9,6 +9,9 @@ $keys = unserialize(file_get_contents($keyfile));
 $email_registry = $spooldir.'/email_registry.dat';
 unlink($_POST['captchaimage']);
 
+$username_allowed_chars = "a-zA-Z0-9_.";
+$clean_username = preg_replace("/[^$username_allowed_chars]/", "", $_POST['username']);
+
 if((password_verify($keys[0],$_POST['key'])) || (password_verify($keys[1],$_POST['key']))) {
   $auth_ok = true;
 } else {
@@ -169,6 +172,16 @@ if (empty($_POST['username'])) {
   echo '<form name="return1" method="post" action="register.php">';
   echo '<input name="user_email" type="hidden" id="user_email" value="'.$user_email.'" readonly="readonly">';
   echo '<input type="submit" name="Submit" value="Back"></td>';
+  exit(2);
+}
+
+if($clean_username != $_POST['username']) {
+  echo "The username entered contains disallowed characters.<br />";
+  echo "Allowed characters:<br />letters, numbers, underscore, hypen, full stop<br /><br />";
+  echo '<form name="return1" method="post" action="register.php">';
+  echo '<input name="username" type="hidden" id="username" value="'.$clean_username.'" readonly="readonly">';
+  echo '<input name="user_email" type="hidden" id="user_email" value="'.$user_email.'" readonly="readonly">';
+  echo '<input type="submit" name="Submit" value="Please try again"></td>';
   exit(2);
 }
 
