@@ -185,6 +185,25 @@ if($clean_username != $_POST['username']) {
   exit(2);
 }
 
+if(filter_var($user_email, FILTER_VALIDATE_EMAIL) == false) {
+  echo "Email address format appears incorrect\n";
+  echo '<form name="return1" method="post" action="register.php">';
+  echo '<input name="username" type="hidden" id="username" value="'.$username.'" readonly="readonly">';
+  echo '<input type="submit" name="Submit" value="Back"></td>';
+    exit(2);
+  }
+
+if($CONFIG['verify_email']) {
+  $user_domain = explode('@', $user_email);
+  if((checkdnsrr($user_domain[1].'.', "MX") == false) && (checkdnsrr($user_domain[1].'.', "A") == false)) {
+    echo "Email domain appears to not exist\n";
+    echo '<form name="return1" method="post" action="register.php">';
+    echo '<input name="username" type="hidden" id="username" value="'.$username.'" readonly="readonly">';
+    echo '<input type="submit" name="Submit" value="Back"></td>';
+      exit(2);
+  }
+}
+  
 if (($_POST['password'] !== $_POST['password2']) || $_POST['password'] == '') {
   echo "Your passwords entered do not match\r\n";
   echo '<form name="return1" method="post" action="register.php">';
