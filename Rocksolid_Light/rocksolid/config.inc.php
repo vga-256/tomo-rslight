@@ -2,6 +2,8 @@
 
 include "../common/config.inc.php";
 
+$rslight_version = "0.7.2";
+
 ini_set('memory_limit','1536M');
 
 /* Config file name should be the basename
@@ -30,7 +32,9 @@ $CONFIG = include($config_file);
 $logdir=$spooldir.'/log';
 $lockdir=$spooldir.'/lock';
 
-ini_set('error_reporting', E_ERROR );
+if(!file_exists($config_dir.'/debug')) {
+  ini_set('error_reporting', E_ERROR );
+}
 
 /* Permanent configuration changes */
 @mkdir($logdir,0755,'recursive');
