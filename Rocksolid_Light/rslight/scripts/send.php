@@ -20,7 +20,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-set_time_limit (900);
+set_time_limit(900);
 
 include "config.inc.php";
 include ("$file_newsportal");
