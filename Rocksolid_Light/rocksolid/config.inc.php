@@ -2,8 +2,6 @@
 
 include "../common/config.inc.php";
 
-$rslight_version = "0.7.2";
-
 ini_set('memory_limit','1536M');
 
 /* Config file name should be the basename
