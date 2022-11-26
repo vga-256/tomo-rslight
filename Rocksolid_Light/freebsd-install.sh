@@ -1,5 +1,6 @@
 #!/usr/local/bin/bash
 
+read -r version < "./version.txt"
 webroot="/usr/local/www/html"
 spoolpath="/var/spool/rslight"
 configpath="/etc/rslight"
@@ -101,6 +102,7 @@ echo "done"
 
 echo
 echo -n "Applying configuration..."
+sed -i '' -e "s|<version>|$version|" $webroot/common/config.inc.php
 sed -i '' -e "s|<spooldir>|$spoolpath/|" $webroot/common/config.inc.php
 sed -i '' -e "s|<config_dir>|$configpath/|" $webroot/common/config.inc.php
 sed -i '' -e "s|<webserver_user>|$username|" $configpath/rslight.inc.php

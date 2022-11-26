@@ -1,11 +1,11 @@
 <?php
 
 /* Version */
-$rslight_version = "0.7.2";
+$rslight_version = "<version>";
 
 /* Location of configuration and spool */
-$config_dir = "/etc/rslight/";
-$spooldir = "/var/spool/rslight/";
+$config_dir = "<config_dir>";
+$spooldir = "<spooldir>";
 
 if(isset($config_name) && file_exists($config_dir.$config_name.'.inc.php')) {
   $config_file = $config_dir.$config_name.'.inc.php';
