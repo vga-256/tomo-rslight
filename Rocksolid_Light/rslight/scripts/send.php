@@ -35,8 +35,15 @@ if (posix_getsid($pid) === false || !is_file($lockfile)) {
    print "Starting Send...\n";
    file_put_contents($lockfile, getmypid()); // create lockfile
 } else {
-   print "Send currently running\n";
-   exit;
+    if((time() - filetime($lockfile)) > 960) {
+        posix_kill($pid, 9);
+        unlink($lockfile);
+        print "Killing and restarting Send...\n";
+        file_put_contents($lockfile, getmypid()); // create lockfile
+    } else {
+       print "Send currently running\n";
+       exit;
+    }
 }
 $ns=nntp2_open($CONFIG['remote_server'], $CONFIG['remote_port']);
 if($ns == false) {
