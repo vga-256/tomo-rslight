@@ -32,18 +32,13 @@ $logfile=$logdir.'/spoolnews.log';
 $lockfile = $lockdir . '/rslight-send.lock';
 $pid = file_get_contents($lockfile);
 if (posix_getsid($pid) === false || !is_file($lockfile)) {
+   file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Starting Send...", FILE_APPEND);    
    print "Starting Send...\n";
    file_put_contents($lockfile, getmypid()); // create lockfile
 } else {
-    if((time() - filetime($lockfile)) > 960) {
-        posix_kill($pid, 9);
-        unlink($lockfile);
-        print "Killing and restarting Send...\n";
-        file_put_contents($lockfile, getmypid()); // create lockfile
-    } else {
-       print "Send currently running\n";
+        file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Send currently running...", FILE_APPEND);
+        print "Send currently running\n";
        exit;
-    }
 }
 $ns=nntp2_open($CONFIG['remote_server'], $CONFIG['remote_port']);
 if($ns == false) {
@@ -54,19 +49,24 @@ echo "\nPosting articles\r\n";
 post_articles($ns, $spooldir);
 nntp_close($ns);
 unlink($lockfile);
+file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Exiting Send...", FILE_APPEND);
 echo "\nSend Done\r\n";
 
 function post_articles($ns, $spooldir) {
   global $logfile,$config_name;
   if(!is_dir($spooldir."/".$config_name."/outgoing/")) {
-    return "No messages to send\r\n";
+      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." No messages to send", FILE_APPEND);
+      return "No messages to send\r\n";
   }
   $outgoing_dir = $spooldir."/".$config_name."/outgoing/";
+  $failed_dir = $outgoing_dir.'/failed';
+  @mkdir($failed_dir);
   $messages = scandir($outgoing_dir);
   foreach($messages as $message) {
     if(!is_file($outgoing_dir.$message)) {
       continue;
     }
+    file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Sending: ".$outgoing_dir.$message, FILE_APPEND);
     echo "Sending: ".$outgoing_dir.$message."\r\n";
     fputs($ns, "MODE READER\r\n");
     $response = line_read($ns);
@@ -92,6 +92,7 @@ function post_articles($ns, $spooldir) {
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Posted: ".$message.": ".$response, FILE_APPEND);
     } else {
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Failed to POST: ".$message.": ".$response, FILE_APPEND);
+      rename($outgoing_dir.$message, $failed_dir.'/'.$message);
       continue;
     }
   }
