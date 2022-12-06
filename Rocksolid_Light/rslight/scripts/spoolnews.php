@@ -23,6 +23,8 @@
 include "config.inc.php";
 include ("$file_newsportal");
 
+set_time_limit(900);
+
 $remote_groupfile=$spooldir."/".$config_name."/".$CONFIG['remote_server'].":".$CONFIG['remote_port'].".txt";
 $file_groups=$config_path."groups.txt";
 $local_groupfile=$spooldir."/".$config_name."/local_groups.txt";
@@ -193,6 +195,7 @@ function get_articles($ns, $group) {
   # Pull articles and save them in our spool
   @mkdir($grouppath,0755,'recursive');
   $i=0;
+  #nsfail=0;
   while ($article <= $detail[3]) {
       if(!is_numeric($article)) {
 	file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG This should show server group:article number: ".$CONFIG['remote_server']." ".$group.":".$article, FILE_APPEND);
@@ -311,7 +314,12 @@ function get_articles($ns, $group) {
 	 file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Lost connection to ".$CONFIG['remote_server'].":".$CONFIG['remote_port']." retrieving article ".$article, FILE_APPEND);
 	 @fclose($articleHandle);
 	 unlink($grouppath."/".$local);
-	 continue;
+	 $nsfail++;
+	 if($nsfail > 3){
+	     break;
+	 } else {
+	   continue;
+	 }
        }
        $response=str_replace("\n","",str_replace("\r","",$response));
       }
