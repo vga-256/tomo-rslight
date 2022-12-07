@@ -195,7 +195,7 @@ function get_articles($ns, $group) {
   # Pull articles and save them in our spool
   @mkdir($grouppath,0755,'recursive');
   $i=0;
-  #nsfail=0;
+  $nsfail=0;
   while ($article <= $detail[3]) {
       if(!is_numeric($article)) {
 	file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG This should show server group:article number: ".$CONFIG['remote_server']." ".$group.":".$article, FILE_APPEND);
