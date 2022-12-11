@@ -34,20 +34,23 @@
   exec($CONFIG['php_exec']." ".$config_dir."/scripts/count_users.php");
   echo "Updated user count\n";
 
+  $uinfo=posix_getpwnam($CONFIG['webserver_user']);
   $cwd = getcwd();
   $webtmp = preg_replace('/spoolnews/','tmp',$cwd);
   @mkdir($webtmp,0755,'recursive');
-  @chown($webtmp, $CONFIG['webserver_user']);
-  @chgrp($webtmp, $CONFIG['webserver_user']);
+  @chown($webtmp, $uinfo["uid"]);
+  @chgrp($webtmp, $uinfo["gid"]);
+  @mkdir($ssldir,0755);
+  @chown($ssldir, $uinfo["uid"]);
+  @chgrp($ssldir, $uinfo["gid"]);
 
 # Fix this. It shouldn't be necessary
   $overview = $spooldir.'/articles-overview.db3';
   touch($overview);
-  @chown($overview, $CONFIG['webserver_user']);
-  @chgrp($overview, $CONFIG['webserver_user']);
+  @chown($overview, $uinfo["uid"]);
+  @chgrp($overview, $uinfo["gid"]);
 
 /* Change to non root user */
-  $uinfo=posix_getpwnam($CONFIG['webserver_user']);
   change_identity($uinfo["uid"],$uinfo["gid"]);
 /* Everything below runs as $CONFIG['webserver_user'] */
 

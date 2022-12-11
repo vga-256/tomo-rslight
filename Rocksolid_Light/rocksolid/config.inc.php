@@ -29,6 +29,7 @@ $CONFIG = include($config_file);
 
 $logdir=$spooldir.'/log';
 $lockdir=$spooldir.'/lock';
+$ssldir=$config_dir.'/ssl';
 
 if(!file_exists($config_dir.'/debug')) {
   ini_set('error_reporting', E_ERROR );
