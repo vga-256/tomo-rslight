@@ -14,6 +14,7 @@ return [
   'enable_all_networks' => '1',
   'server_auth_user' => 'localuser',
   'server_auth_pass' => '<local_password>',
+  'site_shortname' => '',
   'rslight_title' => 'New Rocksolid Light Install',
   'title_full' => 'rslight',
   'hide_email' => '1',
