@@ -1,6 +1,12 @@
 <?php
 echo '<center>';
 echo '<font size="1em">';
+$pubkeyfile = getcwd().'/../tmp/pubkey.pem';
+if(is_file($pubkeyfile)) {
+    echo 'sitename: '.$CONFIG[site_shortname].'&nbsp;&nbsp;';
+    echo '<a href="/tmp/pubkey.pem" target=_blank>public key</a>';
+    echo '<br />';
+}
 echo '<i>rocksolid light</i> '.$rslight_version;
 echo '<br />';
 echo '<a href="https://github.com/novabbs/rocksolid-light" target=_blank>clearnet</a>';
