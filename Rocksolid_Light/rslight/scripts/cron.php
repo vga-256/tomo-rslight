@@ -1,6 +1,7 @@
 <?php
 // This file runs maintenance scripts and should be executed by cron regularly
   include "config.inc.php";
+  include $config_dir."/scripts/rslight-lib.php";
 
   $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
@@ -36,7 +37,8 @@
 
   $uinfo=posix_getpwnam($CONFIG['webserver_user']);
   $cwd = getcwd();
-  $webtmp = preg_replace('/spoolnews/','tmp',$cwd);
+  $webtmp = preg_replace('/spoolnews/','tmp/',$cwd);
+
   @mkdir($webtmp,0755,'recursive');
   @chown($webtmp, $uinfo["uid"]);
   @chgrp($webtmp, $uinfo["gid"]);
@@ -57,8 +59,14 @@
   @mkdir($logdir,0755,'recursive');
   @mkdir($lockdir,0755,'recursive');
   
-  if(!is_file($webtmp.'/pubkey.pem') && is_file($config_dir.'/ssl/pubkey.pem')) {
-      copy($config_dir.'/ssl/pubkey.pem', $webtmp.'/pubkey.pem');
+  $pemfile = $ssldir.'/server.pem';
+  $pubkeyfile = $ssldir.'/pubkey.pem';
+  if((!is_file($pemfile)) || (!is_file($pubkeyfile))) {
+      create_certificate($pemfile, $pubkeyfile);
+  }
+  if(!is_file($webtmp.'/pubkey.txt') && is_file($config_dir.'/ssl/pubkey.pem')) {
+      echo 'Writing pubkey.txt to: '.$webtmp."/pubkey.txt\n";
+      copy($config_dir.'/ssl/pubkey.pem', $webtmp.'/pubkey.txt');
   }
 
 if(isset($CONFIG['enable_nocem']) && $CONFIG['enable_nocem'] == true) {
