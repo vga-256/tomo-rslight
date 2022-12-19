@@ -382,7 +382,7 @@ if (isset($_GET['thisgroup'])) {
 }
 
 function show_overboard_footer($stats, $results, $iscached) {
-    global $user_time,$rslight_version;
+    global $CONFIG,$user_time,$rslight_version;
     if(isset($user_time)) {
       $recent = 'new';
     } else {
