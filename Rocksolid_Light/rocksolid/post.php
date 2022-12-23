@@ -37,6 +37,9 @@ $CONFIG = include($config_file);
 @$abspeichern=$_REQUEST["abspeichern"];
 @$references=$_REQUEST["references"];
 @$id=$_REQUEST["id"];
+
+$name = trim($name);
+
 if (!isset($group)) $group=$newsgroups;
 
 include "auth.inc";
