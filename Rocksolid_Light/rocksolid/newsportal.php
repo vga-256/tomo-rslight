@@ -903,9 +903,9 @@ function recode_charset($text,$source=false,$dest=false) {
   global $iconv_enable,$www_charset;
   if($dest==false)
     $dest=$www_charset;
-  if(($iconv_enable) && ($source!=false)) {
+  if($iconv_enable) {
     $return=iconv($source,
-                 $dest."//TRANSLIT",$text);
+                 $dest."//TRANSLIT//IGNORE",$text);
     if($return!="")
       return $return;
     else
