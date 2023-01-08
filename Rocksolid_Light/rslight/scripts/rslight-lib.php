@@ -1212,6 +1212,52 @@ function get_article_list($thisgroup) {
   return(array_unique($ok_article));
 }
 
+function create_node_ssl_cert($pemfile) {
+    global $CONFIG, $ssldir, $webtmp, $config_dir;
+    include $config_dir.'/letsencrypt.inc.php';
+    $pubkeyfile = $ssldir.'/pubkey.pem';
+    
+    if((is_file($pemfile)) && (is_file($pubkeyfile)) && (is_file($webtmp.'/pubkey.txt'))) {
+      return;
+    }
+/* Use letsencrypt */    
+    if((isset($letsencrypt['server.pem'])) && (isset($letsencrypt['pubkey.pem']))) {
+        file_put_contents($pemfile, $letsencrypt['server.pem'].$letsencrypt['privkey']);
+        file_put_contents($pubkeyfile, $letsencrypt['pubkey.pem']);
+        copy($pubkeyfile, $webtmp.'/pubkey.txt');
+        return;
+    }
+/* Create self signed cert */
+    $certificateData = array(
+        "countryName" => "US",
+        "stateOrProvinceName" => "New York",
+        "localityName" => "New York City",
+        "organizationName" => "Rocksolid",
+        "organizationalUnitName" => "Rocksolid Light",
+        "commonName" => $CONFIG['organization'],
+        "emailAddress" => "rocksolid@example.com"
+    );
+    
+    // Generate certificate
+    $privateKey = openssl_pkey_new();
+    $certificate = openssl_csr_new($certificateData, $privateKey);
+    $certificate = openssl_csr_sign($certificate, null, $privateKey, 365);
+    
+    // Generate PEM file
+    $pem_passphrase = null; // empty for no passphrase
+    $pem = array();
+    openssl_x509_export($certificate, $pem[0]);
+    openssl_pkey_export($privateKey, $pem[1], $pem_passphrase);
+    $pem = implode($pem);
+    
+    $pubkey=openssl_pkey_get_details($privateKey);
+    
+    // Save PEM file
+    file_put_contents($pemfile, $pem);
+    file_put_contents($pubkeyfile, $pubkey['key']);
+    copy($pubkeyfile, $webtmp.'/pubkey.txt');
+}
+
 function create_certificate($pemfile, $pubkeyfile) {
     global $CONFIG;
     $certificateData = array(

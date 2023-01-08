@@ -73,11 +73,10 @@ $config_path,$groupconfig,$workpath,$path,$spooldir,$nntp_group,$auth_ok;
 	$auth_ok = 0;
 	$user = "";
 	$pass = "";
+	
 	$pemfile = $ssldir.'/server.pem';
-	$pubkeyfile = $ssldir.'/pubkey.pem';
-	if((!is_file($pemfile)) || (!is_file($pubkeyfile))) {
-	    create_certificate($pemfile, $pubkeyfile);
-	}	
+	create_node_ssl_cert($pemfile);
+
 	$context = stream_context_create();
 	stream_context_set_option($context, 'ssl', 'local_cert', $pemfile);
 	stream_context_set_option($context, 'ssl', 'allow_self_signed', true);

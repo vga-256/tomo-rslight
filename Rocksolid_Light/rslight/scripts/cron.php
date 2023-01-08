@@ -46,7 +46,9 @@
   @chown($ssldir, $uinfo["uid"]);
   @chgrp($ssldir, $uinfo["gid"]);
 
-# Fix this. It shouldn't be necessary
+  $pemfile = $ssldir.'/server.pem';
+  create_node_ssl_cert($pemfile);
+
   $overview = $spooldir.'/articles-overview.db3';
   touch($overview);
   @chown($overview, $uinfo["uid"]);
@@ -59,16 +61,6 @@
   @mkdir($logdir,0755,'recursive');
   @mkdir($lockdir,0755,'recursive');
   
-  $pemfile = $ssldir.'/server.pem';
-  $pubkeyfile = $ssldir.'/pubkey.pem';
-  if((!is_file($pemfile)) || (!is_file($pubkeyfile))) {
-      create_certificate($pemfile, $pubkeyfile);
-  }
-  if(!is_file($webtmp.'/pubkey.txt') && is_file($config_dir.'/ssl/pubkey.pem')) {
-      echo 'Writing pubkey.txt to: '.$webtmp."/pubkey.txt\n";
-      copy($config_dir.'/ssl/pubkey.pem', $webtmp.'/pubkey.txt');
-  }
-
 if(isset($CONFIG['enable_nocem']) && $CONFIG['enable_nocem'] == true) {
   @mkdir($spooldir."nocem",0755,'recursive');
   exec($CONFIG['php_exec']." ".$config_dir."/scripts/nocem.php");
