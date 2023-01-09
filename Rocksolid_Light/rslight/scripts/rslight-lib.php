@@ -1217,15 +1217,23 @@ function create_node_ssl_cert($pemfile) {
     include $config_dir.'/letsencrypt.inc.php';
     $uinfo=posix_getpwnam($CONFIG['webserver_user']);
     $pubkeyfile = $ssldir.'/pubkey.pem';
-    
-    if((is_file($pemfile)) && (is_file($pubkeyfile)) && (is_file($webtmp.'/pubkey.txt'))) {
-      return;
+    $pubkeytxtfile = $webtmp.'/pubkey.txt';
+    if(!file_exists($config_dir.'/ssl.reload')) {
+      if((is_file($pemfile)) && (is_file($pubkeyfile)) && (is_file($pubkeytxtfile))) {
+          if(md5_file($pubkeyfile) == md5_file($pubkeytxtfile)) {
+            return;
+          }
+      }
     }
+    @unlink($config_dir.'/ssl.reload');
+    unlink($pemfile);
+    unlink($pubkeyfile);
+    unlink($pubkeytxtfile);
 /* Use letsencrypt */    
     if((isset($letsencrypt['server.pem'])) && (isset($letsencrypt['pubkey.pem']))) {
         file_put_contents($pemfile, $letsencrypt['server.pem'].$letsencrypt['privkey']);
         file_put_contents($pubkeyfile, $letsencrypt['pubkey.pem']);
-        file_put_contents($webtmp.'/pubkey.txt', $letsencrypt['pubkey.pem']);
+        file_put_contents($pubkeytxtfile, $letsencrypt['pubkey.pem']);
     } else {
 /* Create self signed cert */
       $certificateData = array(
@@ -1254,44 +1262,13 @@ function create_node_ssl_cert($pemfile) {
       // Save PEM file
       file_put_contents($pemfile, $pem);
       file_put_contents($pubkeyfile, $pubkey['key']);
-      file_put_contents($webtmp.'/pubkey.txt', $pubkey['key']);
+      file_put_contents($pubkeytxtfile, $pubkey['key']);
     }
     chown($pemfile, $uinfo["uid"]);
     chown($pubkeyfile, $uinfo["uid"]);
-    chown($webtmp.'/pubkey.txt', $uinfo["uid"]);
+    chown($pubkeytxtfile, $uinfo["uid"]);
     chmod($pemfile,0660);
     chmod($pubkeyfile,0660);
-    chmod($webtmp.'/pubkey.txt',0660);
-}
-
-function create_certificate($pemfile, $pubkeyfile) {
-    global $CONFIG;
-    $certificateData = array(
-        "countryName" => "US",
-        "stateOrProvinceName" => "New York",
-        "localityName" => "New York City",
-        "organizationName" => "Rocksolid",
-        "organizationalUnitName" => "Rocksolid Light",
-        "commonName" => $CONFIG['organization'],
-        "emailAddress" => "rocksolid@example.com"
-    );
-    
-    // Generate certificate
-    $privateKey = openssl_pkey_new();
-    $certificate = openssl_csr_new($certificateData, $privateKey);
-    $certificate = openssl_csr_sign($certificate, null, $privateKey, 365);
-    
-    // Generate PEM file
-    $pem_passphrase = null; // empty for no passphrase
-    $pem = array();
-    openssl_x509_export($certificate, $pem[0]);
-    openssl_pkey_export($privateKey, $pem[1], $pem_passphrase);
-    $pem = implode($pem);
-    
-    $pubkey=openssl_pkey_get_details($privateKey);
-    
-    // Save PEM file
-    file_put_contents($pemfile, $pem);
-    file_put_contents($pubkeyfile, $pubkey['key']);
+    chmod($pubkeytxtfile,0660);
 }
 ?>
