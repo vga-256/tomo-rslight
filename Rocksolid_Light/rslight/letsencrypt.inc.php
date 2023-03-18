@@ -1,8 +1,10 @@
 <?php 
 
-/* Set paths for fullchain.pem abnd privkey.pem */
-$letsencrypt['fullchain'] = file_get_contents("/etc/letsencrypt/live/<domain>/fullchain.pem");
-$letsencrypt['privkey'] = file_get_contents("/etc/letsencrypt/live/<domain>/privkey.pem");
+/* Set paths for fullchain.pem and privkey.pem */
+$letsencrypt['path'] = "/etc/letsencrypt/live/<domain>/";
+
+$letsencrypt['fullchain'] = file_get_contents($letsencrypt['path']."fullchain.pem");
+$letsencrypt['privkey'] = file_get_contents($letsencrypt['path']."/privkey.pem");
 
 /* Please do not change anything below */
 $letsencrypt['pem_private_key'] = openssl_pkey_get_private($letsencrypt['privkey']);

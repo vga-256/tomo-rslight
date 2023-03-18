@@ -1218,6 +1218,13 @@ function create_node_ssl_cert($pemfile) {
     $uinfo=posix_getpwnam($CONFIG['webserver_user']);
     $pubkeyfile = $ssldir.'/pubkey.pem';
     $pubkeytxtfile = $webtmp.'/pubkey.txt';
+	$ssltime = filectime($letsencrypt['path'])."fullchain.pem";
+    if(isset($letsencrypt['path'])) {
+        if($ssltime > filectime($pemfile)) {
+            touch($config_dir.'/ssl.reload');
+        }
+        
+    }
     if(!file_exists($config_dir.'/ssl.reload')) {
       if((is_file($pemfile)) && (is_file($pubkeyfile)) && (is_file($pubkeytxtfile))) {
           if(md5_file($pubkeyfile) == md5_file($pubkeytxtfile)) {
@@ -1234,6 +1241,9 @@ function create_node_ssl_cert($pemfile) {
         file_put_contents($pemfile, $letsencrypt['server.pem'].$letsencrypt['privkey']);
         file_put_contents($pubkeyfile, $letsencrypt['pubkey.pem']);
         file_put_contents($pubkeytxtfile, $letsencrypt['pubkey.pem']);
+        touch($pemfile, $ssltime);  
+		touch($pubkeyfile, $ssltime);
+		touch($pubkeytxtfile, $ssltime);
     } else {
 /* Create self signed cert */
       $certificateData = array(
