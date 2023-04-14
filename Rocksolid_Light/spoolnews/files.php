@@ -16,14 +16,13 @@ include "newsportal.php";
     $getfh = fopen($getfilename, "rb");
     $getfile = fread($getfh, filesize($getfilename));
     fclose($getfh);
-    header('Content-type: '.$_REQUEST[contenttype]);
-    header('Content-disposition: filename="'.$_REQUEST[showfilename].'"');
+    header('Content-type: '.$_REQUEST['contenttype']);
+    header('Content-disposition: filename="'.$_REQUEST['showfilename'].'"');
     file_put_contents($logfile, "\n".format_log_date()." Requesting: ".$_REQUEST['showfile'], FILE_APPEND);
 
     echo $getfile;
     exit(0);
   }
-
   $title.=' - Browse files';
 include "head.inc";
   echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';

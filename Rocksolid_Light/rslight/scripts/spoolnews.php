@@ -23,8 +23,6 @@
 include "config.inc.php";
 include ("$file_newsportal");
 
-set_time_limit(900);
-
 $remote_groupfile=$spooldir."/".$config_name."/".$CONFIG['remote_server'].":".$CONFIG['remote_port'].".txt";
 $file_groups=$config_path."groups.txt";
 $local_groupfile=$spooldir."/".$config_name."/local_groups.txt";
@@ -57,21 +55,18 @@ if (posix_getsid($pid) === false || !is_file($lockfile)) {
    print "Spoolnews currently running\n";
    exit;
 }
-
 $sem = $spooldir."/".$config_name.".reload";
 if(is_file($sem)) {
   unlink($remote_groupfile);
   unlink($sem);
   $maxfirstrequest = 20;
 }
-
 if(filemtime($spooldir.'/'.$config_name.'-thread-timer')+600 < time()) {
   $timer=true;
   touch($spooldir.'/'.$config_name.'-thread-timer');
 } else {
   $timer=false;
 }
-
 # Check for groups file, create if necessary
 create_spool_groups($file_groups, $remote_groupfile);
 create_spool_groups($file_groups, $local_groupfile);
@@ -195,7 +190,6 @@ function get_articles($ns, $group) {
   # Pull articles and save them in our spool
   @mkdir($grouppath,0755,'recursive');
   $i=0;
-  $nsfail=0;
   while ($article <= $detail[3]) {
       if(!is_numeric($article)) {
 	file_put_contents($logfile, "\n".format_log_date()." ".$config_name." DEBUG This should show server group:article number: ".$CONFIG['remote_server']." ".$group.":".$article, FILE_APPEND);
@@ -209,8 +203,9 @@ function get_articles($ns, $group) {
       fputs($ns, "stat ".$article."\r\n");
       $response = line_read($ns);
       $this_msgid = explode(' ', $response);
-      $group_overviewfp=fopen($spooldir."/".$group."-overview", 'r');
-      while($group_overview=fgets($group_overviewfp, 2048)) {
+      $group_overviewfile = $spooldir."/".$group."-overview";
+      $gover = file($group_overviewfile);
+      foreach($gover as $group_overview) {
 	$overview_msgid = explode("\t", $group_overview);
 	if(strpos($overview_msgid[4], $this_msgid[2]) !== false) {
 	  echo "\nDuplicate Message-ID for: ".$CONFIG['remote_server']." ".$group.":".$article."\n";
@@ -220,7 +215,6 @@ function get_articles($ns, $group) {
           break;
 	}
       }
-      fclose($group_overviewfp);
       if($duplicate == 1) {
 	continue;
       }
@@ -314,12 +308,7 @@ function get_articles($ns, $group) {
 	 file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Lost connection to ".$CONFIG['remote_server'].":".$CONFIG['remote_port']." retrieving article ".$article, FILE_APPEND);
 	 @fclose($articleHandle);
 	 unlink($grouppath."/".$local);
-	 $nsfail++;
-	 if($nsfail > 3){
-	     break;
-	 } else {
-	   continue;
-	 }
+	 continue;
        }
        $response=str_replace("\n","",str_replace("\r","",$response));
       }
@@ -375,14 +364,13 @@ function get_articles($ns, $group) {
       fputs($ns, "XGTITLE ".$group."\r\n");
       $response = line_read($ns);
       if (strcmp(substr($response,0,3),"282") == 0) { 
-        $overviewHandle = fopen($workpath.$group."-title", 'w');
+          $titlefile = $workpath.$group."-title";
         $response = line_read($ns);
         while(strcmp($response,".") != 0)
         {
-          fputs($overviewHandle, $response."\r\n");
+            file_put_contents($titlefile, $response);
           $response = line_read($ns);
         }
-        @fclose($overviewHandle);
       }
    }
   # Save config
@@ -463,15 +451,15 @@ function get_high_watermark($group) {
 
 function get_article_list($thisgroup) {
         global $spooldir;
-        $group_overviewfp=fopen($spooldir."/".$thisgroup."-overview", 'r');
+        $group_overview_file = $spooldir."/".$thisgroup."-overview";
         $ok_article=array();
-        while($line = fgets($group_overviewfp)) {
+        $getline = file($group_overview_file);
+        foreach($getline as $line) {
           $art=explode("\t", $line);
           if(is_numeric($art[0])) {
             $ok_article[] = $art[0];
           }
         }
-        fclose($group_overviewfp);
         return($ok_article);
 }
 

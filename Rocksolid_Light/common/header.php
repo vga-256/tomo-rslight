@@ -32,7 +32,7 @@ if(!isset($_SESSION['theme']) && file_exists($config_dir.'/userconfig/'.$user.'.
 }
 
 if(trim($_SESSION['theme']) !== '') {
-  echo '<link rel="stylesheet" type="text/css" href="../common/themes/'.$_SESSION[theme].'/style.css">';
+  echo '<link rel="stylesheet" type="text/css" href="../common/themes/'.$_SESSION['theme'].'/style.css">';
 } else {
   echo '<link rel="stylesheet" type="text/css" href="'.$rootdir.'common/themes/Default Theme/style.css">';
 }

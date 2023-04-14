@@ -20,14 +20,20 @@
   // register parameters
   $id=$_REQUEST["id"];
   $group=_rawurldecode($_REQUEST["group"]);
-
+  
+// Switch to correct section in case group has been moved and link is to old section  
   $findsection = get_section_by_group($group);
   if(trim($findsection) !== $config_name) {
-    $newurl = preg_replace("|/$config_name/|", "/$findsection/", $_SERVER['REQUEST_URI']);
-    header("Location: $newurl");
-    die();
-  }
-  
+    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
+      $link = "https";
+      else $link = "http";
+      $link .= "://";
+      $link .= $_SERVER['HTTP_HOST'];
+      $link .= $_SERVER['REQUEST_URI'];
+      $newurl = preg_replace("|/$config_name/|", "/$findsection/", $link);
+      header("Location:$newurl");
+      die();
+  } 
   if(strpos($id, '@') !== false) {
     if($CONFIG['article_database'] == '1') {
       $database = $spooldir.'/articles-overview.db3';

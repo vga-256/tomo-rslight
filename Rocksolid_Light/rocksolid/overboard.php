@@ -210,9 +210,9 @@ foreach($files as $article) {
     $ref = preg_split("/[\s]+/", $getrefs[1]);
     if($getrefs[1] && $refid = get_data_from_msgid($ref[0])) {
       // Check that article to link is new enough for newsportal to display
-      $groupinfo = file($spooldir.'/'.$refid[newsgroup].'-info.txt');
+      $groupinfo = file($spooldir.'/'.$refid["newsgroup"].'-info.txt');
       $range = explode(' ', $groupinfo[1]);
-      if($refid[number] > ($range[0] - 1)) {
+      if($refid['number'] > (intval($range[0]) - 1)) {
         $threadref = $ref[0];
       } else {
         $threadref = false;
@@ -274,6 +274,9 @@ function expire_overboard($cachefile) {
 function display_threads($threads, $oldest) {
     global $thissite, $logfile, $config_name, $snippetlength, $maxdisplay, $prune, $this_overboard;
     echo '<table cellspacing="0" width="100%" class="np_results_table">';
+    if(!isset($threads)) {
+        $threads = (object)[];
+    }
     krsort($threads);
     $results = 0;
     foreach($threads as $key => $value) {
@@ -303,7 +306,7 @@ function display_threads($threads, $oldest) {
         echo '<b><a href="'.$url.'"><span>'.mb_decode_mimeheader($target['subject']).'</span></a></b>';
         if(isset($this_overboard['threadlink'][$value])) {
           $thread = get_data_from_msgid($this_overboard['threadlink'][$value]);
-          echo '<font class="np_ob_group"><a href="article-flat.php?id='.$thread[number].'&group='.rawurlencode($thread[newsgroup]).'#'.$thread[number].'"> (thread)</a></font>';
+          echo '<font class="np_ob_group"><a href="article-flat.php?id='.$thread['number'].'&group='.rawurlencode($thread['newsgroup']).'#'.$thread['number'].'"> (thread)</a></font>';
         } 
         echo '</p>';
         echo '</p><p class=np_ob_group>';
@@ -323,7 +326,7 @@ function show_overboard_header($grouplist) {
 if (isset($_GET['thisgroup'])) {
     echo '<h1 class="np_thread_headline">';
     echo '<a href="'.$file_index.'" target='.$frame['menu'].'>'.basename(getcwd()).'</a> / ';
-    echo '<a href="'.$file_thread.'?group='.rawurlencode($grouplist[0]).'" target='.$frame[content].'>'.htmlspecialchars(group_displaY_name($grouplist[0])).'</a> / ';
+    echo '<a href="'.$file_thread.'?group='.rawurlencode($grouplist[0]).'" target='.$frame["content"].'>'.htmlspecialchars(group_displaY_name($grouplist[0])).'</a> / ';
     if (isset($user_time)) {
       echo ' new messages</h1>';
     } else {
@@ -382,7 +385,7 @@ if (isset($_GET['thisgroup'])) {
 }
 
 function show_overboard_footer($stats, $results, $iscached) {
-    global $CONFIG,$user_time,$rslight_version;
+    global $user_time,$rslight_version;
     if(isset($user_time)) {
       $recent = 'new';
     } else {

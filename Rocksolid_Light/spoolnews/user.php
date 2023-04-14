@@ -124,9 +124,10 @@ echo '</table>';
   $_SESSION['username'] = $user;
   unset($user_config);
   $userfile=$spooldir.'/'.$user.'-articleviews.dat';
-  $userdata = unserialize(file_get_contents($userfile));
-  ksort($userdata);
-
+  if(is_file($userfile)) {
+     $userdata = unserialize(file_get_contents($userfile));
+     ksort($userdata);
+  }
 // Apply Config
     if(isset($_POST['command']) && $_POST['command'] == 'SaveConfig') {
 	$user_config['signature'] = $_POST['signature'];
@@ -149,7 +150,7 @@ echo '</table>';
 	file_put_contents($spooldir.'/'.$user.'-articleviews.dat', serialize($newsubs));
 	$userdata = unserialize(file_get_contents($userfile));
 	ksort($userdata);
-	echo 'Configuration Saved for '.$_POST[username];
+	echo 'Configuration Saved for '.$_POST['username'];
     } else {
 	$user_config = unserialize(file_get_contents($config_dir.'/userconfig/'.$user.'.config'));
     }
@@ -163,7 +164,7 @@ echo '</table>';
         }
         $themes[] = $theme_dir;
       }
-      closedir($theme_dir);
+      closedir($theme_list);
     }
   }
   sort($themes);
@@ -171,17 +172,17 @@ echo '</table>';
 // Show Config 
     echo '<hr><h1 class="np_thread_headline">Configuration:</h1>';
     echo '<table cellspacing="0" width="100%" class="np_results_table">';
-    echo '<tr class="np_thread_head"><td class="np_thread_head">Settings for '.$_POST[username].' (leave blank for none):</td></tr>';
+    echo '<tr class="np_thread_head"><td class="np_thread_head">Settings for '.$_POST['username'].' (leave blank for none):</td></tr>';
     echo '<form method="post" action="user.php">';
     echo '<tr class="np_result_line1">';
 // Signature
       echo '<td class="np_result_line1" style="word-wrap:break-word";>Signature:</td>';
-        echo '</tr><tr><td class="np_result_line1" style="word-wrap:break-word";><textarea class="configuration" id="signature" name="signature" rows="6" cols="70">'.$user_config[signature];
+        echo '</tr><tr><td class="np_result_line1" style="word-wrap:break-word";><textarea class="configuration" id="signature" name="signature" rows="6" cols="70">'.$user_config['signature'];
 	echo '</textarea></td>'; 
 	echo '</tr>';
 // X-Face
       echo '<td class="np_result_line1" style="word-wrap:break-word";>X-Face:</td>';
-        echo '</tr><tr><td class="np_result_line1" style="word-wrap:break-word";><textarea class="configuration" id="xface" name="xface" rows="4" cols="80">'.$user_config[xface];
+        echo '</tr><tr><td class="np_result_line1" style="word-wrap:break-word";><textarea class="configuration" id="xface" name="xface" rows="4" cols="80">'.$user_config['xface'];
         echo '</textarea></td>';	
         echo '</tr>';
 // Theme

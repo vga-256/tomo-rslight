@@ -24,7 +24,7 @@
     /* Send instructions. */
     $msg = "200 Rocksolid Light NNTP Server ready (no posting)\r\n";
     fwrite($msgsock, $msg, strlen($msg)); 
-    do {   
+    do {
 	$msg="";	
 set_time_limit(30);
 	$buf = fgets($msgsock, 2048);
@@ -216,7 +216,7 @@ set_time_limit(0);
 	if ($command[0] == 'quit') {
 	    $msg = "205 closing connection - goodbye!\r\n";
 	    fwrite($msgsock, $msg, strlen($msg));
-	    socket_close($msgsock);
+//	    socket_close($msgsock);
             exit(0);
         }
         file_put_contents($logfile, "\n".format_log_date()." Syntax error: ".$buf, FILE_APPEND);
@@ -353,7 +353,7 @@ function process_post($message, $group) {
           }
 	}
     }
-  rewind($message);
+//  rewind($message);
 /*
  * SPAM CHECK
  */         
@@ -599,11 +599,11 @@ function get_title($mode) {
         $msg="481 descriptions unavailable\r\n";
         return $msg;
     }
-    $title = file_get_contents($spooldir."/".$mode."-title", IGNORE_NEW_LINES);
+    $title = file_get_contents($spooldir."/".$mode."-title");
     $msg="282 list of group and description follows\r\n";
     $msg.=$title;
 
-    $msg.=".\r\n";
+    $msg.="\r\n.\r\n";
     return $msg;
 }
 
@@ -1073,13 +1073,6 @@ $date_i,$mid_i,$references_i,$bytes_i,$lines_i,$xref_i,$body) {
   }
   $nocem_check="@@NCM";
   $article_date=strtotime($date_i); 
-  # Check if group exists. Open it if it does
-  fputs($ns, "group ".$nntp_group."\r\n");
-  $response = line_read($ns);
-  if (strcmp(substr($response,0,3),"411") == 0) {
-    unlink($sn_lockfile);
-    return(1);
-  }
   $grouplist = file($local_groupfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
   foreach($grouplist as $findgroup) {
     $name = explode(':', $findgroup);
@@ -1218,7 +1211,7 @@ function create_node_ssl_cert($pemfile) {
     $uinfo=posix_getpwnam($CONFIG['webserver_user']);
     $pubkeyfile = $ssldir.'/pubkey.pem';
     $pubkeytxtfile = $webtmp.'/pubkey.txt';
-	$ssltime = filectime($letsencrypt['path'])."fullchain.pem";
+    $ssltime = filectime($letsencrypt['path'])."fullchain.pem";
     if(isset($letsencrypt['path'])) {
         if($ssltime > filectime($pemfile)) {
             touch($config_dir.'/ssl.reload');
@@ -1226,53 +1219,53 @@ function create_node_ssl_cert($pemfile) {
         
     }
     if(!file_exists($config_dir.'/ssl.reload')) {
-      if((is_file($pemfile)) && (is_file($pubkeyfile)) && (is_file($pubkeytxtfile))) {
-          if(md5_file($pubkeyfile) == md5_file($pubkeytxtfile)) {
-            return;
-          }
-      }
+        if((is_file($pemfile)) && (is_file($pubkeyfile)) && (is_file($pubkeytxtfile))) {
+            if(md5_file($pubkeyfile) == md5_file($pubkeytxtfile)) {
+                return;
+            }
+        }
     }
     @unlink($config_dir.'/ssl.reload');
     unlink($pemfile);
     unlink($pubkeyfile);
     unlink($pubkeytxtfile);
-/* Use letsencrypt */    
+    /* Use letsencrypt */
     if((isset($letsencrypt['server.pem'])) && (isset($letsencrypt['pubkey.pem']))) {
         file_put_contents($pemfile, $letsencrypt['server.pem'].$letsencrypt['privkey']);
         file_put_contents($pubkeyfile, $letsencrypt['pubkey.pem']);
         file_put_contents($pubkeytxtfile, $letsencrypt['pubkey.pem']);
-        touch($pemfile, $ssltime);  
-		touch($pubkeyfile, $ssltime);
-		touch($pubkeytxtfile, $ssltime);
+        touch($pemfile, $ssltime);
+        touch($pubkeyfile, $ssltime);
+        touch($pubkeytxtfile, $ssltime);
     } else {
-/* Create self signed cert */
-      $certificateData = array(
-        "countryName" => "US",
-        "stateOrProvinceName" => "New York",
-        "localityName" => "New York City",
-        "organizationName" => "Rocksolid",
-        "organizationalUnitName" => "Rocksolid Light",
-        "commonName" => $CONFIG['organization'],
-        "emailAddress" => "rocksolid@example.com"
-      );
-    
-    // Generate certificate
-      $privateKey = openssl_pkey_new();
-      $certificate = openssl_csr_new($certificateData, $privateKey);
-      $certificate = openssl_csr_sign($certificate, null, $privateKey, 365);
-    
-      // Generate PEM file
-      $pem_passphrase = null; // empty for no passphrase
-      $pem = array();
-      openssl_x509_export($certificate, $pem[0]);
-      openssl_pkey_export($privateKey, $pem[1], $pem_passphrase);
-      $pem = implode($pem);
-      $pubkey=openssl_pkey_get_details($privateKey);
-    
-      // Save PEM file
-      file_put_contents($pemfile, $pem);
-      file_put_contents($pubkeyfile, $pubkey['key']);
-      file_put_contents($pubkeytxtfile, $pubkey['key']);
+        /* Create self signed cert */
+        $certificateData = array(
+            "countryName" => "US",
+            "stateOrProvinceName" => "New York",
+            "localityName" => "New York City",
+            "organizationName" => "Rocksolid",
+            "organizationalUnitName" => "Rocksolid Light",
+            "commonName" => $CONFIG['organization'],
+            "emailAddress" => "rocksolid@example.com"
+        );
+        
+        // Generate certificate
+        $privateKey = openssl_pkey_new();
+        $certificate = openssl_csr_new($certificateData, $privateKey);
+        $certificate = openssl_csr_sign($certificate, null, $privateKey, 365);
+        
+        // Generate PEM file
+        $pem_passphrase = null; // empty for no passphrase
+        $pem = array();
+        openssl_x509_export($certificate, $pem[0]);
+        openssl_pkey_export($privateKey, $pem[1], $pem_passphrase);
+        $pem = implode($pem);
+        $pubkey=openssl_pkey_get_details($privateKey);
+        
+        // Save PEM file
+        file_put_contents($pemfile, $pem);
+        file_put_contents($pubkeyfile, $pubkey['key']);
+        file_put_contents($pubkeytxtfile, $pubkey['key']);
     }
     chown($pemfile, $uinfo["uid"]);
     chown($pubkeyfile, $uinfo["uid"]);

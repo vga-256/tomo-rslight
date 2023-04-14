@@ -34,10 +34,10 @@ if (isset($_COOKIE["ts_limit"])) {
   echo '<td><strong>Register Username </strong></td>';
   echo '</tr><tr>';
   echo '<td>Username:</td>';
-  echo '<td><input name="username" type="text" id="username"value="'.$_POST[username].'"></td>';
+  echo '<td><input name="username" type="text" id="username"value="'.$_POST['username'].'"></td>';
   echo '</tr><tr>';
   echo '<td>Email:</td>';
-  echo '<td><input name="user_email" type="text" id="user_email" value="'.$_POST[user_email].'"></td>';
+  echo '<td><input name="user_email" type="text" id="user_email" value="'.$_POST['user_email'].'"></td>';
   echo '</tr><tr>';
   echo '<td>Password:</td>';
   echo '<td><input name="password" type="password" id="password"></td>';

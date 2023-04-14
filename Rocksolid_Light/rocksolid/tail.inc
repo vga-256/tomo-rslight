@@ -3,7 +3,7 @@ echo '<center>';
 $pubkeyfile = getcwd().'/../tmp/pubkey.txt';
 if(is_file($pubkeyfile) && (isset($CONFIG['site_shortname']) && $CONFIG['site_shortname'] != '')) {
     echo '<font size="1.5em">';
-    echo '<a href="/tmp/pubkey.txt" target=_blank>'.$CONFIG[site_shortname].'</a>';
+    echo '<a href="/tmp/pubkey.txt" target=_blank>'.$CONFIG['site_shortname'].'</a>';
     echo '<br />';
     echo '</font>';
 }

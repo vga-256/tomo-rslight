@@ -24,7 +24,6 @@ return [
 'server_auth_pass' => 'The password for the local server user',
 
 # Site configuration
-'site_shortname' => 'Must be unique from other rslight sites. Blank to disable',
 'rslight_title' => 'The tagline at the top of the web page',
 'title_full' => 'The site title in the client browser bar', 
 'hide_email' => 'Truncate email addresses in From header (1=true, blank=false)',

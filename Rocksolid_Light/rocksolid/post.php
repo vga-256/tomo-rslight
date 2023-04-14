@@ -37,9 +37,6 @@ $CONFIG = include($config_file);
 @$abspeichern=$_REQUEST["abspeichern"];
 @$references=$_REQUEST["references"];
 @$id=$_REQUEST["id"];
-
-$name = trim($name);
-
 if (!isset($group)) $group=$newsgroups;
 
 include "auth.inc";
@@ -56,14 +53,6 @@ if ((isset($post_port)) && ($post_port!=""))
   $port=$post_port;
 
 include $file_newsportal;
-
-  $findsection = get_section_by_group($_REQUEST["group"]);
-  if(trim($findsection) !== $config_name) {
-    $newurl = preg_replace("|/$config_name/|", "/$findsection/", $_SERVER['REQUEST_URI']);
-    header("Location: $newurl");
-    die();
-  }
-
 include "head.inc";
 global $synchro_user,$synchro_pass;
 // check to which groups the user is allowed to post to
@@ -105,9 +94,11 @@ $returngroup = preg_split("/( |\,)/", $newsgroups, 2);
     echo '</td>';
  }
  // Pages
+/*
     echo '<td class="np_pages" width="100%" align="right">';
     echo articleflat_pageselect($thisgroup,$id,count($subthread),$first);
     echo '</td></tr></table>';
+*/
 // has the user write-rights on the newsgroups?
 if((function_exists("npreg_group_has_read_access") &&
     !npreg_group_has_read_access($newsgroups)) ||
@@ -207,7 +198,6 @@ if ($type=="post") {
     $error=$text_post["captchafail"];
   }
               
-
   if ($type=="post") {
     if (!$CONFIG['readonly']) {
       // post article to the newsserver
@@ -231,9 +221,9 @@ if ($type=="post") {
 	      echo '<p><a href="'.$file_thread.'?group='.urlencode($returngroup[0]).'">'.$text_post["button_back"].'</a> '.$text_post["button_back2"].' '.group_display_name($returngroup[0]).'</p>';
 	      return;	
 	    }
-        }
+    }
 	if(isset($_FILES["photo"]) && $_FILES["photo"]["error"] == 0) { 
-		$_FILES[photo][name] = preg_replace('/[^a-zA-Z0-9\.]/', '_', $_FILES[photo][name]);
+		$_FILES['photo']['name'] = preg_replace('/[^a-zA-Z0-9\.]/', '_', $_FILES['photo']['name']);
 // There is an attachment to handle 
 		$message=message_post_with_attachment(quoted_printable_encode($subject),
                  $nemail." (".quoted_printable_encode($name).")",

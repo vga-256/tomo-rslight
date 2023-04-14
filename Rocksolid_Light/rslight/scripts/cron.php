@@ -8,7 +8,9 @@
 # Start or verify NNTP server
   if(isset($CONFIG['enable_nntp']) && $CONFIG['enable_nntp'] == true) {
     # Create group list for nntp.php
-    $fp1=fopen($spooldir."/".$config_name."/groups.txt", 'w');
+    $fp1=$spooldir."/".$config_name."/groups.txt";
+    unlink($fp1);
+    touch($fp1);
       foreach($menulist as $menu) {
       if(($menu[0] == '#') || trim($menu) == "") {
 	continue;
@@ -21,11 +23,10 @@
 	    continue;
 	  }
 	  $ok_group = preg_split("/( |\t)/", trim($ok_group), 2);
-	  fputs($fp1, $ok_group[0]."\r\n");
+      file_put_contents($fp1, $ok_group[0]."\r\n", FILE_APPEND);
 	}
       }
     }
-    fclose($fp1);
     exec($CONFIG['php_exec']." ".$config_dir."/scripts/nntp.php > /dev/null 2>&1");
     if(is_numeric($CONFIG['local_ssl_port'])) {
       exec($CONFIG['php_exec']." ".$config_dir."/scripts/nntp-ssl.php > /dev/null 2>&1");
@@ -60,7 +61,7 @@
 
   @mkdir($logdir,0755,'recursive');
   @mkdir($lockdir,0755,'recursive');
-  
+
 if(isset($CONFIG['enable_nocem']) && $CONFIG['enable_nocem'] == true) {
   @mkdir($spooldir."nocem",0755,'recursive');
   exec($CONFIG['php_exec']." ".$config_dir."/scripts/nocem.php");

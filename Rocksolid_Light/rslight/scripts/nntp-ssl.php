@@ -57,7 +57,7 @@
     {
         GLOBAL $__server_listening;
         GLOBAL 
-$CONFIG,$logdir,$lockdir,$ssldir,$webserver_uid,$webserver_gid,$installed_path,
+$CONFIG,$logdir,$lockdir,$webserver_uid,$webserver_gid,$installed_path,
 $config_path,$groupconfig,$workpath,$path,$spooldir,$nntp_group,$auth_ok;
 	$logfile=$logdir.'/nntp.log';
 	$lockfile = $lockdir . '/rslight-nntp-ssl.lock';
@@ -73,10 +73,10 @@ $config_path,$groupconfig,$workpath,$path,$spooldir,$nntp_group,$auth_ok;
 	$auth_ok = 0;
 	$user = "";
 	$pass = "";
-	
-	$pemfile = $ssldir.'/server.pem';
-	create_node_ssl_cert($pemfile);
-
+	$pemfile = $spooldir.'/server.pem';
+	if(!is_file($pemfile)) {
+	  create_certificate($pemfile);
+	}	
 	$context = stream_context_create();
 	stream_context_set_option($context, 'ssl', 'local_cert', $pemfile);
 	stream_context_set_option($context, 'ssl', 'allow_self_signed', true);
@@ -159,4 +159,32 @@ $config_path,$groupconfig,$workpath,$path,$spooldir,$nntp_group,$auth_ok;
             fclose($csock);
         }
     }
+
+function create_certificate($pemfile) {
+global $CONFIG;
+$certificateData = array(
+    "countryName" => "US",
+    "stateOrProvinceName" => "New York",
+    "localityName" => "New York City",
+    "organizationName" => "Rocksolid",
+    "organizationalUnitName" => "Rocksolid Light",
+    "commonName" => $CONFIG['organization'],
+    "emailAddress" => "rocksolid@example.com"
+);
+ 
+// Generate certificate
+$privateKey = openssl_pkey_new();
+$certificate = openssl_csr_new($certificateData, $privateKey);
+$certificate = openssl_csr_sign($certificate, null, $privateKey, 365);
+
+// Generate PEM file
+$pem_passphrase = null; // empty for no passphrase
+$pem = array();
+openssl_x509_export($certificate, $pem[0]);
+openssl_pkey_export($privateKey, $pem[1], $pem_passphrase);
+$pem = implode($pem);
+
+// Save PEM file
+file_put_contents($pemfile, $pem);
+}
 ?>

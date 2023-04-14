@@ -88,6 +88,7 @@ function nntp_open($nserver=0,$nport=0) {
 function nntp2_open($nserver=0,$nport=0) {
   global $text_error,$CONFIG;
   // echo "<br>NNTP OPEN<br>";
+  echo "NS: ".$nserver." PORT: ".$nport;
   $authorize=((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
               ($CONFIG['remote_auth_user'] != ""));
   if ($nserver==0) $nserver=$CONFIG['remote_server'];
@@ -350,18 +351,15 @@ function get_section_by_group($groupname) {
         continue;
       }
       $section = "";
-      $glfp=fopen($config_dir.$menuitem[0]."/groups.txt", 'r');
-      while($gl=fgets($glfp)) {
+      $gldata = file($config_dir.$menuitem[0]."/groups.txt");
+      foreach($gldata as $gl) {
         $group_name = preg_split("/( |\t)/", $gl, 2);
 		if(strtolower(trim($groupname)) == strtolower(trim($group_name[0]))) {
-	      fclose($glfp);
        	  $section=$menuitem[0];
-	      fclose($glfp);
 	      return $section;
         }
       }
     }
-    fclose($glfp);
     return false;
 }
 
@@ -475,13 +473,14 @@ function groups_read($server,$port,$load=0) {
   } else {
     $ns=nntp_open($server,$port);
     if ($ns == false) return false;
-    $gf=fopen($file_groups,"r");
+//    $gf=fopen($file_groups,"r");
+    $gfdata = file($file_groups);
     // if we want to mark groups with new articles with colors, wie will later
     // need the format of the overview
     $overviewformat=thread_overview_read($ns);
-    while (!feof($gf)) {
+    foreach($gfdata as $gf) {
       $gruppe=new newsgroupType;
-      $tmp=trim(line_read($gf));
+      $tmp=trim($gf);
       $tmp=preg_replace('/\t/', ' ', $tmp);
       if(substr($tmp,0,1)==":") {
         $gruppe->text=substr($tmp,1);
@@ -502,6 +501,7 @@ function groups_read($server,$port,$load=0) {
             $neu=line_read($ns);
             do {
               $response=$neu;
+              echo $response;
               if ($neu != ".") $neu=line_read($ns);
             } while ($neu != ".");
             $desc=strrchr($response,"\t");
@@ -550,12 +550,9 @@ function groups_read($server,$port,$load=0) {
           $newsgroups[]=$gruppe;
       }
     }
-    fclose($gf);
     nntp_close($ns);
     // write the data to the cachefile
-    $file=fopen($cachefile,"w");
-    fputs($file,serialize($newsgroups));
-    fclose($file);
+    file_put_contents($cachefile, serialize($newsgroups));
   }
   if ($load == 0) {
     return $newsgroups;
@@ -618,11 +615,10 @@ function groups_show($gruppen) {
         $groupdisplay.='</span><br><p class="np_group_desc">'.$g->description.'</p>';
 // Subscribed features
     $filename = $spooldir."/".$g->name."-lastarticleinfo.dat";
-    if($file=@fopen($filename,"r")) {
-      $lastarticleinfo=unserialize(fread($file,filesize($filename)));
-      fclose($file);
+    if(is_file($filename)) {
+    $lastarticleinfo = unserialize(file_get_contents($filename));
     } else {
-      $lastarticleinfo->date = 0;
+      $lastarticleinfo['date'] = 0;
     }
     if(isset($userdata[$g->name])) {
       $groupdisplay.='</span><p class="np_group_desc">';
@@ -660,7 +656,7 @@ function groups_show($gruppen) {
       }
       $dbh = null;
       if($found) {
-	$lastarticleinfo->date = $row['date'];
+	$lastarticleinfo['date'] = $row['date'];
 // Put this in a function already!
         $fromoutput = explode("<", html_entity_decode($row['name']));
 // Just an email address?
@@ -673,16 +669,16 @@ function groups_show($gruppen) {
           $fromoutput[0] = $fromaddress[1];
         }
         if((isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) && (strpos($fromoutput[0], '@') !== false)) {
-          $lastarticleinfo->name = truncate_email($fromoutput[0]);
+          $lastarticleinfo['name'] = truncate_email($fromoutput[0]);
         } else {
-          $lastarticleinfo->name = $fromoutput[0];
+          $lastarticleinfo['name'] = $fromoutput[0];
         }
       }
     }
-    $groupdisplay.=get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
+    $groupdisplay.=get_date_interval(date("D, j M Y H:i T",$lastarticleinfo['date']));
     $groupdisplay.='<table><tr><td>';
     $groupdisplay.='<font class="np_last_posted_date">by: ';
-    $groupdisplay.=create_name_link($lastarticleinfo->name, $lastarticleinfo->from);
+    $groupdisplay.=create_name_link(mb_decode_mimeheader($lastarticleinfo['name']), $lastarticleinfo['from']);
     $groupdisplay.='</td></tr></table>';
     }
     $groupdisplay.="\n";
@@ -752,7 +748,7 @@ function groups_show_frames($gruppen) {
 }
 
 /*
- * gets a list of aviable articles in the group $groupname
+ * gets a list of available articles in the group $groupname
  */
 /*
 function getArticleList(&$ns,$groupname) {
@@ -903,9 +899,9 @@ function recode_charset($text,$source=false,$dest=false) {
   global $iconv_enable,$www_charset;
   if($dest==false)
     $dest=$www_charset;
-  if($iconv_enable) {
+  if(($iconv_enable) && ($source!=false)) {
     $return=iconv($source,
-                 $dest."//TRANSLIT//IGNORE",$text);
+                 $dest."//TRANSLIT",$text);
     if($return!="")
       return $return;
     else
@@ -1100,7 +1096,7 @@ function check_bbs_auth($username, $password) {
 // Create accounts for $anonymous and $CONFIG['server_auth_user'] if not exist  
   if($username == strtolower($CONFIG['anonusername'])) {
     if(filemtime($config_dir."rslight.inc.php") > filemtime($userFilename)) {
-      if ($userFileHandle = @fopen($userFilename, 'w+'))
+      if ($userFileHandle = fopen($userFilename, 'w+'))
       {
         fwrite($userFileHandle, password_hash($CONFIG['anonuserpass'], PASSWORD_DEFAULT));
         fclose($userFileHandle);
@@ -1109,7 +1105,7 @@ function check_bbs_auth($username, $password) {
   }
   if($username == strtolower($CONFIG['server_auth_user'])) { 
     if(filemtime($config_dir."rslight.inc.php") > filemtime($userFilename)) {
-      if ($userFileHandle = @fopen($userFilename, 'w+'))
+      if ($userFileHandle = fopen($userFilename, 'w+'))
       {
         fwrite($userFileHandle, password_hash($CONFIG['server_auth_pass'], PASSWORD_DEFAULT));
         fclose($userFileHandle);
@@ -1121,7 +1117,7 @@ function check_bbs_auth($username, $password) {
 	return FALSE;
   }
 
-  if ($userFileHandle = @fopen($userFilename, 'r'))
+  if ($userFileHandle = fopen($userFilename, 'r'))
   {
         $userFileInfo = fread($userFileHandle, filesize($userFilename));
         fclose($userFileHandle);
@@ -1171,7 +1167,7 @@ function check_encryption_groups($request) {
 	  return TRUE;
 	}
     }
-    fclose($userFileHandle);
+    fclose($groupsFileHandle);
   } else {
     return FALSE;
   }
@@ -1602,7 +1598,7 @@ $logfile=$logdir.'/newsportal.log';
 
 // $loadrate = allowed article request per second
   $loadrate = .15;
-  $rate = ($_SESSION['views'] / (time() - $_SESSION['starttime']));
+  $rate = fdiv($_SESSION['views'], (time() - $_SESSION['starttime']));
   if (($rate > $loadrate) && ($_SESSION['views'] > 5)) {
     header("HTTP/1.0 429 Too Many Requests");
     if(!isset($_SESSION['throttled'])) {

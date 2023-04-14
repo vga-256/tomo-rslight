@@ -29,12 +29,10 @@ $CONFIG = include($config_file);
 
 $logdir=$spooldir.'/log';
 $lockdir=$spooldir.'/lock';
-$ssldir=$config_dir.'/ssl';
 
 if(!file_exists($config_dir.'/debug')) {
   ini_set('error_reporting', E_ERROR );
 }
-
 /* Permanent configuration changes */
 @mkdir($logdir,0755,'recursive');
 @mkdir($spooldir.'/upload',0755,'recursive');

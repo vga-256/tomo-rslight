@@ -41,7 +41,7 @@ include "head.inc";
   } else {
     echo '<td>Search Poster:&nbsp';
   }
-  echo '<input name="terms" type="text" id="terms" value="'.$_GET[terms].'"></td>';
+  echo '<input name="terms" type="text" id="terms" value="'.$_GET['terms'].'"></td>';
   echo '</tr><tr></tr><tr><td>';
 
 if ($_GET['searchpoint'] == 'Poster') {
@@ -97,7 +97,7 @@ $thissite = '.';
 
 $groupconfig=$config_path."/groups.txt";
 
-$title.=' - search results for: '.$_POST[terms];
+$title.=' - search results for: '.$_POST['terms'];
 include "head.inc";
 
 ob_start();

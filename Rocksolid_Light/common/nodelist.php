@@ -12,13 +12,12 @@ echo '<br />';
 echo '<b>novaBBS:</b><br /><a href="https://www.novabbs.com">www.novabbs.com</a><br />';
 echo '<br />';
 
-echo "Newsreader Access (most text newsgroups available, use 'list'):<br />";
+echo 'Newsreader Access:<br />';
 echo 'v77lu6t26velvaddm4gibyzd5sogskuczp7vwoc4vxmukvvaucva.b32.i2p<br />';
 echo 'zkcvkb5xprurx5dvpanhyivneuzah6k6xayxgxd4h2ekklxgoi2x5aad.onion:119<br />';
 echo 'news.novabbs.org:119 or 563<br />';
 echo '<br />';
 echo 'Create NNTP Account: Use one of the <i>Rocksolid Light</i> links above to create account.<br />';
-echo 'Log into NNTP server with your username/password to post<br />';
 echo 'NNTP Peering also available in i2p/tor/clearnet<br />';
 echo '<br />';
 echo 'Rocksolid is also available from any usenet news provider carrying the rocksolid.* hierarchy<br />';
