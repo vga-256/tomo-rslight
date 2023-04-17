@@ -194,6 +194,7 @@ function thread_overview_interpret($line,$overviewformat,$groupname) {
 //  $over=explode("\t",$line,count($overviewfmt)-1);
   $over=explode("\t",$line);
   //$article=new headerType;
+  $article = (object)[];
   for ($i=0; $i<count($overviewfmt)-1; $i++) {
     if ($overviewfmt[$i]=="Subject:") {
       $subject=preg_replace('/\[doctalk\]/i','',headerDecode($over[$i+1]));
@@ -422,9 +423,9 @@ function thread_load_newsserver(&$ns,$groupname,$poll) {
         }
         // write information about the last article to the spool-directory
         $infofile=fopen($spooldir."/".$groupname."-lastarticleinfo.dat","w");
-        $lastarticleinfo->from=$article->from;
-        $lastarticleinfo->date=$article->date;
-        $lastarticleinfo->name=$article->name;
+        $lastarticleinfo['from']=$article->from;
+        $lastarticleinfo['date']=$article->date;
+        $lastarticleinfo['name']=$article->name;
         fputs($infofile,serialize($lastarticleinfo));
         fclose($infofile);
       }

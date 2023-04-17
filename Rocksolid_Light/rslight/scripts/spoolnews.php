@@ -184,7 +184,7 @@ function get_articles($ns, $group) {
   $stmt = $dbh->prepare($sql);
   if($CONFIG['article_database'] == '1') {
     $article_dbh = article_db_open($spooldir.'/'.$group.'-articles.db3');
-    $article_sql = 'INSERT INTO articles(newsgroup, number, msgid, date, name, subject, article, search_snippet) VALUES(?,?,?,?,?,?,?,?)';
+    $article_sql = 'INSERT OR IGNORE INTO articles(newsgroup, number, msgid, date, name, subject, article, search_snippet) VALUES(?,?,?,?,?,?,?,?)';
     $article_stmt = $article_dbh->prepare($article_sql);
   }
   # Pull articles and save them in our spool
@@ -318,7 +318,7 @@ function get_articles($ns, $group) {
       $bytes = $bytes + ($lines * 2);
 // Don't spool article if $banned=1
        if($banned == 1) {
-         @fclose($articleHandle);
+//         @fclose($articleHandle);
          unlink($grouppath."/".$local);
          file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Skipping: ".$CONFIG['remote_server']." ".$group.":".$article." user: ".$from[1]." is banned", FILE_APPEND);
 	 $article++;

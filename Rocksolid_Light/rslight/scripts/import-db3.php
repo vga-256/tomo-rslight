@@ -59,7 +59,7 @@ function import_articles($group) {
   # Prepare databases
 // Overview db
   $new_article_dbh = article_db_open($spooldir.'/'.$group.'-articles.db3-new');
-  $new_article_sql = 'INSERT INTO articles(newsgroup, number, msgid, date, name, subject, article, search_snippet) VALUES(?,?,?,?,?,?,?,?)';
+  $new_article_sql = 'INSERT OR IGNORE INTO articles(newsgroup, number, msgid, date, name, subject, article, search_snippet) VALUES(?,?,?,?,?,?,?,?)';
   $new_article_stmt = $new_article_dbh->prepare($new_article_sql);
   $database = $spooldir.'/articles-overview.db3';
   $table = 'overview';
@@ -69,7 +69,7 @@ function import_articles($group) {
   $clear_stmt->execute();
   unlink($overview_file);
 
-  $sql = 'INSERT INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';
+  $sql = 'INSERT OR IGNORE INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';
   $stmt = $dbh->prepare($sql);
 // Incoming db
   $article_dbh = article_db_open($spooldir.'/'.$group.'-articles.db3');

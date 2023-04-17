@@ -126,7 +126,7 @@ echo '</table>';
   $userfile=$spooldir.'/'.$user.'-articleviews.dat';
   if(is_file($userfile)) {
      $userdata = unserialize(file_get_contents($userfile));
-     ksort($userdata);
+//     ksort($userdata);
   }
 // Apply Config
     if(isset($_POST['command']) && $_POST['command'] == 'SaveConfig') {

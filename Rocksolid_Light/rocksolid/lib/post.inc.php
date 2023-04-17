@@ -232,13 +232,12 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis=null,$e
     $weg=line_read($ns);
     $t = explode(' ', $weg);
     if($t[0] != "340") {
-	nntp_close($ns);
-	return $weg;
+	  nntp_close($ns);
+	  return $weg;
     }
 
 
     fputs($ns,'Subject: '.encode_subject($subject)."\r\n");
-
 // For Synchronet use
     if (isset($fromname) && (isset($CONFIG['synchronet']) && ($CONFIG['synchronet'] == true))) {
 //    if ( isset($fromname) && isset($CONFIG['synchronet']) ) {
