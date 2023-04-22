@@ -623,7 +623,7 @@ function groups_show($gruppen) {
     if(isset($userdata[$g->name])) {
       $groupdisplay.='</span><p class="np_group_desc">';
       $groupdisplay.='<a class="np_group_desc" href="index.php?unsub='.$g->name.'">(unsubscribe)</a>';
-      if($userdata[$g->name] < $lastarticleinfo->date) {
+      if($userdata[$g->name] < $lastarticleinfo['date']) {
 	    $groupdisplay.='<a href="overboard.php?thisgroup='._rawurlencode($g->name).'&time='.$userdata[$g->name].'">(new)</a> ';
       }
       $groupdisplay.='</p';   
