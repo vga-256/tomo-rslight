@@ -120,7 +120,7 @@ set_time_limit(0);
 	  if(!isset($command[2])) {
 	    $command[2] = fgets($msgsock, 2048);
 	  } 
-          if($command[1] == 'user') {
+          if(strtolower($command[1]) == 'user') {
             $user = $command[2];
 	    if(isset($command[3])) {
 		$user = $user." ".$command[3];
@@ -129,7 +129,7 @@ set_time_limit(0);
 	    fwrite($msgsock, $msg, strlen($msg));
             continue;
           } 
-	  if ($command[1] == 'pass') {
+	  if (strtolower($command[1]) == 'pass') {
             if($user == "") {
               $msg="482 Authentication commands issued out of sequence\r\n";
             } else {
