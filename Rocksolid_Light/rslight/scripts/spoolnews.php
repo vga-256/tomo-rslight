@@ -55,6 +55,7 @@ if (posix_getsid($pid) === false || !is_file($lockfile)) {
    print "Spoolnews currently running\n";
    exit;
 }
+
 $sem = $spooldir."/".$config_name.".reload";
 if(is_file($sem)) {
   unlink($remote_groupfile);
@@ -231,7 +232,7 @@ function get_articles($ns, $group) {
           $local++;
         }
       }
-      $articleHandle = fopen($grouppath."/".$local, 'w+');
+      $articleHandle = $grouppath."/".$local;
       $response = line_read($ns);
       $lines=0;
       $bytes=0;
@@ -301,24 +302,22 @@ function get_articles($ns, $group) {
        } else {
 	$body.=$response."\n";
        }
-       fputs($articleHandle, $response."\n");
+       file_put_contents($articleHandle, $response."\n", FILE_APPEND);
 // Check here for broken $ns connection before continuing
        $response=fgets($ns,1200);
        if($response == false) {
 	 file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Lost connection to ".$CONFIG['remote_server'].":".$CONFIG['remote_port']." retrieving article ".$article, FILE_APPEND);
-	 @fclose($articleHandle);
 	 unlink($grouppath."/".$local);
-	 continue;
+	 break;
+//	 continue;
        }
        $response=str_replace("\n","",str_replace("\r","",$response));
       }
-      fputs($articleHandle, $response."\n");
-      @fclose($articleHandle);
+      file_put_contents($articleHandle, $response."\n", FILE_APPEND);
       $lines=$lines-1;
       $bytes = $bytes + ($lines * 2);
 // Don't spool article if $banned=1
        if($banned == 1) {
-//         @fclose($articleHandle);
          unlink($grouppath."/".$local);
          file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Skipping: ".$CONFIG['remote_server']." ".$group.":".$article." user: ".$from[1]." is banned", FILE_APPEND);
 	 $article++;

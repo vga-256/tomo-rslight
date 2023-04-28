@@ -37,6 +37,28 @@ if (posix_getsid($pid) === false || !is_file($lockfile)) {
    exit;
 }
 
+if($argv[1][0] == '-') {
+    switch ($argv[1]) {
+        case "-ver":
+            echo "Version 1.0\n";
+            break;
+        case "-remove":
+            echo "Removing: ".$argv[2]."\n";
+            remove_articles($argv[2]);
+            reset_group($argv[2], 1);
+            break;
+        case "-reset":
+            echo "Reset: ".$argv[2]."\n";
+            remove_articles($argv[2]);
+            reset_group($argv[2], 0);
+            break;
+    }
+    exit();
+} else {
+    exit();
+}
+
+$group_list = get_group_list();
 $group = trim($argv[1]);
 if($group == '') {
   $group_files = scandir($workpath);
@@ -45,13 +67,90 @@ if($group == '') {
       continue;
     } 
     $group = preg_replace('/-articles.db3/', '', $this_file);
-    echo 'Importing: '.$group."\n";
-    import_articles($group);
+    if (in_array($group, $group_list)) {
+      echo "Importing: ".$group."\n";
+      import_articles($group);
+    } else {
+      echo "Removing: ".$group."\n";
+      remove_articles($group);
+    }
   }
 } else {
+  echo "Importing: ".$group."\n";
   import_articles($group);
 }
 echo "\nImport Done\r\n";
+
+function get_group_list() {
+    global $config_dir;
+    $grouplist = array();
+    $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach($menulist as $menu) {
+        if($menu[0] == '#') {
+            continue;
+        }
+        $menuitem=explode(':', $menu);
+        if($menuitem[2] == '0') {
+            continue;
+        }
+        $glist = file($config_dir.$menuitem[0]."/groups.txt");
+        foreach($glist as $gl) {
+            if($gl[0] == ':') {
+                continue;
+            }
+            $group_name = preg_split("/( |\t)/", $gl, 2);
+            $grouplist[] = trim($group_name[0]);
+        }
+    }
+    return $grouplist;
+}
+
+function reset_group($group, $remove=0) {
+    global $config_dir, $spooldir;
+    $group = trim($group);
+    
+    if(!$section = get_section_by_group($group)) {
+        return false;
+    }
+    $config_location = $spooldir.'/'.$section;
+    $config_files = array_diff(scandir($config_location), array('..', '.'));
+
+    foreach($config_files as $config_file) {
+        $output = array();
+        echo $config_location.'/'.$config_file."\n";
+        $thisfile = file($config_location.'/'.$config_file);
+        foreach($thisfile as $thisgroupline) {
+            $onegroup = explode(':', $thisgroupline);
+            if(trim($onegroup[0]) == $group) {
+                echo "FOUND: ".$group." in ".$section."\n";
+                if($remove == 0) {
+                    $output[] = $group."\n";
+                }
+            } else {
+                $output[] = $thisgroupline;
+            }
+        }
+        file_put_contents($config_location.'/'.$config_file, $output);
+    }
+}
+
+function remove_articles($group) {
+    global $spooldir, $CONFIG, $workpath, $path, $config_name, $logfile;
+    $group = trim($group);
+    $overview_file = $workpath.'/'.$group."-overview";
+    # Prepare databases
+    $dbh = rslight_db_open($spooldir.'/articles-overview.db3');
+    $clear_stmt = $dbh->prepare("DELETE FROM overview WHERE newsgroup=:group");
+    $clear_stmt->bindParam(':group', $group);
+    $clear_stmt->execute();
+    unlink($overview_file);
+    rename($spooldir.'/'.$group.'-articles.db3',$spooldir.'/'.$group.'-articles.db3-removed');
+    unlink($spooldir.'/'.$group.'-data.dat');
+    unlink($spooldir.'/'.$group.'-info.txt');
+    unlink($spooldir.'/'.$group.'-cache.txt');
+    unlink($spooldir.'/'.$group.'-lastarticleinfo.dat');
+    unlink($spooldir.'/'.$group.'-overboard.dat');
+}
 
 function import_articles($group) {
   global $spooldir, $CONFIG, $workpath, $path, $config_name, $logfile;
@@ -150,5 +249,8 @@ function import_articles($group) {
   rename($spooldir.'/'.$group.'-articles.db3-new', $spooldir.'/'.$group.'-articles.db3');
   unlink($spooldir.'/'.$group.'-data.dat');
   unlink($spooldir.'/'.$group.'-info.txt');
+  unlink($spooldir.'/'.$group.'-cache.txt');
+  unlink($spooldir.'/'.$group.'-lastarticleinfo.dat');
+  unlink($spooldir.'/'.$group.'-overboard.dat');
 }
 ?>

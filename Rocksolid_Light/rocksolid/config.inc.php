@@ -16,7 +16,6 @@ if(file_exists($config_dir.$config_name.'.inc.php')) {
 } else {
   $config_file = $config_dir.'rslight.inc.php';
 }
-
 $installed_path = getcwd();
 
 /* $config_path is a directory off the $config_dir

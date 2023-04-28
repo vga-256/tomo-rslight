@@ -398,6 +398,10 @@ function thread_load_newsserver(&$ns,$groupname,$poll) {
     // read articles from the newsserver
     if ($spoolopenmodus != "n") {
       // order the article overviews from the newsserver
+        if($firstarticle == 0 && $lastarticle ==  0) {
+            fclose($ns);
+            return false;
+        }
       fputs($ns,"XOVER ".$firstarticle."-".$lastarticle."\r\n");
       $tmp=line_read($ns);
       // have the server accepted our order?

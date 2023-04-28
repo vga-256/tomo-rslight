@@ -50,7 +50,6 @@ set_time_limit(0);
 	$command = explode(' ', $buf);
 	$command[0] = strtolower($command[0]);
 	if(isset($command[1])) {
-  	  $command[1] = strtolower($command[1]);
 	}
 	if ($command[0] == 'date') {
           $msg = '111 '.date('YmdHis')."\r\n";
@@ -590,7 +589,6 @@ function extract_header_line($article_full_path, $header, $thisgroup, $article) 
 
 function get_title($mode) {
     global $nntp_group,$workpath,$spooldir,$path;
-    $mode = strtolower($mode);
     if($mode == "active") {
 	$msg="481 descriptions unavailable\r\n";
         return $msg;
@@ -601,7 +599,7 @@ function get_title($mode) {
     }
     $title = file_get_contents($spooldir."/".$mode."-title");
     $msg="282 list of group and description follows\r\n";
-    $msg.=$title;
+    $msg.=trim($title);
 
     $msg.="\r\n.\r\n";
     return $msg;
@@ -870,8 +868,6 @@ function get_listgroup($nntp_group, $msgsock) {
     $count=0;
     foreach($grouplist as $findgroup) {
         $name = preg_split("/( |\t)/", $findgroup, 2);
-        $name[0]=strtolower($name[0]);
-        $nntp_group=strtolower($nntp_group);
         if(!strcmp($name[0], $nntp_group)) {
             $ok_group=true;
             break;
@@ -904,8 +900,6 @@ function get_group($change_group) {
     $count=0;
     foreach($grouplist as $findgroup) {
 	$name = preg_split("/( |\t)/", $findgroup, 2);
-	$name[0]=strtolower($name[0]);
-	$change_group=strtolower($change_group);
 	if(!strcmp($name[0], $change_group)) {
 	    $ok_group=true;
 	    break;
@@ -933,7 +927,6 @@ function get_group($change_group) {
 function get_newgroups($mode) {
     global $path,$groupconfig;
     $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $mode = strtolower($mode);
   $mode = "active";
   if($mode == "active") {
     $msg = '231 list of newsgroups follows'."\r\n";
@@ -982,7 +975,6 @@ function get_newgroups($mode) {
 function get_list($mode, $msgsock) {
     global $path,$spooldir,$groupconfig;
     $grouplist = file($groupconfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-  $mode = strtolower($mode);
   if($mode == "headers") {
     $msg = "215 metadata items supported:\r\n";
     $msg.= ":\r\n";

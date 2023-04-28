@@ -88,13 +88,15 @@ function nntp_open($nserver=0,$nport=0) {
 function nntp2_open($nserver=0,$nport=0) {
   global $text_error,$CONFIG;
   // echo "<br>NNTP OPEN<br>";
-  echo "NS: ".$nserver." PORT: ".$nport;
   $authorize=((isset($CONFIG['remote_auth_user'])) && (isset($CONFIG['remote_auth_pass'])) &&
               ($CONFIG['remote_auth_user'] != ""));
   if ($nserver==0) $nserver=$CONFIG['remote_server'];
   if ($nport==0) $nport=$CONFIG['remote_port'];
   if($CONFIG['remote_ssl']) {
-    $ns=@fsockopen('ssl://'.$nserver.":".$nport);
+      var_dump($ns = fsockopen("ssl://".$nserver, $nport,  $error, $errorString, 30));
+      var_dump($errorString);
+      var_dump($error);
+//    $ns=@fsockopen('ssl://'.$nserver.":".$nport);
   } else {
     if(isset($CONFIG['socks_host']) && $CONFIG['socks_host'] !== '') {
         $ns=fsocks4asockopen($CONFIG['socks_host'], $CONFIG['socks_port'], $nserver, $nport);
@@ -1595,11 +1597,10 @@ $logfile=$logdir.'/newsportal.log';
     $_SESSION['views'] = 0;
   }
   $_SESSION['views']++;
-
 // $loadrate = allowed article request per second
   $loadrate = .15;
   $rate = fdiv($_SESSION['views'], (time() - $_SESSION['starttime']));
-  if (($rate > $loadrate) && ($_SESSION['views'] > 5)) {
+  if (($rate > $loadrate) && ($_SESSION['views'] > 20)) {
     header("HTTP/1.0 429 Too Many Requests");
     if(!isset($_SESSION['throttled'])) {
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Too many requests from ".$_SERVER['REMOTE_ADDR']." throttling", FILE_APPEND);
