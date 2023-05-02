@@ -656,9 +656,9 @@ function groups_show($gruppen) {
         $found = 1;
         break;
       }
-      $dbh = null;
-      if($found) {
-	$lastarticleinfo['date'] = $row->date;
+      $articles_dbh = null;
+      if($found == 1) {
+        $lastarticleinfo['date'] = $row['date'];
 // Put this in a function already!
         $fromoutput = explode("<", html_entity_decode($row['name']));
 // Just an email address?
