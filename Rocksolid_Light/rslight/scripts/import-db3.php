@@ -1,7 +1,10 @@
 <?php
 /* This script allows importing a group .db3 file from a backup
- * or another rslight site.
+ * or another rslight site, and other features.
  * 
+ * Use -help to see other features.
+ * 
+ * To import a group db3 file:
  * Place the article database file group.name-articles.db3 in 
  * your spool directory, and change user/group to your web user.
  * Run this script as your web user from your $webdir/spoolnews dir:
@@ -22,11 +25,6 @@ include ("$file_newsportal");
 
 $logfile=$logdir.'/import.log';
 
-# END MAIN CONFIGURATION
-
-$workpath=$spooldir."/";
-$path=$workpath."articles/";
-
 $lockfile = $lockdir . '/'.$config_name.'-spoolnews.lock';
 $pid = file_get_contents($lockfile);
 if (posix_getsid($pid) === false || !is_file($lockfile)) {
@@ -37,10 +35,13 @@ if (posix_getsid($pid) === false || !is_file($lockfile)) {
    exit;
 }
 
+if(!isset($argv[1])) {
+    $argv[1] = "-help";
+}
 if($argv[1][0] == '-') {
     switch ($argv[1]) {
-        case "-ver":
-            echo "Version 1.0\n";
+        case "-version":
+            echo 'Version '.$rslight_version."\n";
             break;
         case "-remove":
             echo "Removing: ".$argv[2]."\n";
@@ -52,34 +53,56 @@ if($argv[1][0] == '-') {
             remove_articles($argv[2]);
             reset_group($argv[2], 0);
             break;
+        case "-import":
+            if(isset($argv[2])) {
+                import($argv[2]);
+            } else {
+                import();
+            }
+            break;
+        default:
+            echo "-help: This help page\n";
+            echo "-version: Display version\n";
+            echo "-import: Import articles from a .db3 file (-import alt.test-articles.db3)\n";
+            echo "         You must also add group name to <config_dir>/<section>/groups.txt manually\n";
+            echo "-remove: Remove all data for a group (-remove alt.test)\n";
+            echo "         You must also remove group name from <config_dir>/<section>/groups.txt manually\n";
+            echo "-reset: Reset a group to restart from zero messages (-reset alt.test)\n";
+            break;
     }
     exit();
 } else {
     exit();
 }
 
-$group_list = get_group_list();
-$group = trim($argv[1]);
-if($group == '') {
-  $group_files = scandir($workpath);
-  foreach($group_files as $this_file) {
-    if(strpos($this_file, '-articles.db3') === false) {
-      continue;
-    } 
-    $group = preg_replace('/-articles.db3/', '', $this_file);
-    if (in_array($group, $group_list)) {
-      echo "Importing: ".$group."\n";
-      import_articles($group);
-    } else {
-      echo "Removing: ".$group."\n";
-      remove_articles($group);
+function import($group = '') {
+  global $logfile;
+  $workpath=$spooldir."/";
+  $path=$workpath."articles/";
+  $group_list = get_group_list();
+  $group = trim($group);
+  if($group == '') {
+    $group_files = scandir($workpath);
+    foreach($group_files as $this_file) {
+      if(strpos($this_file, '-articles.db3') === false) {
+        continue;
+      } 
+      $group = preg_replace('/-articles.db3/', '', $this_file);
+      if (in_array($group, $group_list)) {
+        echo "Importing: ".$group."\n";
+        import_articles($group);
+      } else {
+        echo "Removing: ".$group."\n";
+        remove_articles($group);
+        reset_group($group, 1);
+      }
     }
+  } else {
+    echo "Importing: ".$group."\n";
+    import_articles($group);
   }
-} else {
-  echo "Importing: ".$group."\n";
-  import_articles($group);
+  echo "\nImport Done\r\n";
 }
-echo "\nImport Done\r\n";
 
 function get_group_list() {
     global $config_dir;
