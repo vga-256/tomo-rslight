@@ -68,7 +68,7 @@ if($argv[1][0] == '-') {
             echo "-version: Display version\n";
             echo "-clean: Remove extraneous group db3 files\n";
             echo "-import: Import articles from a .db3 file (-import alt.test-articles.db3)\n";
-            echo "         You must also add group name to <config_dir>/<section>/groups.txt manually\n";
+            echo "         You must first add group name to <config_dir>/<section>/groups.txt manually\n";
             echo "-remove: Remove all data for a group (-remove alt.test)\n";
             echo "         You must also remove group name from <config_dir>/<section>/groups.txt manually\n";
             echo "-reset: Reset a group to restart from zero messages (-reset alt.test)\n";
