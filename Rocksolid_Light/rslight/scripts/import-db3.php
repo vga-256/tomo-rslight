@@ -60,9 +60,13 @@ if($argv[1][0] == '-') {
                 import();
             }
             break;
+        case "-clean":
+            clean_spool();
+            break;
         default:
             echo "-help: This help page\n";
             echo "-version: Display version\n";
+            echo "-clean: Remove extraneous group db3 files\n";
             echo "-import: Import articles from a .db3 file (-import alt.test-articles.db3)\n";
             echo "         You must also add group name to <config_dir>/<section>/groups.txt manually\n";
             echo "-remove: Remove all data for a group (-remove alt.test)\n";
@@ -75,8 +79,32 @@ if($argv[1][0] == '-') {
     exit();
 }
 
+
+function clean_spool() {
+    global $logfile, $workpath, $spooldir;
+    $workpath=$spooldir."/";
+    $path=$workpath."articles/";
+    $group_list = get_group_list();
+    $group = trim($group);
+    $group_files = scandir($workpath);
+    foreach($group_files as $this_file) {
+        if(strpos($this_file, '-articles.db3') === false) {
+            continue;
+        }
+        $group = preg_replace('/-articles.db3/', '', $this_file);
+        if (in_array($group, $group_list)) {
+            continue;
+        } else {
+            echo "Removing: ".$this_file."\n";
+            remove_articles($group);
+            reset_group($group, 1);
+        }
+    }
+    echo "\nImport Done\r\n";
+}
+
 function import($group = '') {
-  global $logfile;
+  global $logfile, $workpath, $spooldir;
   $workpath=$spooldir."/";
   $path=$workpath."articles/";
   $group_list = get_group_list();
