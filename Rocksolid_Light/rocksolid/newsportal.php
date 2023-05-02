@@ -620,12 +620,12 @@ function groups_show($gruppen) {
     if(is_file($filename)) {
     $lastarticleinfo = unserialize(file_get_contents($filename));
     } else {
-      $lastarticleinfo['date'] = 0;
+      $lastarticleinfo->date = 0;
     }
     if(isset($userdata[$g->name])) {
       $groupdisplay.='</span><p class="np_group_desc">';
       $groupdisplay.='<a class="np_group_desc" href="index.php?unsub='.$g->name.'">(unsubscribe)</a>';
-      if($userdata[$g->name] < $lastarticleinfo['date']) {
+      if($userdata[$g->name] < $lastarticleinfo->date) {
 	    $groupdisplay.='<a href="overboard.php?thisgroup='._rawurlencode($g->name).'&time='.$userdata[$g->name].'">(new)</a> ';
       }
       $groupdisplay.='</p';   
@@ -658,7 +658,7 @@ function groups_show($gruppen) {
       }
       $dbh = null;
       if($found) {
-	$lastarticleinfo['date'] = $row['date'];
+	$lastarticleinfo['date'] = $row->date;
 // Put this in a function already!
         $fromoutput = explode("<", html_entity_decode($row['name']));
 // Just an email address?
@@ -671,16 +671,16 @@ function groups_show($gruppen) {
           $fromoutput[0] = $fromaddress[1];
         }
         if((isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) && (strpos($fromoutput[0], '@') !== false)) {
-          $lastarticleinfo['name'] = truncate_email($fromoutput[0]);
+          $lastarticleinfo->name = truncate_email($fromoutput[0]);
         } else {
           $lastarticleinfo['name'] = $fromoutput[0];
         }
       }
     }
-    $groupdisplay.=get_date_interval(date("D, j M Y H:i T",$lastarticleinfo['date']));
+    $groupdisplay.=get_date_interval(date("D, j M Y H:i T",$lastarticleinfo->date));
     $groupdisplay.='<table><tr><td>';
     $groupdisplay.='<font class="np_last_posted_date">by: ';
-    $groupdisplay.=create_name_link(mb_decode_mimeheader($lastarticleinfo['name']), $lastarticleinfo['from']);
+    $groupdisplay.=create_name_link(mb_decode_mimeheader($lastarticleinfo->name), $lastarticleinfo->from);
     $groupdisplay.='</td></tr></table>';
     }
     $groupdisplay.="\n";
