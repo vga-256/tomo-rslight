@@ -299,7 +299,7 @@ function message_post($subject,$from,$newsgroups,$ref,$body,$encryptthis=null,$e
     }
     fputs($ns,'Message-ID: '.$msgid."\r\n");
     if ($userconfig['xface'] !== '' && $myconfig) {
-      fputs($ns,'X-Face: '.$userconfig[xface]."\r\n");
+      fputs($ns,'X-Face: '.$userconfig['xface']."\r\n");
     }
     $body=str_replace("\n.\r","\n..\r",$body);
     $body=str_replace("\r",'',$body);
