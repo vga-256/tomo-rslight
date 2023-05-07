@@ -410,11 +410,11 @@ function message_post_with_attachment($subject,$from,$newsgroups,$ref,$body,$enc
 	$body.="\r\n--------------".$boundary."\r\n";
     fputs($ns,'Message-ID: '.$msgid."\r\n");
     if ($userconfig['xface'] !== '' && $myconfig) {
-      fputs($ns,'X-Face: '.$userconfig[xface]."\r\n");
+      fputs($ns,'X-Face: '.$userconfig['xface']."\r\n");
     }
     fputs($ns,'Content-Type: multipart/mixed;boundary="------------'.$boundary.'"');
     fputs($ns,"\r\n");
-    $contenttype = shell_exec('file -b --mime-type '.$spooldir.'/upload/'.$_FILES[photo][name]);
+    $contenttype = shell_exec('file -b --mime-type '.$spooldir.'/upload/'.$_FILES['photo']['name']);
     $contenttype = rtrim($contenttype);
     $b64file = shell_exec('uuencode -m '.$spooldir.'/upload/'.$_FILES['photo']['name'].' '.$_FILES['photo']['name'].' | grep -v \'begin-base64\|====\'');
     $body.='Content-Type: '.$contenttype.';';
