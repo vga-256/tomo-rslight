@@ -1,5 +1,6 @@
 <?php 
-
+/* Rename this file to letsencrypt.inc.php for use */
+/* */
 /* Set paths for fullchain.pem and privkey.pem */
 $letsencrypt['path'] = "/etc/letsencrypt/live/<domain>/";
 

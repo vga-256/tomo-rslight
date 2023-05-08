@@ -691,7 +691,7 @@ function get_stat($article) {
       $over=explode("\t", $overviewline);
       if(trim($over[0]) == trim($article)) { 
 	$msg="223 ".$article." ".$over[4]." status\r\n";
-	fclose(overviewfp);
+	fclose($overviewfp);
 	return $msg;
       }
     }
