@@ -115,7 +115,9 @@ if(isset($frames_on) && $frames_on === true) {
 // $ns=nntp_open($server,$port);
   flush();
   $headers = thread_load($group);
-  $article_count=count($headers);
+  if($headers) {
+    $article_count=count($headers);
+  }
   if ($articles_per_page != 0) { 
     if ((!isset($first)) || (!isset($last))) {
       if ($startpage=="first") {
@@ -134,7 +136,7 @@ if(isset($frames_on) && $frames_on === true) {
     } else {
       // oh no, the replies will not be shown, this makes life hard...
       $pagecount=0;
-      if(count($headers) > 0 && is_array($headers)) {
+      if(($headers) && (count($headers) > 0 && is_array($headers))) {
         foreach($headers as $h) {
           if($h->isAnswer==false)
             $pagecount++;

@@ -166,22 +166,26 @@ if($unread) {
     echo '</tr></table>';
     echo '</p>';
 function check_unread_mail() {
-global $CONFIG, $spooldir;
+        global $CONFIG, $spooldir;
         if(isset($_COOKIE['mail_name'])) {
           $name = strtolower($_COOKIE['mail_name']);
           $database = $spooldir.'/mail.db3';
-          $dbh = head_mail_db_open($database);
-          $query = $dbh->prepare('SELECT * FROM messages where rcpt_to=:rcpt_to');
-          $query->execute(['rcpt_to' => $name]);
-          $newmail = false;
-          while (($row = $query->fetch()) !== false) {
-            if(($row['rcpt_viewed'] != 'true') && ($row['to_hide'] !='true')) {
-              $newmail = true;
+          if(is_file($database)) {
+            $dbh = head_mail_db_open($database);
+            $query = $dbh->prepare('SELECT * FROM messages where rcpt_to=:rcpt_to');
+            $query->execute(['rcpt_to' => $name]);
+            $newmail = false;
+            while (($row = $query->fetch()) !== false) {
+              if(($row['rcpt_viewed'] != 'true') && ($row['to_hide'] !='true')) {
+                $newmail = true;
+              }
             }
-          }
-          $dbh = null;
-          return $newmail;
+            $dbh = null;
+            return $newmail;
+          } else {
+            return false;
         }
+    }
 }
 
 function head_mail_db_open($database, $table='messages') {

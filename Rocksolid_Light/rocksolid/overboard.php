@@ -276,8 +276,9 @@ function display_threads($threads, $oldest) {
     echo '<table cellspacing="0" width="100%" class="np_results_table">';
     if(!isset($threads)) {
         $threads = (object)[];
+    } else {
+      krsort($threads);
     }
-    krsort($threads);
     $results = 0;
     foreach($threads as $key => $value) {
       $target = $this_overboard['msgids'][$value];
