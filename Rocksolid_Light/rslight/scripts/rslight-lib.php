@@ -429,6 +429,7 @@ function process_post($message, $group) {
 //        foreach($post_group as $onegroup) {
 // Check for duplicate msgid
            $duplicate=0;
+       if(file_exists($spooldir."/".$group."-overview")) {   
            $group_overviewfp=fopen($spooldir."/".$group."-overview", 'r');
            while($group_overview=fgets($group_overviewfp, 2048)) {
              $overview_msgid = explode("\t", $group_overview);
@@ -440,6 +441,7 @@ function process_post($message, $group) {
              } 
 	   }
 	   fclose($group_overviewfp);
+    }
 //      }
       if($duplicate == 0) {
 	insert_article($section,$group,$postfilename,$subject[1],$from[1],$article_date,$date_rep,$msgid,$references,$bytes,$lines,$xref,$body);	
