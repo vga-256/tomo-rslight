@@ -83,7 +83,7 @@ $enable_rslight=0;
     if(($menuitem[0] == $config_name) && ($menuitem[1] == '1')) {
       groups_read($server,$port,1);
       $enable_rslight = 1;
-      echo "Loaded groups\n";
+      echo "\nLoaded groups";
     }
   }
 $ns=nntp2_open($CONFIG['remote_server'], $CONFIG['remote_port']);
@@ -99,7 +99,7 @@ foreach($grouplist as $findgroup) {
   }
   $name = preg_split("/( |\t)/", $findgroup, 2);
   file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Retrieving articles for: ".$name[0]."...", FILE_APPEND);
-  echo "\nRetrieving articles for: ".$name[0]."...  \r\n";
+  echo "\nRetrieving articles for: ".$name[0]."...";
   get_articles($ns, $name[0]);
 
   if($enable_rslight == 1) {
@@ -113,7 +113,7 @@ nntp_close($ns2);
 nntp_close($ns);
 #expire_overview();
 unlink($lockfile);
-echo "\nSpoolnews Done\r\n";
+echo "\nSpoolnews Done\n";
 
 function get_articles($ns, $group) {
   global $enable_rslight, $spooldir, $CONFIG, $maxarticles_per_run, $maxfirstrequest, $workpath, $path, $remote_groupfile, $local_groupfile, $local, $logdir, $config_name, $logfile;
@@ -131,8 +131,8 @@ function get_articles($ns, $group) {
   # Check if group exists. Open it if it does
   fputs($ns, "group ".$group."\r\n");
   $response = line_read($ns);
-  if (strcmp(substr($response,0,3),"411") == 0) {
-    echo "\n".$response."\n";
+  if (strcmp(substr($response,0,3),"211") != 0) {
+    echo "\n".$response;
     return(1);
   }
   
@@ -188,6 +188,13 @@ function get_articles($ns, $group) {
     $article_sql = 'INSERT OR IGNORE INTO articles(newsgroup, number, msgid, date, name, subject, article, search_snippet) VALUES(?,?,?,?,?,?,?,?)';
     $article_stmt = $article_dbh->prepare($article_sql);
   }
+// Create list of message-ids
+  $group_overviewfile = $spooldir."/".$group."-overview";
+  $gover = file($group_overviewfile);
+  foreach($gover as $group_overview) {
+      $overview_msgid = explode("\t", $group_overview);
+      $msgids[trim($overview_msgid[4])] = true;
+  }
   # Pull articles and save them in our spool
   @mkdir($grouppath,0755,'recursive');
   $i=0;
@@ -204,17 +211,12 @@ function get_articles($ns, $group) {
       fputs($ns, "stat ".$article."\r\n");
       $response = line_read($ns);
       $this_msgid = explode(' ', $response);
-      $group_overviewfile = $spooldir."/".$group."-overview";
-      $gover = file($group_overviewfile);
-      foreach($gover as $group_overview) {
-	$overview_msgid = explode("\t", $group_overview);
-	if(strpos($overview_msgid[4], $this_msgid[2]) !== false) {
-	  echo "\nDuplicate Message-ID for: ".$CONFIG['remote_server']." ".$group.":".$article."\n";
-          file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Duplicate Message-ID for: ".$CONFIG['remote_server']." ".$group.":".$article, FILE_APPEND);
+      if($msgids[trim($this_msgid[2])] == true) {
+          echo "\nDuplicate Message-ID for: ".$group.":".$article;
+          file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Duplicate Message-ID for: ".$group.":".$article, FILE_APPEND);
           $article++;
           $duplicate = 1;
           break;
-	}
       }
       if($duplicate == 1) {
 	continue;
@@ -222,7 +224,7 @@ function get_articles($ns, $group) {
       fputs($ns, "article ".$article."\r\n");
       $response = line_read($ns);
       if (strcmp(substr($response,0,3),"220") != 0) {
-	echo "\n".$response."\n";
+	echo "\n".$response;
         file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Unexpected response to ARTICLE command: ".$response, FILE_APPEND);
 	$article++;
 	continue;
@@ -346,7 +348,7 @@ function get_articles($ns, $group) {
             $article_date = time();
           touch($grouppath."/".$local, $article_date);
         }
-      echo "\nRetrieved: ".$group." ".$article."\n";
+      echo "\nRetrieved: ".$group." ".$article;
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Wrote to spool: ".$CONFIG['remote_server']." ".$group.":".$article, FILE_APPEND);
       $i++;
       $article++;
