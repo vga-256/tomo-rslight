@@ -658,17 +658,19 @@ function get_xover($articles, $msgsock) {
    }
   }
     fwrite($msgsock, $output, strlen($output));
-    $overviewfp=fopen($overviewfile, 'r');
-    while($overviewline=fgets($overviewfp)) {
-      $article=preg_split("/[\s,]+/", $overviewline);
-      for($i=$first; $i<=$last; $i++) {
-        if($article[0] === strval($i)) {
-	  $overviewline = trim($overviewline)."\r\n";
-          fwrite($msgsock, $overviewline, strlen($overviewline));
+    if(file_exists($overviewfile)) {
+      $overviewfp=fopen($overviewfile, 'r');
+      while($overviewline=fgets($overviewfp)) {
+        $article=preg_split("/[\s,]+/", $overviewline);
+        for($i=$first; $i<=$last; $i++) {
+          if($article[0] === strval($i)) {
+	    $overviewline = trim($overviewline)."\r\n";
+            fwrite($msgsock, $overviewline, strlen($overviewline));
+          }
         }
       }
+      fclose($overviewfp);
     }
-    fclose($overviewfp); 
     $msg.=".\r\n";
     return $msg;
 }
