@@ -25,8 +25,6 @@ include "head.inc";
     echo '<td>';
     echo '<form target="'.$frame['content'].'" method="post" action="files.php">';
     echo '<input name="command" type="hidden" id="command" value="Browse" readonly="readonly">';
-    echo '<input type="hidden" name="username" value="'.$_POST['username'].'">';
-    echo '<input type="hidden" name="password" value="'.$_POST['password'].'">';
     echo '<button class="np_button_link" type="submit">Browse</button>';
     echo '</form>';
     echo '</td>';
@@ -34,15 +32,13 @@ include "head.inc";
     echo '<td>';
     echo '<form target="'.$frame['content'].'" method="post" action="upload.php">';
     echo '<input name="command" type="hidden" id="command" value="Upload" readonly="readonly">';
-    echo '<input type="hidden" name="username" value="'.$_POST['username'].'">';
-    echo '<input type="hidden" name="password" value="'.$_POST['password'].'">';
     echo '<button class="np_button_link" type="submit">Upload</button>';
     echo '</form>';
     echo '</td>';
     echo '<td width=100%></td></tr></table>';
     echo '<hr>';
 
-if(isset($_FILES)) {
+if(isset($_FILES['photo'])) {
    $_FILES['photo']['name'] = preg_replace('/[^a-zA-Z0-9\.]/', '_', $_FILES['photo']['name']);
 // Check auth here
     if(isset($_POST['key']) && password_verify($CONFIG['thissitekey'].$_POST['username'], $_POST['key'])) {
@@ -63,7 +59,6 @@ if(isset($_FILES)) {
   	    echo 'There was an error saving '.$_FILES['photo']['name'];
 	  }
 	}
-      $authkey = password_hash($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), PASSWORD_DEFAULT);
 ?>
       <script type="text/javascript">
        if (navigator.cookieEnabled)
@@ -81,6 +76,12 @@ if(isset($_FILES)) {
   echo '<table border="0" align="center" cellpadding="0" cellspacing="1">';
   echo '<form name="form1" method="post" action="upload.php" enctype="multipart/form-data">';
 
+  if(!isset($_POST['username'])) {
+      $_POST['username'] = '';
+  }
+  if(!isset($_POST['password'])) {
+      $_POST['password'] = '';
+  }
 if(!check_bbs_auth($_POST['username'], $_POST['password'])) {  
   echo '<tr><td><strong>Please Login to Upload<br /></strong></td></tr>';
   echo '<tr><td>Username:</td><td><input name="username" type="text" id="username" value="'.$name.'"></td></tr>';

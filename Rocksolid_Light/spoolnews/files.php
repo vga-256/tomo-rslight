@@ -11,7 +11,7 @@ include "newsportal.php";
     $offset=$CONFIG['timezone'];
   }
 
-  if($_REQUEST['command'] == 'Show' && password_verify($CONFIG['thissitekey'], $_REQUEST['key'])) {
+  if((isset($_REQUEST['command']) && $_REQUEST['command'] == 'Show') && password_verify($CONFIG['thissitekey'], $_REQUEST['key'])) {
     $getfilename = $spooldir.'/upload/'.$_REQUEST['showfile'];
     $getfh = fopen($getfilename, "rb");
     $getfile = fread($getfh, filesize($getfilename));
@@ -30,8 +30,6 @@ include "head.inc";
     echo '<td>';
     echo '<form target="'.$frame['content'].'" method="post" action="files.php">';
     echo '<input name="command" type="hidden" id="command" value="Browse" readonly="readonly">';
-    echo '<input type="hidden" name="username" value="'.$_POST['username'].'">';
-    echo '<input type="hidden" name="password" value="'.$_POST['password'].'">';
     echo '<button class="np_button_link" type="submit">Browse</button>';
     echo '</form>';
     echo '</td>';
@@ -39,8 +37,6 @@ include "head.inc";
     echo '<td>';
     echo '<form target="'.$frame['content'].'" method="post" action="upload.php">';
     echo '<input name="command" type="hidden" id="command" value="Upload" readonly="readonly">';
-    echo '<input type="hidden" name="username" value="'.$_POST['username'].'">';
-    echo '<input type="hidden" name="password" value="'.$_POST['password'].'">';
     echo '<button class="np_button_link" type="submit">Upload</button>';
     echo '</form>';
     echo '</td>';
@@ -67,8 +63,6 @@ include "head.inc";
     echo '<form name="browse" method="post" action="files.php" enctype="multipart/form-data">';
     echo '<input name="command" type="hidden" id="command" value="Browse" readonly="readonly">';
     echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'], PASSWORD_DEFAULT).'">';
-    echo '<input type="hidden" name="username" value="'.$_POST['username'].'">';
-    echo '<input type="hidden" name="password" value="'.$_POST['password'].'">';
     echo '<select name="listbox">';  
     foreach($users as $user) {
       $num = count(scandir($spooldir.'/upload/'.$user.'/')) - 2;

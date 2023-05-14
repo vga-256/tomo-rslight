@@ -322,7 +322,7 @@ function display_threads($threads, $oldest) {
 }
 
 function show_overboard_header($grouplist) {
-  global $text_thread, $text_article, $file_index, $file_thread, $user_time;
+  global $text_thread, $frame, $text_article, $file_index, $file_thread, $user_time;
 
 if (isset($_GET['thisgroup'])) {
     echo '<h1 class="np_thread_headline">';

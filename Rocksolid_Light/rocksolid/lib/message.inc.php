@@ -489,7 +489,9 @@ function display_full_headers($article,$group,$name,$from,$getface=false) {
     }
     $message=file($thisgroup."/".$article, FILE_IGNORE_NEW_LINES);
   }
-   unlink($sendface);
+  if(isset($sendface)) {
+      unlink($sendface);
+  }
    $isface = 0;
    foreach($message as $line) {
     if(trim($line) == '') {
@@ -511,6 +513,7 @@ function display_full_headers($article,$group,$name,$from,$getface=false) {
     if(stripos($line, 'Xref: ') === 0) {
       continue;
     }
+    $return = '';
     if(stripos($line, 'From: ') === 0) {
       $return.='From: ';
       if(isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) {
@@ -527,7 +530,7 @@ function display_full_headers($article,$group,$name,$from,$getface=false) {
      $return.=mb_decode_mimeheader(htmlspecialchars($line)).'<br />';
    }
   if($getface) {
-    if($sendface) {
+    if(isset($sendface)) {
       return($sendface);
     } else {
       return FALSE;
@@ -610,6 +613,9 @@ function message_show($group,$id,$attachment=0,$article_data=false,$maxlen=false
     $article_data=message_read($id,$attachment,$group);
   $head=$article_data->header;
   $local_poster=false;
+  if(!isset($head->rslight_site)) {
+      $head->rslight_site = '';
+  }
   if(password_verify($CONFIG['thissitekey'].$head->id, $head->rslight_site)) {
     $local_poster=true;
   }

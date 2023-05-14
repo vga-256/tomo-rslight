@@ -66,7 +66,9 @@ if(isset($frames_on) && $frames_on === true) {
     $userdata[$group] = time();
     file_put_contents($userfile, serialize($userdata));
   }
-  
+  if(!isset($_SERVER['REQUEST_STRING'])) {
+      $_SERVER['REQUEST_STRING'] = '';
+  }
   $_SESSION['return_page'] = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
 
   echo '<a name="top"></a>';

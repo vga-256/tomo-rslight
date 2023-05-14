@@ -15,5 +15,7 @@ if(isset($config_name) && file_exists($config_dir.$config_name.'.inc.php')) {
 /* Include main config file for rslight */
 $CONFIG = include $config_file;
 
-ini_set('error_reporting', E_ERROR );
+if(!file_exists($config_dir.'/DEBUG')) {
+  ini_set('error_reporting', E_ERROR );
+}
 ?>

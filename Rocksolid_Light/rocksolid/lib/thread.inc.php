@@ -68,6 +68,7 @@ function thread_pageselect($group,$article_count,$first) {
 function thread_cache_load($group) {
   global $spooldir,$compress_spoolfiles;
   $filename=$spooldir."/".$group."-data.dat";
+  $waiting = 0;
   $now = time();
   while(file_exists($filename."-writing")) {
     $waiting = 1;
@@ -686,7 +687,7 @@ function formatTreeText($tree) {
  * format the subject inside the thread
  */
 function thread_format_subject($c,$group,$highlightids=false) {
-  global $file_article, $thread_maxSubject, $frame_article, $thread_show, $spooldir, $CONFIG;
+  global $file_article, $thread_maxSubject, $frame_article, $frame, $thread_show, $spooldir, $CONFIG;
   if(isset($_COOKIE['tzo'])) {
     $offset=$_COOKIE['tzo'];
   } else {
@@ -849,9 +850,9 @@ function thread_format_lastmessage($c,$group='') {
   }
     if($ovfound == 1) {
       $url = 'article-flat.php?id='.$found['number'].'&group='.urlencode($group).'#'.$found['number'];
-      $return.='<p class=np_posted_date_left><a href="'.$url.'">'.get_date_interval(date("D, j M Y H:i T",$c->date_thread)).'</a>';
+      $return='<p class=np_posted_date_left><a href="'.$url.'">'.get_date_interval(date("D, j M Y H:i T",$c->date_thread)).'</a>';
     } else {
-      $return.='<p class=np_posted_date_left>'.get_date_interval(date("D, j M Y H:i T",$c->date_thread)).'</p>';
+      $return='<p class=np_posted_date_left>'.get_date_interval(date("D, j M Y H:i T",$c->date_thread)).'</p>';
     }
     $return.='<p class=np_posted_date_left>By: '.create_name_link($poster_name, $name_from).'</p>';
   return($return);

@@ -1,7 +1,6 @@
 <html>
 	<head>
 <?php
-session_start();
 if (basename(getcwd()) == 'mods') {
   $rootdir = "../../";
 } else {
@@ -23,21 +22,22 @@ $linklist = file($config_dir."links.conf", FILE_IGNORE_NEW_LINES);
 
 if(isset($_COOKIE['mail_name']) && isset($_COOKIE['pkey'])) {
   $user = strtolower($_COOKIE['mail_name']);
+  if(!isset($_SESSION['theme']) && file_exists($config_dir.'/userconfig/'.$user.'.config')) {
+      $user_config = unserialize(file_get_contents($config_dir.'/userconfig/'.$user.'.config'));
+      $_SESSION['theme'] = $user_config['theme'];
+  }
 } else {
   unset($user);
 }
-if(!isset($_SESSION['theme']) && file_exists($config_dir.'/userconfig/'.$user.'.config')) {
-  $user_config = unserialize(file_get_contents($config_dir.'/userconfig/'.$user.'.config'));
-  $_SESSION['theme'] = $user_config['theme'];
-}
 
-if(trim($_SESSION['theme']) !== '') {
+if(isset($_SESSION['theme'])) {
+//if(trim($_SESSION['theme']) !== '') {
   echo '<link rel="stylesheet" type="text/css" href="../common/themes/'.$_SESSION['theme'].'/style.css">';
 } else {
   echo '<link rel="stylesheet" type="text/css" href="'.$rootdir.'common/themes/Default Theme/style.css">';
 }
 
-if (file_exists($rootdir.'common/themes/'.$_SESSION['theme'].'/images/rocksolidlight.png')) {
+if ((isset($_SESSION['theme'])) && file_exists($rootdir.'common/themes/'.$_SESSION['theme'].'/images/rocksolidlight.png')) {
   $header_image=$rootdir.'common/themes/'.$_SESSION['theme'].'/images/rocksolidlight.png';
 } else {
   $header_image=$rootdir.'common/images/rocksolidlight.png';
@@ -61,7 +61,7 @@ if (file_exists($rootdir.'common/themes/'.$_SESSION['theme'].'/images/rocksolidl
 		</td>
 		<td align="right">
 <?php
-		if($user && check_unread_mail() == true) {
+		if(isset($user) && $user && check_unread_mail() == true) {
 			$unread = true;
 		} else {
 			$unread = false;
@@ -119,11 +119,9 @@ ob_end_clean();
 }
 
 // If $config_dir/motd.txt is not blank, show it
-$m = file_get_contents($config_dir.'/motd.txt');
-if (trim($m) !== '' ) {
-  $motd = $m;
+if(file_exists($config_dir.'/motd.txt')) {
+  $motd = file_get_contents($config_dir.'/motd.txt');
 }
-
 echo '<p align="center">';
 echo '<table cellpadding="0" cellspacing="0" class="np_header_bar_large"><tr>';
 foreach($menulist as $menu) {

@@ -683,12 +683,14 @@ function groups_show($gruppen) {
     $groupdisplay.=create_name_link(mb_decode_mimeheader($lastarticleinfo['name']), $lastarticleinfo['from']);
     $groupdisplay.='</td></tr></table>';
     }
-    $groupdisplay.="\n";
-    flush();
-    if(isset($userdata[$g->name])) {
-      $subs[] = $groupdisplay;
-    } else {
-      $nonsubs[] = $groupdisplay;
+    if(isset($groupdisplay)) {
+      $groupdisplay.="\n";
+      flush();
+      if(isset($userdata[$g->name])) {
+        $subs[] = $groupdisplay;
+      } else {
+        $nonsubs[] = $groupdisplay;
+      }
     }
   } // END
   foreach($subs as $sub) {
@@ -1090,6 +1092,10 @@ function group_display_name($gname)
 function check_bbs_auth($username, $password) {
   global $config_dir,$CONFIG;
 
+  if($username == '' && $password == '') {
+      return false;
+  }
+  
   $workpath = $config_dir."users/";
   $username = trim(strtolower($username));
   $userFilename = $workpath.$username;

@@ -61,6 +61,9 @@
 
   $_SESSION['rsactive'] = true;
 
+  if(!isset($_SERVER['REQUEST_STRING'])) {
+      $_SERVER['REQUEST_STRING'] = '';
+  }
   $location = $_SERVER['REQUEST_URI'].$_SERVER['REQUEST_STRING'];
   $_SESSION['return_page'] = $location.'#'.$id;
 

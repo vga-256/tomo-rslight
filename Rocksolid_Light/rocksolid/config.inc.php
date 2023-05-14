@@ -29,9 +29,6 @@ $CONFIG = include($config_file);
 $logdir=$spooldir.'/log';
 $lockdir=$spooldir.'/lock';
 
-if(!file_exists($config_dir.'/debug')) {
-  ini_set('error_reporting', E_ERROR );
-}
 /* Permanent configuration changes */
 @mkdir($logdir,0755,'recursive');
 @mkdir($spooldir.'/upload',0755,'recursive');
@@ -232,9 +229,6 @@ if((isset($group)) && (isset($group_config))) {
     }
   }
 }
-
-// check the settings
-include "lib/check.php";
 
 // load the english language definitions first because some of the other
 // definitions are incomplete
