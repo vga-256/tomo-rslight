@@ -44,6 +44,7 @@ $keys = unserialize(file_get_contents($keyfile));
       $logged_in = true;
     }
   }
+$title.=' - Mail';
 include "head.inc";
 
   echo '<h1 class="np_thread_headline">';

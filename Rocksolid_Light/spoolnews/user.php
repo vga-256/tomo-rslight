@@ -27,6 +27,7 @@ if($_POST['command'] == 'Logout') {
   echo 'You have been logged out';
   exit(0);
 }
+$title.=' - User Configuration';
 include "head.inc";
 
 // How long should cookie allow user to stay logged in?
