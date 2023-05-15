@@ -493,6 +493,7 @@ function display_full_headers($article,$group,$name,$from,$getface=false) {
       unlink($sendface);
   }
    $isface = 0;
+   $return = '';
    foreach($message as $line) {
     if(trim($line) == '') {
       break;
@@ -513,7 +514,6 @@ function display_full_headers($article,$group,$name,$from,$getface=false) {
     if(stripos($line, 'Xref: ') === 0) {
       continue;
     }
-    $return = '';
     if(stripos($line, 'From: ') === 0) {
       $return.='From: ';
       if(isset($CONFIG['hide_email']) && $CONFIG['hide_email'] == true) {
