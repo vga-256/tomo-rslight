@@ -10,6 +10,9 @@ include "newsportal.php";
     $offset=$CONFIG['timezone'];
   }
 
+  if(!isset($_POST['command'])) {
+      $_POST['command'] = '';
+  }
 $keyfile = $spooldir.'/keys.dat';
 $keys = unserialize(file_get_contents($keyfile));
 
@@ -55,7 +58,6 @@ echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
       echo '<form target="'.$frame['content'].'" method="post" action="mail.php">';
       echo '<input name="command" type="hidden" id="command" value="Send" readonly="readonly">';
       echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
-      echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
       echo '<button class="np_button_link" type="submit">New Message</button>';
       echo '</form>';
       echo '</td>';
@@ -66,7 +68,6 @@ echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
       echo '<form target="'.$frame['content'].'" method="post" action="mail.php">';
       echo '<input name="command" type="hidden" id="command" value="Delete" readonly="readonly">';
       echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
-      echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
       echo "<input type='hidden' name='id' value='".$_POST['id']."' />";
       echo '<button class="np_button_link" type="submit">Delete This Message</button>';
       echo '</form>';
@@ -161,7 +162,6 @@ echo '</table>';
       echo '<button class="np_button_link" type="submit">Reply</button>';
       echo "<input type='hidden' name='id' value='".$row['id']."' />";
       echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
-      echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
       echo '<input name="command" type="hidden" id="command" value="Send" readonly="readonly">';
       echo '</form>';
       echo '</div>';
@@ -251,7 +251,6 @@ echo '</table>';
 		echo '</tr><tr>';
 		echo "<input type='hidden' name='from' value='".$user."' />";
 	        echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
-	        echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
                 echo "<td></td><td><input type='submit' value='Send Mail' name='sendMessage' /></td>";
 		echo '</tr></tbody></table></form>';
   }
@@ -296,7 +295,6 @@ echo '</table>';
     echo '<button class="'.$button_link.'" type="submit">'.$row["subject"].'</button>';
     echo "<input type='hidden' name='id' value='".$row['id']."' />";
     echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
-    echo "<input type='hidden' name='password' value='".$_POST['password']."' />"; 
     echo '<input name="command" type="hidden" id="command" value="Message" readonly="readonly">';
     echo '</form>';
     echo '</td><td>'.$row["mail_from"].'</td><td>'.$row["rcpt_to"].'</td><td>'.$newdate.'</td></tr>';
