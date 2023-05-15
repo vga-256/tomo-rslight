@@ -2,13 +2,29 @@
 
 include "config.inc.php";
 include "alphabet.inc.php";
+
+$title.=' - Register';
 include "head.inc";
 
 $keyfile = $spooldir.'/keys.dat';
 $keys = unserialize(file_get_contents($keyfile));
 $email_registry = $spooldir.'/email_registry.dat';
-unlink($_POST['captchaimage']);
 
+if(!file_exists($config_dir.'/phpmailer.inc.php')) {
+    $CONFIG['verify_email'] = false;
+}
+if(isset($_POST['captchaimage']) && file_exists($_POST['captchaimage'])) {
+  unlink($_POST['captchaimage']);
+}
+if(!isset($_POST['username'])) {
+    $_POST['username'] = null;
+}
+if(!isset($_POST['key'])) {
+    $_POST['key'] = null;
+}
+if(!isset($_POST['user_email'])) {
+    $_POST['user_email'] = null;
+}
 $username_allowed_chars = "a-zA-Z0-9_.";
 $clean_username = preg_replace("/[^$username_allowed_chars]/", "", $_POST['username']);
 
@@ -77,7 +93,11 @@ if(isset($_POST['command']) && $_POST['command'] == 'CreateNew') {
   $username = $_POST['username'];
   $password = $_POST['password'];
   $user_email = $_POST['user_email'];
-  $code = $_POST['code'];
+  if(isset($_POST['code'])) {
+      $code = $_POST['code'];
+  } else {
+      $code = false;
+  }
   $userFilename = $workpath.$username;
   $keyFilename = $keypath.$username;
   @mkdir($workpath.'new/');
@@ -127,7 +147,9 @@ if(isset($_POST['command']) && $_POST['command'] == 'CreateNew') {
         fclose($userFileHandle);
         chmod($userFilename, 0666);
     }
-    unlink(sys_get_temp_dir()."/".$username);
+    if(file_exists(sys_get_temp_dir()."/".$username)) {
+      unlink(sys_get_temp_dir()."/".$username);
+    }
     echo "User:".$username." Created\r\n";
     echo '<br /><a href="'.$CONFIG['default_content'].'">Back</a>';
 
@@ -238,15 +260,16 @@ foreach($users as $user) {
 }
 
 # Check email address attempts to avoid abuse
-$tried_email = unserialize(file_get_contents($email_registry));
-if(isset($tried_email[$user_email])) {
-    echo "Email address already used\r\n";
-  echo '<form name="return1" method="post" action="register.php">';
-  echo '<input name="username" type="hidden" id="username" value="'.$username.'" readonly="readonly">';
-  echo '<input type="submit" name="Submit" value="Back"></td>';
-    exit(2);
+if(file_exists($email_registry)) {
+  $tried_email = unserialize(file_get_contents($email_registry));
+  if(isset($tried_email[$user_email])) {
+      echo "Email address already used\r\n";
+      echo '<form name="return1" method="post" action="register.php">';
+      echo '<input name="username" type="hidden" id="username" value="'.$username.'" readonly="readonly">';
+      echo '<input type="submit" name="Submit" value="Back"></td>';
+      exit(2);
+  }
 }
-
 if (!preg_match("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z0-9]{2,3})$^",$user_email)) {
   echo "Email must be in the form of an email address\r\n";
   echo '<br /><a href="register.php">Back</a>';
@@ -310,7 +333,9 @@ if ($ok || ($command == "Create") )
 if($CONFIG['verify_email']) {
 
 # Log email address attempts to avoid abuse
-  $tried_email = unserialize(file_get_contents($email_registry)); 
+  if(file_exists($email_registry)) {
+    $tried_email = unserialize(file_get_contents($email_registry)); 
+  }
   $tried_email[$user_email]['time'] = time();
   file_put_contents($email_registry, serialize($tried_email));
   

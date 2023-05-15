@@ -9,6 +9,9 @@ include "newsportal.php";
   } else {
     $offset=$CONFIG['timezone'];
   }
+  if(!isset($_POST['command'])) {
+      $_POST['command'] = null;
+  }
 
 $keyfile = $spooldir.'/keys.dat';
 $keys = unserialize(file_get_contents($keyfile));
@@ -38,6 +41,12 @@ include "head.inc";
     $_POST['username'] = $_COOKIE['mail_name'];
   }
   $name = $_POST['username'];
+  if(!isset($_POST['password'])) {
+      $_POST['password'] = null;
+  }
+  if(!isset($_COOKIE['mail_auth'])) {
+      $_COOKIE['mail_auth'] = null;
+  }
   if(((get_user_mail_auth_data($_COOKIE['mail_name'])) && password_verify($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['mail_auth'])) || (password_verify($_POST['username'].$keys[1].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['mail_auth']))) {
     $logged_in = true;
   } else {
@@ -73,7 +82,6 @@ echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
       echo '<form target="'.$frame['content'].'" method="post" action="mail.php">';
       echo '<input name="command" type="hidden" id="command" value="Mail" readonly="readonly">';
       echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
-      echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
       echo '<button class="np_button_link" type="submit">Mail</button>';
       echo '</form>';
       echo '</td>';
@@ -82,8 +90,6 @@ echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
       echo '<form target="'.$frame['content'].'" method="post" action="user.php">';
       echo '<input name="command" type="hidden" id="command" value="Logout" readonly="readonly">';
       echo "<input type='hidden' name='username' value='".$_POST['username']."' />";
-      echo "<input type='hidden' name='password' value='".$_POST['password']."' />";
-      echo "<input type='hidden' name='id' value='".$_POST['id']."' />";
       echo '<button class="np_button_link" type="submit">Logout</button>';
       echo '</form>';
       echo '</td>';

@@ -132,6 +132,9 @@ foreach($menulist as $menu) {
     if($menuitem[1] == '0') { 
       continue;
     }
+    if(!isset($frame['menu'])) {
+        $frame['menu'] = null;
+    }
     echo '<td>';
     echo '<form target="'.$frame['menu'].'" action="'.$rootdir.$menuitem[0].'">';
     echo '<button class="np_header_button_link" type="submit">'.$menuitem[0].'</button>';
