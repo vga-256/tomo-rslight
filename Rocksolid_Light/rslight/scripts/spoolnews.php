@@ -207,7 +207,6 @@ function get_articles($ns, $group) {
         $local = $article;
       }
 // Check for duplicate msgid
-      $duplicate=0;
       fputs($ns, "stat ".$article."\r\n");
       $response = line_read($ns);
       $this_msgid = explode(' ', $response);
@@ -215,11 +214,7 @@ function get_articles($ns, $group) {
           echo "\nDuplicate Message-ID for: ".$group.":".$article;
           file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Duplicate Message-ID for: ".$group.":".$article, FILE_APPEND);
           $article++;
-          $duplicate = 1;
-          break;
-      }
-      if($duplicate == 1) {
-	continue;
+          continue;
       }
       fputs($ns, "article ".$article."\r\n");
       $response = line_read($ns);
