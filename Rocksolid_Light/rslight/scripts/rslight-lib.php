@@ -269,6 +269,8 @@ function prepare_post($filename) {
       if(stripos($line, "Newsgroups: ") === 0) {
         $ngroups=explode(': ', $line);
         $newsgroups=$ngroups[1];
+        $lines++;
+        break;
       }
     }
     $ngroups = preg_split("/(\ |\,)/", trim($newsgroups));
@@ -306,7 +308,7 @@ function process_post($message, $group) {
 	$bytes = $bytes + mb_strlen($line, '8bit');
 	if(trim($line) == "" || $lines > 0) {
           $is_header=0;
-	  $lines++;
+	      $lines++;
         }
         if($is_header == 0) {
           $body.=$line."\n";
@@ -350,7 +352,7 @@ function process_post($message, $group) {
             $mid=explode(': ', $line);
 	    $no_mid=0;
           }
-	}
+    	}
     }
 //  rewind($message);
 /*
@@ -385,7 +387,7 @@ function process_post($message, $group) {
         }
       } 
     }
-    fclose($glfp);
+    fclose($glfp);   
     @mkdir($spooldir."/".$section."/outgoing",0755,'recursive');
     $postfilename = tempnam($spooldir.'/'.$section.'/outgoing', '');
     $postfilehandle = fopen($postfilename, 'wb');
@@ -411,12 +413,21 @@ function process_post($message, $group) {
         fputs($postfilehandle,"X-Rslight-Original-Group: ".$orig_newsgroups."\r\n");
       }
     }
+    $is_header = 1;
+    $lines = 0;
     foreach($message as $line) {
-      if(stripos($line, "Newsgroups: ") === 0) {
-	fputs($postfilehandle, "Newsgroups: ".$newsgroups."\r\n");
-      } else {
-	fputs($postfilehandle, $line."\r\n");
-      }
+        if(trim($line) == "" || $lines > 0) {
+            $is_header=0;
+            $lines++;
+        }
+        if($is_header == 0) {
+            $body.=$line."\n";
+        }
+        if(stripos($line, "Newsgroups: ") === 0 && $is_header == 1) {
+        	fputs($postfilehandle, "Newsgroups: ".$newsgroups."\r\n");
+        } else {
+        	fputs($postfilehandle, $line."\r\n");
+        }
     }
     fclose($postfilehandle);
     unlink($filename);

@@ -159,7 +159,7 @@ foreach($menulist as $menu) {
     echo '</td>';
 }
 if($unread) {
-    $motd = 'You have unread mail. <a href="../spoolnews/mail.php">Click Here</a>';
+    $motd = '<center>*** You have unread mail. <a href="../spoolnews/mail.php">Click Here</a> ***</center>';
 }
     if(strlen($motd) > 0) {
       echo '<div class="np_last_posted_date"><h1 class="np_thread_headline">'.$motd.'</h1></div>';
