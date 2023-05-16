@@ -86,6 +86,17 @@ $enable_rslight=0;
       echo "\nLoaded groups";
     }
   }
+# Clean outgoing directory for LOCAL sections
+  if($CONFIG['remote_server'] == '') {
+      $outgoing_dir = $spooldir."/".$config_name."/outgoing/";
+      $files = scandir($outgoing_dir);
+      foreach($files as $file) {
+          $file_name = $outgoing_dir.$file;
+          if(is_file($file_name) && (filemtime($file_name) < (time()-3600))) {
+            unlink($file_name);
+        }
+      }
+  }
 $ns=nntp2_open($CONFIG['remote_server'], $CONFIG['remote_port']);
 $ns2=nntp_open();
 if(!$ns) {
