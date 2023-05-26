@@ -360,7 +360,7 @@ function show_header($head,$group,$local_poster=false) {
   if(isset($_COOKIE['tzo'])) {
     $offset=$_COOKIE['tzo'];
   } else {
-    $offset=$CONFIG['timezone'];
+    $offset=intval($CONFIG['timezone']);
   }
   echo '<div class="np_article_header">';
   if ($article_show["Subject"]) echo $text_header["subject"].htmlspecialchars($head->subject)."<br>";

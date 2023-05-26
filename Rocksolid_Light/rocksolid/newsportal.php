@@ -1606,7 +1606,7 @@ $logfile=$logdir.'/newsportal.log';
 // $loadrate = allowed article request per second
   $loadrate = .15;
   $rate = fdiv($_SESSION['views'], (time() - $_SESSION['starttime']));
-  if (($rate > $loadrate) && ($_SESSION['views'] > 20)) {
+  if (($rate > $loadrate) && ($_SESSION['views'] > 50)) {
     header("HTTP/1.0 429 Too Many Requests");
     if(!isset($_SESSION['throttled'])) {
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Too many requests from ".$_SERVER['REMOTE_ADDR']." throttling", FILE_APPEND);
