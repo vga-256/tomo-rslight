@@ -192,7 +192,7 @@ function get_articles($ns, $group) {
   $database = $spooldir.'/articles-overview.db3';
   $table = 'overview';
   $dbh = rslight_db_open($database, $table);
-  $sql = 'INSERT INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';
+  $sql = 'INSERT OR IGNORE INTO '.$table.'(newsgroup, number, msgid, date, name, subject) VALUES(?,?,?,?,?,?)';
   $stmt = $dbh->prepare($sql);
   if($CONFIG['article_database'] == '1') {
     $article_dbh = article_db_open($spooldir.'/'.$group.'-articles.db3');
@@ -206,6 +206,19 @@ function get_articles($ns, $group) {
       $overview_msgid = explode("\t", $group_overview);
       $msgids[trim($overview_msgid[4])] = true;
   }
+// Get overview from server
+  $server_overview = array();
+  $re = false;
+  fputs($ns, "xover ".$article."-".$detail[3]."\r\n");
+  $response=line_read($ns);  // and once more
+  if ((substr($response,0,3) != "224")) {
+      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Cannot get overview from ".$CONFIG['remote_server']." for ".$group, FILE_APPEND);
+  }
+  while(trim($response = line_read($ns)) !== '.') {
+      $ov = preg_split("/\t/", $response);
+      $server_msgids[$ov[0]] = $ov[4];
+  }
+  
   # Pull articles and save them in our spool
   @mkdir($grouppath,0755,'recursive');
   $i=0;
@@ -217,11 +230,7 @@ function get_articles($ns, $group) {
       if($CONFIG['enable_nntp'] != true){
         $local = $article;
       }
-// Check for duplicate msgid
-      fputs($ns, "stat ".$article."\r\n");
-      $response = line_read($ns);
-      $this_msgid = explode(' ', $response);
-      if($msgids[trim($this_msgid[2])] == true) {
+      if($msgids[$server_msgids[$article]] == true) {
           echo "\nDuplicate Message-ID for: ".$group.":".$article;
           file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Duplicate Message-ID for: ".$group.":".$article, FILE_APPEND);
           $article++;
@@ -265,7 +274,7 @@ function get_articles($ns, $group) {
 	// Get overview data
         if(stripos($response, "Message-ID: ") === 0) {
           $mid=explode(': ', $response, 2);
-	  $ref=0;
+     	  $ref=0;
         }
         if(stripos($response, "From: ") === 0) {
           $from=explode(': ', $response, 2);
