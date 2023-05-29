@@ -8,6 +8,7 @@ if(is_file($pubkeyfile) && (isset($CONFIG['site_shortname']) && $CONFIG['site_sh
     echo '</font>';
 }
 echo '<font size="1em">';
+echo '<a href="https://github.com/novabbs/rocksolid-light" target=_blank><img src="/common/images/footer.png"></a><br />';
 echo '<i>rocksolid light</i> '.$rslight_version;
 echo '<br />';
 echo '<a href="https://github.com/novabbs/rocksolid-light" target=_blank>clearnet</a>';
