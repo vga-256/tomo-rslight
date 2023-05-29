@@ -95,6 +95,10 @@ if (isset($_GET['time'])) {
 }
 
 if (isset($_GET['thisgroup'])) {
+  if(get_section_by_group($_GET['thisgroup']) == false) {
+      echo "Group not found";
+      exit(1);
+  }  
   $grouplist = array();
   $grouplist[0] = _rawurldecode(_rawurldecode($_GET['thisgroup']));
   $cachefile=$spooldir."/".$grouplist[0]."-overboard.dat";
