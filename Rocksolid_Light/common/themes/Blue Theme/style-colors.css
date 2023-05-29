@@ -1,5 +1,5 @@
 :root {
-  --color-dark: #00003D;
+  --color-dark: #191970;
   --color-medium: #000052;
   --color-light: #000066;
 
@@ -11,5 +11,5 @@
   --color-visited: #6688BB;
 
   --color-border: #828282;
-  --color-row-border: black;
+  --color-row-border: #0000A5;
 }
