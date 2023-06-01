@@ -103,7 +103,9 @@ ob_start();
 
 // Select fortunes
 // If you want different fortunes for different sections you can do that here
-
+if(!isset($config_name)) {
+    $config_name = null;
+}
 if($config_name == 'computers' || $config_name == 'programming') {
   passthru('/usr/games/fortune -s -n 100 linux debian perl linuxcookie computers');
 } else if ($config_name == 'arts' || $config_name == 'interests') {

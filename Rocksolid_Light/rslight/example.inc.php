@@ -43,7 +43,7 @@ return [
   'server_auth_pass' => $CONFIG['server_auth_pass'],
   'anonusername' => $CONFIG['anonusername'],
   'anonuserpass' => $CONFIG['anonuserpass'],
-  'timezone' => $CONFIG['tiemzone'],
+  'timezone' => $CONFIG['timezone'],
   'default_content' => $CONFIG['default_content'],
   'organization' => $CONFIG['organization'],
   'verify_email' => $CONFIG['verify_email'],

@@ -201,6 +201,7 @@ function remove_articles($group) {
     unlink($spooldir.'/'.$group.'-cache.txt');
     unlink($spooldir.'/'.$group.'-lastarticleinfo.dat');
     unlink($spooldir.'/'.$group.'-overboard.dat');
+    unlink($spooldir.'/'.$group.'-overview');
 }
 
 function import_articles($group) {
