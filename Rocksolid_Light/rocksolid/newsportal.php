@@ -678,7 +678,7 @@ function groups_show($gruppen) {
     $groupdisplay.=get_date_interval(date("D, j M Y H:i T",$lastarticleinfo['date']));
     $groupdisplay.='<table><tr><td>';
     $groupdisplay.='<font class="np_last_posted_date">by: ';
-    $groupdisplay.=create_name_link(html_entity_decode($lastarticleinfo['name']), $lastarticleinfo['from']);
+    $groupdisplay.=create_name_link(mb_decode_mimeheader(html_entity_decode($lastarticleinfo['name'])), $lastarticleinfo['from']);
     $groupdisplay.='</td></tr></table>';
     }
     if(isset($groupdisplay)) {
