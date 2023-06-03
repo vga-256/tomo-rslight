@@ -830,6 +830,20 @@ function thread_format_lastmessage($c,$group='') {
       };
       $dbh = null;
     }
+  } else {
+// Tradspool
+        $database = $spooldir.'/articles-overview.db3';
+        $table = 'overview';
+        $dbh = rslight_db_open($database, $table);
+        $stmt = $dbh->prepare("SELECT * FROM $table WHERE newsgroup=:newsgroup AND date=:date ORDER BY date DESC");
+        $stmt->bindParam(':newsgroup', $group);
+        $stmt->bindParam(':date', $c->date_thread);
+        $stmt->execute();
+        if($found = $stmt->fetch()) {
+            $ovfound = 1;
+        };
+        $dbh = null;
+    }
       $fromline = address_decode(headerDecode($found['name']),"nirgendwo");
           if (!isset($fromline[0]["host"])) $fromline[0]["host"]="";
           $name_from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
@@ -847,7 +861,6 @@ function thread_format_lastmessage($c,$group='') {
            $poster_name = $fromoutput[0];
          }
        }
-  }
     if($ovfound == 1) {
       $url = 'article-flat.php?id='.$found['number'].'&group='.urlencode($group).'#'.$found['number'];
       $return='<p class=np_posted_date_left><a href="'.$url.'">'.get_date_interval(date("D, j M Y H:i T",$c->date_thread)).'</a>';
