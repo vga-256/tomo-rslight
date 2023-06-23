@@ -185,7 +185,7 @@ function get_articles($ns, $group) {
     $article = $detail[2];
   }
 // Broken message on last run? Let's try again. 
-  if($article > ($detail[3] + 1)) {
+  if($article > ($detail[3])) {
     $article = $detail[3];
   }
   # Prepare databases
@@ -213,6 +213,7 @@ function get_articles($ns, $group) {
   $response=line_read($ns);  // and once more
   if ((substr($response,0,3) != "224")) {
       file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Cannot get overview from ".$CONFIG['remote_server']." for ".$group, FILE_APPEND);
+      return false;
   }
   while(trim($response = line_read($ns)) !== '.') {
       $ov = preg_split("/\t/", $response);
