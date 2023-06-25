@@ -172,6 +172,7 @@ if ($type=="post") {
   }
               
   if ($type=="post") {
+    $name = trim($name); 
     if (!$CONFIG['readonly']) {
       // post article to the newsserver
       if($references)
