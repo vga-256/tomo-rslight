@@ -420,9 +420,6 @@ function process_post($message, $group) {
             $is_header=0;
             $lines++;
         }
-        if($is_header == 0) {
-            $body.=$line."\n";
-        }
         if(stripos($line, "Newsgroups: ") === 0 && $is_header == 1) {
         	fputs($postfilehandle, "Newsgroups: ".$newsgroups."\r\n");
         } else {
