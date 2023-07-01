@@ -73,7 +73,7 @@ $config_path,$groupconfig,$workpath,$path,$spooldir,$nntp_group,$auth_ok;
 	$auth_ok = 0;
 	$user = "";
 	$pass = "";
-	$pemfile = $spooldir.'/server.pem';
+	$pemfile = $ssldir.'/server.pem';
 	if(!is_file($pemfile)) {
 	  create_certificate($pemfile);
 	}	

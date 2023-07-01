@@ -39,6 +39,7 @@
   $uinfo=posix_getpwnam($CONFIG['webserver_user']);
   $cwd = getcwd();
   $webtmp = preg_replace('/spoolnews/','tmp/',$cwd);
+  $ssldir = $spooldir."ssl";
 
   @mkdir($webtmp,0755,'recursive');
   @chown($webtmp, $uinfo["uid"]);
