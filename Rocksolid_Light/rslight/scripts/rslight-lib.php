@@ -1215,7 +1215,7 @@ function create_node_ssl_cert($pemfile) {
     $uinfo=posix_getpwnam($CONFIG['webserver_user']);
     $pubkeyfile = $ssldir.'/pubkey.pem';
     $pubkeytxtfile = $webtmp.'/pubkey.txt';
-    $ssltime = filectime($letsencrypt['path'])."fullchain.pem";
+    $ssltime = filectime($letsencrypt['path'].'fullchain.pem');
     if(isset($letsencrypt['path'])) {
         if($ssltime > filectime($pemfile)) {
             touch($config_dir.'/ssl.reload');
@@ -1235,6 +1235,7 @@ function create_node_ssl_cert($pemfile) {
     unlink($pubkeytxtfile);
     /* Use letsencrypt */
     if((isset($letsencrypt['server.pem'])) && (isset($letsencrypt['pubkey.pem']))) {
+        echo "Using existing LetsEncrypt certificate.\n";
         file_put_contents($pemfile, $letsencrypt['server.pem'].$letsencrypt['privkey']);
         file_put_contents($pubkeyfile, $letsencrypt['pubkey.pem']);
         file_put_contents($pubkeytxtfile, $letsencrypt['pubkey.pem']);
