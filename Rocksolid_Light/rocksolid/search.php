@@ -189,7 +189,7 @@ $results=0;
 
        		unset($ts);
 		    
-		$fromline=address_decode(headerDecode($overviewline['name']),"nirgendwo");
+		$fromline=address_decode(headerDecode($overviewline['name']),"nowhere");
 
       		if (!isset($fromline[0]["personal"])) {
         		$lastname=$fromline[0]["mailbox"];;
@@ -209,7 +209,7 @@ $results=0;
 		    echo '<a href="'.$groupurl.'">'.$overviewline['newsgroup'].'</a>';
 		    echo '</p>';
   
-      $fromline = address_decode($overviewline['name'],"nirgendwo");
+      $fromline = address_decode($overviewline['name'],"nowhere");
           if (!isset($fromline[0]["host"])) $fromline[0]["host"]="";
           $name_from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
           $name_username=$fromline[0]["mailbox"];

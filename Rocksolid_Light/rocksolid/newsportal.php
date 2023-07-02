@@ -802,7 +802,7 @@ function parse_header($hdr,$number="") {
     $value=trim(substr($hdr[$count],strpos($hdr[$count]," ")+1));
       switch (strtolower($variable)) {
         case "from:": 
-          $fromline=address_decode(headerDecode($value),"nirgendwo");
+          $fromline=address_decode(headerDecode($value),"nowhere");
           if (!isset($fromline[0]["host"])) $fromline[0]["host"]="";
           $header->from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
           $header->username=$fromline[0]["mailbox"];
@@ -1550,7 +1550,7 @@ function np_get_db_article($article, $group, $makearray=1, $dbh=null) {
 }
 
 function get_poster_name($name) {
-        $fromline = address_decode($name,"nirgendwo");
+        $fromline = address_decode($name,"nowhere");
         if (!isset($fromline[0]["host"])) $fromline[0]["host"]="";
           $name_from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
           $name_username=$fromline[0]["mailbox"];

@@ -206,7 +206,7 @@ function thread_overview_interpret($line,$overviewformat,$groupname) {
       $article->date=getTimestamp($over[$i+1]);
     }
     if ($overviewfmt[$i]=="From:") {
-      $fromline=address_decode(headerDecode($over[$i+1]),"nirgendwo");
+      $fromline=address_decode(headerDecode($over[$i+1]),"nowhere");
       $article->from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
       $article->username=$fromline[0]["mailbox"];
       if (!isset($fromline[0]["personal"])) {
@@ -844,7 +844,7 @@ function thread_format_lastmessage($c,$group='') {
         };
         $dbh = null;
     }
-      $fromline = address_decode(headerDecode($found['name']),"nirgendwo");
+      $fromline = address_decode(headerDecode($found['name']),"nowhere");
           if (!isset($fromline[0]["host"])) $fromline[0]["host"]="";
           $name_from=$fromline[0]["mailbox"]."@".$fromline[0]["host"];
           $name_username=$fromline[0]["mailbox"];
