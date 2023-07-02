@@ -1,3 +1,4 @@
+
 <?php
 
 include "config.inc.php";
@@ -108,6 +109,7 @@ if(isset($_POST['command']) && $_POST['command'] == 'CreateNew') {
       $CONFIG['verify_email'] = false;
     }
   }
+  
  if($CONFIG['verify_email'] == true) {
   $saved_code = file_get_contents(sys_get_temp_dir()."/".$username);
   if((strcmp(trim($code), trim($saved_code))) !== 0) {
@@ -321,76 +323,89 @@ if ($external)
 # User is authenticated or to be created. Either way, create the file
 if ($ok || ($command == "Create") )
 {
-  echo 'Create account: '.$_POST['username'].'<br/><br />';
-/* Generate email */
-  $no_verify=explode(' ', $CONFIG['no_verify']);
-  foreach($no_verify as $no) {
-    if (strlen($_SERVER['HTTP_HOST']) - strlen($no) === strrpos($_SERVER['HTTP_HOST'],$no)) {
-      $CONFIG['verify_email'] = false;
-    }
-  }
-
-if($CONFIG['verify_email']) {
-
-# Log email address attempts to avoid abuse
-  if(file_exists($email_registry)) {
-    $tried_email = unserialize(file_get_contents($email_registry)); 
-  }
-  $tried_email[$user_email]['time'] = time();
-  file_put_contents($email_registry, serialize($tried_email));
+	echo 'Create account: '.$_POST['username'].'<br/><br />';
+	/* Generate email */
+	# only check for no verification is the field has been populated
+	if (!empty($CONFIG['no_verify']))
+	{
+		$no_verify=explode(' ', $CONFIG['no_verify']);
+		foreach($no_verify as $no) {
+		  if (strlen($_SERVER['HTTP_HOST']) - strlen($no) === strrpos($_SERVER['HTTP_HOST'],$no)) {
+		    $CONFIG['verify_email'] = false;
+		  }
+		}
+	}
+	if($CONFIG['verify_email']) {
+		# Log email address attempts to avoid abuse
+		if(file_exists($email_registry)) {
+		  $tried_email = unserialize(file_get_contents($email_registry)); 
+		}
+		$tried_email[$user_email]['time'] = time();
+		file_put_contents($email_registry, serialize($tried_email));
   
-$mail->SMTPOptions = array(
-    'ssl' => array(
-        'verify_peer' => false,
-        'verify_peer_name' => false,
-        'allow_self_signed' => true
-    )
-);
+		$mail->SMTPOptions = array(
+		    'ssl' => array(
+		        'verify_peer' => false,
+		        'verify_peer_name' => false,
+		        'allow_self_signed' => true
+		    )
+		);
 
-$mail->IsSMTP();
-$mail->CharSet = 'UTF-8';
-$mail->Host = $mailer['host'];
-$mail->SMTPAuth = true;
+		$mail->IsSMTP();
+		#uncomment below to enable debugging
+		#$mail->SMTPDebug = 3;
 
-$mail->Port       = $mailer['port']; 
-$mail->Username   = $mailer['username']; 
-$mail->Password   = $mailer['password'];;
-$mail->SMTPSecure = 'tls';
+		$mail->CharSet = 'UTF-8';
+		$mail->Host = $mailer['host'];
+		$mail->SMTPAuth = true;
 
-$mail->setFrom($mail_user.'@'.$mail_domain, $mail_name);
-$mail->addAddress($user_email);
+		$mail->Port       = $mailer['port']; 
+		$mail->Username   = $mailer['username']; 
+		$mail->Password   = $mailer['password'];;
+		$mail->SMTPSecure = 'tls';
+		
+		$mail->setFrom($mail_user.'@'.$mail_domain, $mail_name);
+		$mail->addAddress($user_email);
 
-$mail->Subject = "Confirmation code for ".$_SERVER['HTTP_HOST']; 
+		$mail->Subject = "Confirmation code for ".$_SERVER['HTTP_HOST']; 
 
-foreach($mail_custom_header as $key => $value) {
-  $mail->addCustomHeader($key, $value);
-}
+		foreach($mail_custom_header as $key => $value) {
+		  $mail->addCustomHeader($key, $value);
+		}
 
-$mycode = create_code($username);
-$msg="A request to create an account on ".$_SERVER['HTTP_HOST'];
-$msg.=" has been made using ".$user_email.".\n\n";
-$msg.="If you did not request this, please ignore and the request will fail.\n\n";
-$msg.="This is your account creation code: ".$mycode."\n\n";
-$msg.="Note: replies to this email address are checked daily.";
-$mail->Body = wordwrap($msg,70);
+		$mycode = create_code($username);
+		$msg="A request to create an account on ".$_SERVER['HTTP_HOST'];
+		$msg.=" has been made using ".$user_email.".\n\n";
+		$msg.="If you did not request this, please ignore and the request will fail.\n\n";
+		$msg.="This is your account creation code: ".$mycode."\n\n";
+		$msg.="Note: replies to this email address are checked daily.";
+		$mail->Body = wordwrap($msg,70);
+	
+		if (!$mail->send())
+		{
+			echo 'The message could not be sent.';
+			echo '<p>Error: ' . $mail->ErrorInfo;
+		}
+		else
+		{
+		    echo 'An email has been sent to '.$user_email.'<br />';
+		    echo 'Please enter the code from the email below:<br />'; 
+		}
+	}
 
-$mail->send();
-
-    echo 'An email has been sent to '.$user_email.'<br />';
-    echo 'Please enter the code from the email below:<br />'; 
-  }    
-    echo '<form name="create1" method="post" action="register.php">';
+  echo '<form name="create1" method="post" action="register.php">';
   if($CONFIG['verify_email'] == true) {
       echo '<input name="code" type="text" id="code">&nbsp;';
   }
-    echo '<input name="username" type="hidden" id="username" value="'.$username.'" readonly="readonly">';
-    echo '<input name="password" type="hidden" id="password" value="'.$password.'" readonly="readonly">';
-    echo '<input name="command" type="hidden" id="command" value="CreateNew" readonly="readonly">';
-    echo '<input name="user_email" type="hidden" id="user_email" value="'.$user_email.'" readonly="readonly">';
-    echo '<input name="key" type="hidden" value="'.password_hash($keys[0], PASSWORD_DEFAULT).'">';
-    echo '<input type="submit" name="Submit" value="Click Here to Create"></td>';
-    echo '<br/><br/><a href="'.$CONFIG['default_content'].'">Cancel and return to home page</a>';
-} else {
+  echo '<input name="username" type="hidden" id="username" value="'.$username.'" readonly="readonly">';
+  echo '<input name="password" type="hidden" id="password" value="'.$password.'" readonly="readonly">';
+  echo '<input name="command" type="hidden" id="command" value="CreateNew" readonly="readonly">';
+  echo '<input name="user_email" type="hidden" id="user_email" value="'.$user_email.'" readonly="readonly">';
+  echo '<input name="key" type="hidden" value="'.password_hash($keys[0], PASSWORD_DEFAULT).'">';
+  echo '<input type="submit" name="Submit" value="Click Here to Create"></td>';
+  echo '<br/><br/><a href="'.$CONFIG['default_content'].'">Cancel and return to home page</a>';
+} 
+else {
     echo "Authentication Failed\r\n";
     exit(1);
 }
