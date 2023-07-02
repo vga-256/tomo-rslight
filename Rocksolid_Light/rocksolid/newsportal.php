@@ -75,6 +75,7 @@ function nntp_open($nserver=0,$nport=0) {
       fputs($ns,"AUTHINFO PASS ".$CONFIG['server_auth_pass']."\r\n"); 
       $weg=line_read($ns);
 /* Only check auth if reading and posting same server */
+	  // NNTP Response NOT 281 (Authorization failed)
       if (substr($weg,0,3) != "281" && !(isset($post_server)) && ($post_server!="")) {
         echo "<p>".$text_error["error:"]."</p>";
         echo "<p>".$text_error["auth_error"]."</p>";
