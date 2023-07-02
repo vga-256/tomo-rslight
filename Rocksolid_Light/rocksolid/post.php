@@ -34,17 +34,16 @@ $CONFIG = include($config_file);
 @$name=$_POST[md5($fieldnamedecrypt."name")];
 @$email=$_POST[md5($fieldnamedecrypt."email")];
 @$body=stripslashes($_POST[md5($fieldnamedecrypt."body")]);
-@$abspeichern=$_REQUEST["abspeichern"];
+@$save=$_REQUEST["save"];
 @$references=$_REQUEST["references"];
 @$id=$_REQUEST["id"];
 if (!isset($group)) $group=$newsgroups;
 
-include "auth.inc";
 if($post_captcha)
   include "lib/captcha/captcha.php";
 
 // Save name in cookies
-if (($setcookies==true) && (isset($abspeichern)) && ($abspeichern=="ja")) {
+if (($setcookies==true) && (isset($save)) && ($save=="yes")) {
   setcookie("cookie_name",stripslashes($name),time()+(3600*24*90),"/");
 } 
 if ((isset($post_server)) && ($post_server!=""))
@@ -54,6 +53,9 @@ if ((isset($post_port)) && ($post_port!=""))
 
 include $file_newsportal;
 include "head.inc";
+# note: authorization depends upon newsportal.php and must be loaded *after* the header
+include "auth.inc.php";
+
 global $synchro_user,$synchro_pass;
 // check to which groups the user is allowed to post to
 $thisgroup=_rawurldecode($_REQUEST['group']);
@@ -137,7 +139,8 @@ if ($type=="new") {
 // Is there a new article to post to the newsserver?
 if ($type=="post") {
   $show=0;
-  if (!$CONFIG['synchronet']) {
+  // if the user isn't logged in already, check username and password
+  if (!$CONFIG['synchronet'] && !$logged_in) {
     if (check_bbs_auth(trim($name), $userpass) == FALSE) {
       $type="retry";
       $error=$text_error["auth_error"];
@@ -325,29 +328,50 @@ if ($newsgroups == "") {
 <tr><td align="right"><b><?php echo $text_header["subject"] ?></b></td>
 <td><input class="post" type="text" name="<?php echo md5($fieldencrypt."subject")?>" value="<?php
 echo htmlspecialchars($subject);?>" size="40" maxlength="80"></td></tr>
-<tr><td align="right"><b><?php echo $text_post["name"]?></b></td>
- <td align="left">
- <?php
+  <tr><td align="right"><b>
+<?php 
+if ($logged_in)
+{
+	echo "From: ";
+	echo '</b></td>';
+	echo '<td align="left">';
+	$name = $_POST['username'];
+ 	echo htmlspecialchars($name);
+    echo '<input class="post" type="hidden" name="'.md5($fieldencrypt."name").'"';
+    if (isset($name)) echo 'value="'. htmlspecialchars(stripslashes($name)).'"';
+    echo 'size="40" maxlength="40">';
+}
+else
+{
+	echo $text_post["name"];
+	echo '</b></td>';
+	echo '<td align="left">';
  if ( !isset($name) && $CONFIG['anonuser'])
     $name = $CONFIG['anonusername'];
  if($form_noname===true) {
    echo htmlspecialchars($name);
  } else {
    echo '<input class="post" type="text" name="'.md5($fieldencrypt."name").'"';
-   if (isset($name)) echo 'value="'.
-    htmlspecialchars(stripslashes($name)).'"';
+   if (isset($name)) echo 'value="'. htmlspecialchars(stripslashes($name)).'"';
    echo 'size="40" maxlength="40">';
    if($CONFIG['anonuser'])
-     echo '&nbsp;or "'.$CONFIG['anonusername'].'" with no password';
- }
- ?>
+     echo '&nbsp;or '.$CONFIG['anonusername'] .' with password: ' . $CONFIG['anonuserpass'];
+ } 	
+}
+?>
  </td></tr>
+<?php
+ // only show the password box if user is logged out
+ if (!$logged_in)
+ {
+?>
  <tr><td align="right"><b><?php echo $text_post["password"]?></b></td>
  <td align="left">
  <?php
    echo '<input class="post" type="password" name="'.md5($fieldencrypt."email").'"';
 //   if (isset($email)) echo 'value="'.htmlspecialchars(stripslashes($email)).'"';
    echo 'size="40" maxlength="40">';
+ }
  ?>
  </td</tr>
 
@@ -396,7 +420,7 @@ function quoten() {
 <input type="submit"  value="<?php echo $text_post["button_post"];?>">
 <?php if ($setcookies==true) { ?>
 &nbsp;<input tabindex="100" type="Button" name="quote" value="<?php echo $text_post["quote"]?>" onclick="quoten(); this.style.visibility= 'hidden';">
-&nbsp;<input type="checkbox" name="abspeichern" value="ja" checked>
+&nbsp;<input type="checkbox" name="save" value="yes" checked>
 <?php echo $text_post["remember"];?>
 <?php } ?>
 &nbsp;<input type="file" name="photo" id="fileSelect" value="fileSelect" accept="image/*,audio/*,text/*,application/pdf">
