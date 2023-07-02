@@ -109,7 +109,7 @@ if (!$logged_in) {
   echo '<td><input name="command" type="hidden" id="command" value="Upload" readonly="readonly"></td>';
   echo '<td><input type="submit" name="Submit" value="Login"></td>';
 } else {
-  echo '<tr><td><strong>Logged in as '.$_POST['username'].'<br />(max size=2MB)</strong></td></tr>';
+  echo '<tr><td><strong>(max upload size: 2MB)</strong></td></tr>';
   echo '<td><input name="command" type="hidden" id="command" value="Upload" readonly="readonly"></td>';
   echo '<input type="hidden" name="key" value="'.password_hash($CONFIG['thissitekey'].$name, PASSWORD_DEFAULT).'">';
   echo '<input type="hidden" name="username" value="'.$_POST['username'].'">';
