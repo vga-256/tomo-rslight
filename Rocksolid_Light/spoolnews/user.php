@@ -69,6 +69,10 @@ include "head.inc";
 <?php
       $logged_in = true;
     }
+	else
+	{
+		echo 'Login failed.';
+	}
   }
   echo '<h1 class="np_thread_headline">';
     
