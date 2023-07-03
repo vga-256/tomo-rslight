@@ -469,7 +469,6 @@ function groups_read($server,$port,$load=0,$force_reload=false) {
     return;
   }
   if(!$force_reload && file_exists($cachefile) && $load == 0) {
-    echo 'using cached version of groups';
     // cached file exists and is new enough, so lets read it out.
     $file=fopen($cachefile,"r");
     $data="";
