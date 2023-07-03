@@ -454,17 +454,22 @@ function address_decode($adrstring,$defaulthost) {
 /*
  * Read the groupnames from groups.txt, and get additional informations
  * of the groups from the newsserver
- */
-function groups_read($server,$port,$load=0) {
+ *
+ * when load=0, returns cached group list
+ * when load=1, checks if the cache should be used, and returns nothing
+ * when force_reload=true, rebuilds group list cache
+*/
+function groups_read($server,$port,$load=0,$force_reload=false) {
   global $gl_age,$file_groups,$spooldir,$config_name,$cache_index;
   // is there a cached version, and is it actual enough?
   $cachefile=$spooldir.'/'.$config_name.'-groups.dat';
   // if cache is new enough, don't recreate it
   clearstatcache(TRUE, $cachefile);
-  if($load == 1 && file_exists($cachefile) && (filemtime($cachefile)+$cache_index>time())) {
+  if(!$force_reload && $load == 1 && file_exists($cachefile) && (filemtime($cachefile)+$cache_index>time())) {
     return;
   }
-  if(file_exists($cachefile) && $load == 0) {
+  if(!$force_reload && file_exists($cachefile) && $load == 0) {
+    echo 'using cached version of groups';
     // cached file exists and is new enough, so lets read it out.
     $file=fopen($cachefile,"r");
     $data="";
@@ -473,7 +478,10 @@ function groups_read($server,$port,$load=0) {
     }
     fclose($file);
     $newsgroups=unserialize($data);
-  } else {
+  } 
+  else 
+  {
+    // force a refresh of the group list
     $ns=nntp_open($server,$port);
     if ($ns == false) return false;
 //    $gf=fopen($file_groups,"r");

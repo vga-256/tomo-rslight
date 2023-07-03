@@ -71,6 +71,7 @@ if(filemtime($spooldir.'/'.$config_name.'-thread-timer')+600 < time()) {
 # Check for groups file, create if necessary
 create_spool_groups($file_groups, $remote_groupfile);
 create_spool_groups($file_groups, $local_groupfile);
+
 # Iterate through groups 
 $enable_rslight=0;
 # Refresh group list
@@ -81,7 +82,7 @@ $enable_rslight=0;
     }
     $menuitem = explode(':', $menu);
     if(($menuitem[0] == $config_name) && ($menuitem[1] == '1')) {
-      groups_read($server,$port,1);
+      groups_read($server,$port,1,true); // 'true' forces a refresh of the group list
       $enable_rslight = 1;
       echo "\nLoaded groups";
     }
@@ -97,31 +98,34 @@ $enable_rslight=0;
         }
       }
   }
-$ns=nntp2_open($CONFIG['remote_server'], $CONFIG['remote_port']);
-$ns2=nntp_open();
-if(!$ns) {
-  file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Failed to connect to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
-  exit();
-}
-$grouplist = file($config_dir.'/'.$config_name.'/groups.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-foreach($grouplist as $findgroup) {
-  if($findgroup[0] == ":") {
-      continue;
+if ($CONFIG['remote_server'] != '')
+{
+  $ns=nntp2_open($CONFIG['remote_server'], $CONFIG['remote_port']);
+  $ns2=nntp_open();
+  if(!$ns) {
+    file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Failed to connect to ".$CONFIG['remote_server'].":".$CONFIG['remote_port'], FILE_APPEND);
+    exit();
   }
-  $name = preg_split("/( |\t)/", $findgroup, 2);
-  file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Retrieving articles for: ".$name[0]."...", FILE_APPEND);
-  echo "\nRetrieving articles for: ".$name[0]."...";
-  get_articles($ns, $name[0]);
+  $grouplist = file($config_dir.'/'.$config_name.'/groups.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+  foreach($grouplist as $findgroup) {
+    if($findgroup[0] == ":") {
+        continue;
+    }
+    $name = preg_split("/( |\t)/", $findgroup, 2);
+    file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Retrieving articles for: ".$name[0]."...", FILE_APPEND);
+    echo "\nRetrieving articles for: ".$name[0]."...";
+    get_articles($ns, $name[0]);
 
-  if($enable_rslight == 1) {
-    if($timer) {
-      file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Updating threads for: ".$name[0]."...", FILE_APPEND);
-      thread_load_newsserver($ns2,$name[0],0);
+    if($enable_rslight == 1) {
+      if($timer) {
+        file_put_contents($logfile, "\n".format_log_date()." ".$config_name." Updating threads for: ".$name[0]."...", FILE_APPEND);
+        thread_load_newsserver($ns2,$name[0],0);
+      }
     }
   }
+  nntp_close($ns2);
+  nntp_close($ns);
 }
-nntp_close($ns2);
-nntp_close($ns);
 #expire_overview();
 unlink($lockfile);
 echo "\nSpoolnews Done\n";
