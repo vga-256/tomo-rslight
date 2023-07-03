@@ -1,6 +1,4 @@
 <?php 
-include('config.inc.php');
-
 echo '<html>';
 echo '<head>';
 echo '<title>'.htmlspecialchars($title).'</title>';
