@@ -28,6 +28,7 @@ $CONFIG = include($config_file);
 
 $logdir=$spooldir.'/log';
 $lockdir=$spooldir.'/lock';
+$ssldir = $spooldir."ssl";
 
 /* Permanent configuration changes */
 @mkdir($logdir,0755,'recursive');
