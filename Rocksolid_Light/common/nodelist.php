@@ -1,4 +1,5 @@
 <?php
+include "config.inc.php";
 include "head.inc";
 
 echo '<h4><p align="left">Welcome to Rocksolid</p>';
