@@ -485,27 +485,28 @@ function groups_read($server,$port,$load=0,$force_reload=false) {
     if ($ns == false) return false;
 //    $gf=fopen($file_groups,"r");
     $gfdata = file($file_groups);
-    // if we want to mark groups with new articles with colors, wie will later
+    // if we want to mark groups with new articles with colors, we will later
     // need the format of the overview
     $overviewformat=thread_overview_read($ns);
     foreach($gfdata as $gf) {
-      $gruppe=new newsgroupType;
+      $group=new newsgroupType;
       $tmp=trim($gf);
       $tmp=preg_replace('/\t/', ' ', $tmp);
       if(substr($tmp,0,1)==":") {
-        $gruppe->text=substr($tmp,1);
-        $newsgroups[]=$gruppe;  
-      } elseif(strlen(trim($tmp))>0) {
+        $group->text=substr($tmp,1);
+        $newsgroups[]=$group;  
+      } 
+	  elseif(strlen(trim($tmp))>0) {
         // is there a description in groups.txt?
 	$pos=strpos($tmp," ");
         if ($pos != false) {
           // yes.
-          $gruppe->name=substr($tmp,0,$pos);
+          $group->name=substr($tmp,0,$pos);
           $desc=substr($tmp,$pos);
         } else {
           // no, get it from the newsserver.
-          $gruppe->name=$tmp;
-          fputs($ns,"XGTITLE $gruppe->name\r\n");
+          $group->name=$tmp;
+          fputs($ns,"XGTITLE $group->name\r\n");
           $response=line_read($ns);
           if (strcmp(substr($response,0,3),"282") == 0) {
             $neu=line_read($ns);
@@ -525,22 +526,28 @@ function groups_read($server,$port,$load=0,$force_reload=false) {
             $desc="-";
         }
         if (strcmp($desc,"") == 0) $desc="-";
-        $gruppe->description=$desc;
-        fputs($ns,"GROUP ".$gruppe->name."\r\n"); 
+        $group->description=$desc;
+        fputs($ns,"GROUP ".$group->name."\r\n"); 
         $t=explode(" ",line_read($ns));
 //RETRO
 	if($t[0]=="211")
-		$gruppe->count=$t[1];
+		$group->count=$t[1];
 	else {
 		nntp_close($ns);
 		$ns=nntp_open($server,$port);
-	        if ($ns == false) return false;
-		fputs($ns,"GROUP ".$gruppe->name."\r\n");
-	        $t=explode(" ",line_read($ns));
+	    if ($ns == false) return false;
+		fputs($ns,"GROUP ".$group->name."\r\n");
+		// read the response from the nntp server
+	    $t=explode(" ",line_read($ns));
+		// successful nntp response to GROUP command: yes, I carry that group
 		if($t[0]=="211")
-                  $gruppe->count=$t[1];
-	        else
-		  continue;
+        	$group->count=$t[1];
+	    else if ($t[0]=="411")
+		{
+			// debug: do not add this group to the list because the server does not carry this group
+			//echo 'NNTP response: No Such Group ' . $group->name . '<br>';
+			continue;
+	    }
 	}
 	// mark group with new articles with colors
         if($gl_age) {
@@ -549,15 +556,17 @@ function groups_read($server,$port,$load=0,$force_reload=false) {
           if($tmp[0]=="224") {
             $tmp=line_read($ns);
             if($tmp!=".") {
-              $head=thread_overview_interpret($tmp,$overviewformat,$gruppe->name);
+              $head=thread_overview_interpret($tmp,$overviewformat,$group->name);
               $tmp=line_read($ns);
-              $gruppe->age=$head->date;
+              $group->age=$head->date;
             }
           }
         }
-        if ((strcmp(trim($gruppe->name),"") != 0) &&
-            (substr($gruppe->name,0,1) != "#"))
-          $newsgroups[]=$gruppe;
+        if ((strcmp(trim($group->name),"") != 0) &&
+            (substr($group->name,0,1) != "#"))
+		{
+            $newsgroups[]=$group;			
+		}
       }
     }
     nntp_close($ns);
@@ -571,12 +580,12 @@ function groups_read($server,$port,$load=0,$force_reload=false) {
   }
 }
 
-function groups_show($gruppen) {
+function groups_show($groups) {
   global $gl_age,$frame,$spooldir,$CONFIG,$spoolnews;
-  if ($gruppen == false) return;
+  if ($groups == false) return;
   global $file_thread,$text_groups;
   write_access_log();
-  $c = count($gruppen);
+  $c = count($groups);
   $acttype="keins";
   echo '<table class="np_groups_table" cellspacing="0"><tr class="np_thread_head"><td width="45px" class="np_thread_head">';
   echo 'Latest</td><td style="text-align: center;">Newsgroup</td><td width="8%" class="np_thread_head">Messages</td><td width="20%" class="np_thread_head" >Last Message</td></tr>';
@@ -590,7 +599,7 @@ function groups_show($gruppen) {
   }
   for($i = 0 ; $i < $c ; $i++) {
     unset($groupdisplay);
-    $g = $gruppen[$i];
+    $g = $groups[$i];
     if(isset($g->text)) {
       if($acttype!="text") {
         $acttype="text";
@@ -711,15 +720,15 @@ function groups_show($gruppen) {
 /*
  * print the group names from an array to the webpage
  */
-function groups_show_frames($gruppen) {
+function groups_show_frames($groups) {
   global $gl_age,$frame,$spooldir;
-  if ($gruppen == false) return;
+  if ($groups == false) return;
   global $file_thread,$text_groups;
-  $c = count($gruppen);
+  $c = count($groups);
   echo '<div class="np_index_groupblock">';
   $acttype="keins";
   for($i = 0 ; $i < $c ; $i++) {
-    $g = $gruppen[$i];
+    $g = $groups[$i];
     if(isset($g->text)) {
       if($acttype!="text") {
         $acttype="text";
@@ -1694,4 +1703,54 @@ function get_data_from_msgid($msgid) {
         return false;
       }
 }
+
+// Reload all groups
+// Note: this script currently does not work due to the way the
+// groups_read() function gets the current list of data from the nntp server
+// I need to come up with a way of forcing the nntp server itself to reload 
+// its group list without completely restarting itself.
+function reload_groups()
+{
+  global $spooldir, $config_name, $config_dir, $spoolnews;
+  $menulist = file($config_dir."menu.conf", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+   # Rebuild group list and copy to spooldir
+#    $fp1=$spooldir."/".$config_name."/groups.txt";
+	$fp1=$spooldir."/spoolnews/groups.txt";
+    unlink($fp1);
+    touch($fp1);
+      foreach($menulist as $menu) {
+       if(($menu[0] == '#') || trim($menu) == "") {
+         continue;
+       }
+       $menuitem=explode(':', $menu);
+       if($menuitem[2] == '1') {
+        $in_gl = file($config_dir.$menuitem[0]."/groups.txt");
+        foreach($in_gl as $ok_group) {
+          if(($ok_group[0] == ':') || (trim($ok_group) == "")) {
+            continue;
+          }
+          $ok_group = preg_split("/( |\t)/", trim($ok_group), 2);
+          file_put_contents($fp1, $ok_group[0]."\r\n", FILE_APPEND);
+        }
+       }
+    }
+		  
+ reset($menulist);
+ foreach($menulist as $menu) {
+   if(($menu[0] == '#') || (trim($menu) == "")) {
+     continue;
+   }
+   $menuitem=explode(':', $menu);
+   chdir("../".$menuitem[0]);
+ # Refresh spool
+   if(isset($spoolnews) && ($spoolnews == true)) {
+     exec($CONFIG['php_exec']." ".$config_dir."/scripts/spoolnews.php");
+   }
+ }
+ // force a refresh of the NNTP server group list
+ // so the groups will be shown on the web front end
+ groups_read($server,$port,0,true);
+}
+
 ?>
