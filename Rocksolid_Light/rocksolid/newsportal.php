@@ -42,6 +42,7 @@ $CONFIG = include($config_file);
 function nntp_open($nserver=0,$nport=0) {
   global $text_error,$CONFIG;
   global $server,$port;
+
   // echo "<br>NNTP OPEN<br>";
   if(!isset($CONFIG['enable_nntp']) || $CONFIG['enable_nntp'] != true) {
     $CONFIG['server_auth_user'] = $CONFIG['remote_auth_user'];
@@ -52,6 +53,17 @@ function nntp_open($nserver=0,$nport=0) {
   if ($nserver==0) $nserver=$server;
   if ($nport==0) $nport=$port;
   $ns=@fsockopen($nserver,$nport);
+
+  // if the connection to the news server fails, inform the user and stop processing.
+  if ($ns == false)
+  {
+	echo '<center><p>' . $text_error["error:"] . " " . $text_error["connection_failed"] . '.</p>';
+	echo '<br>';
+	echo '<p>Please wait a few moments and try again. If you see the same error, notify the owner that their Message Server is offline.</p>';
+	echo '</center>';
+	exit(0);
+  }
+
   $weg=line_read($ns);  // kill the first line
   if (substr($weg,0,2) != "20") {
     echo "<p>".$text_error["error:"].$weg."</p>";
