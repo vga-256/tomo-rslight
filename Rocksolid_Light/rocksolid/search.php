@@ -286,9 +286,14 @@ function get_body_search($group, $terms) {
       }
       $dbh = null;
     }
-  usort($overview, function($a, $b) {
-    return $a['rank'] <=> $b['rank'];
-  });
+    // do not perform a usort of an empty search result
+    if ($overview != null)
+    {
+      usort($overview, 
+	function($a, $b) {
+      		return $a['rank'] <=> $b['rank'];
+  	});
+    }
   return $overview;
 }
 
