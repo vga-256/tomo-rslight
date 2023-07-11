@@ -7,7 +7,7 @@ $_SESSION['rsactive'] = true;
 
 include "config.inc.php";
 include("$file_newsportal");
-include "auth.inc";
+include $auth_file;
 
 $logfile=$logdir.'/newsportal.log';
 throttle_hits();
@@ -40,6 +40,8 @@ if(isset($_REQUEST["last"]))
   
 $thread_show["latest"]=true;
 $title.= ' - '.$group;
+$networkname = basename(getcwd()); // TODO: ugly hack; gets name of group's network
+$groupname = explode('.', $group, 2)[1];
 include "head.inc";
 
 $CONFIG = include($config_file);
@@ -74,7 +76,7 @@ if(isset($frames_on) && $frames_on === true) {
   echo '<a name="top"></a>';
   echo '<h1 class="np_thread_headline">';
 
-  echo '<a href="'.$file_index.'" target='.$frame['menu'].'>'.basename(getcwd()).'</a> / ';
+  echo '<a href="'.$file_index.'" target='.$frame['menu'].'>'.$networkname.'</a> / ';
   echo htmlspecialchars(group_display_name($group)).'</h1>';
 
   echo '<table cellpadding="0" cellspacing="0" width="100%" class="np_buttonbar"><tr>';
@@ -113,6 +115,17 @@ if(isset($frames_on) && $frames_on === true) {
     echo '<button class="np_button_hidden" type="submit">'.$text_thread["button_grouplist"].'</button>';
     echo '</form>';
     echo '</td>';
+  }
+  if ($logged_in)
+  {
+	  echo '<td>';
+	  echo '<form action="admin.php" method=post>';
+	  echo '<button class="np_button_link" type"submit">delete group</button>';
+	  echo '<input type="hidden" name="command" value="delete_group">';
+	  echo '<input type="hidden" name="network" value=' .urlencode($networkname).'>';
+	  echo '<input type="hidden" name="group" value="'.urlencode($groupname).'"/>';
+	  echo '</form>';
+	  echo '</td>';
   }
 // $ns=nntp_open($server,$port);
   flush();

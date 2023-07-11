@@ -3,7 +3,7 @@
 session_start();
 
 include "config.inc.php";
-include "newsportal.php";
+include $file_newsportal;
 
 if(isset($_COOKIE['tzo'])) {
 	$offset=$_COOKIE['tzo'];
@@ -30,7 +30,7 @@ if (isset($_POST['description']))
 	$_POST['description'] = null;
 }*/
 
-include("auth.inc.php");
+include($auth_file);
 include("head.inc");
 
 $network_list = $config_dir."menu.conf";
@@ -137,15 +137,33 @@ if ($command == "Create" && $logged_in)
 	{
 		echo "Error: no such network. Typo?";
 	    echo '<form name="return1" method="post" action="create_group.php">';
-	  	echo '<input type="submit" name="Submit" value="Back"></td>';
+	  	echo '<input type="submit" name="Submit" value="Go Back"></td>';
 		exit(2);
 	}
-	else if ($groupexists)
+	else if ($netok && $groupexists)
 	{
-		echo "The group name you selected already exists on this network.";
-	    echo '<form name="return1" method="post" action="create_group.php">';
-	  	echo '<input type="submit" name="Submit" value="Back"></td>';
-		exit(2);
+		// index 0: name, index 1: description
+		if ($groupexists == $group)
+		{
+			echo "Sorry, " . $network . "." . $group . " already exists.";
+		    echo '<form name="return1" method="post" action="create_group.php">';
+			echo '<input type="submit" name="Back" value="Go Back"></form>';
+			exit(2);
+		}
+		else if ($groupexists) {
+			echo "Tomo found potential groups that already sound similar: <br>";
+			foreach ($groupexists as $groupname => $groupdesc)
+			{
+				echo $groupname . ": " . $groupdesc . "<br>";
+			}
+			echo 'Are you sure that none of these fit your needs?';
+		    echo '<form name="return1" method="post" action="create_group.php">';
+			echo '<input type="submit" name="Back" value="Go Back"></form> ';
+		    echo '<form name="command" method="post" action="create_group.php">';
+			echo '<input name="command" type="hidden" id="command" value="PunchItBishop" readonly="readonly">';
+		  	echo '<input type="submit" name="Submit" value="Yes, I want to create the group."></form>';
+			exit(2);			
+		}
 	}
 	if ($netok && !$groupexists)
 	{
@@ -216,18 +234,36 @@ function group_exists($networkname, $groupname)
       $networklistitem=explode(':', $menu);
 	  if ($networkname == $networklistitem[0])
 	  {
+		  $group_matches = array();
 	      $glfp=fopen($config_dir.$networklistitem[0]."/groups.txt", 'r');
 	      while($gl=fgets($glfp)) {
 			// split group entries up by spaces or tabs, and only look at the first two chunks
 			$full_group_name = preg_split("/( |\t)/", $gl, 2);
+			
+			// check for exact matches to names on the network
+			if (trim($networkname . '.' . $groupname) == trim($full_group_name[0]))
+			{
+				fclose($glfp);
+				return $groupname;
+			}
 			// now compare the full network+groupname and the group list
 			if(stripos(trim($networkname . '.' . $groupname), trim($full_group_name[0])) !== false) {
-			  fclose($glfp);
-			  return true;
+				// add any potential matches to the list
+				// crucial: MUST trim before using a variable as a key name!
+				$group_matches += [trim($full_group_name[0]) => trim($full_group_name[1])];
 			}
 	      }
-	      fclose($glfp);
-	      return false;
+		  
+		  if ($group_matches)
+		  {
+		      fclose($glfp);
+			  return $group_matches;
+		  }
+		  else
+		  {
+		      fclose($glfp);
+			  return false;
+		  }
 	  }
     }
 }

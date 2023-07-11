@@ -8,7 +8,7 @@
  * Place the article database file group.name-articles.db3 in 
  * your spool directory, and change user/group to your web user.
  * Run this script as your web user from your $webdir/spoolnews dir:
- * php $config_dir/scripts/import.php group.name
+ * php $bbsroot_dir/admintools/import.php group.name
  *
  * To import/upgrade all group.db3 files, do not list group.name 
  * after the above command.
@@ -22,6 +22,8 @@
 
 include "config.inc.php";
 include ("$file_newsportal");
+// contains article/group removal functions
+include "lib/delete.inc.php";
 
 $logfile=$logdir.'/import.log';
 
@@ -154,54 +156,6 @@ function get_group_list() {
         }
     }
     return $grouplist;
-}
-
-function reset_group($group, $remove=0) {
-    global $config_dir, $spooldir;
-    $group = trim($group);
-    
-    if(!$section = get_section_by_group($group)) {
-        return false;
-    }
-    $config_location = $spooldir.'/'.$section;
-    $config_files = array_diff(scandir($config_location), array('..', '.'));
-
-    foreach($config_files as $config_file) {
-        $output = array();
-        echo $config_location.'/'.$config_file."\n";
-        $thisfile = file($config_location.'/'.$config_file);
-        foreach($thisfile as $thisgroupline) {
-            $onegroup = explode(':', $thisgroupline);
-            if(trim($onegroup[0]) == $group) {
-                echo "FOUND: ".$group." in ".$section."\n";
-                if($remove == 0) {
-                    $output[] = $group."\n";
-                }
-            } else {
-                $output[] = $thisgroupline;
-            }
-        }
-        file_put_contents($config_location.'/'.$config_file, $output);
-    }
-}
-
-function remove_articles($group) {
-    global $spooldir, $CONFIG, $workpath, $path, $config_name, $logfile;
-    $group = trim($group);
-    $overview_file = $workpath.'/'.$group."-overview";
-    # Prepare databases
-    $dbh = rslight_db_open($spooldir.'/articles-overview.db3');
-    $clear_stmt = $dbh->prepare("DELETE FROM overview WHERE newsgroup=:group");
-    $clear_stmt->bindParam(':group', $group);
-    $clear_stmt->execute();
-    unlink($overview_file);
-    rename($spooldir.'/'.$group.'-articles.db3',$spooldir.'/'.$group.'-articles.db3-removed');
-    unlink($spooldir.'/'.$group.'-data.dat');
-    unlink($spooldir.'/'.$group.'-info.txt');
-    unlink($spooldir.'/'.$group.'-cache.txt');
-    unlink($spooldir.'/'.$group.'-lastarticleinfo.dat');
-    unlink($spooldir.'/'.$group.'-overboard.dat');
-    unlink($spooldir.'/'.$group.'-overview');
 }
 
 function import_articles($group) {

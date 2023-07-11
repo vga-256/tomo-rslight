@@ -1,7 +1,7 @@
     <?php
     include "config.inc.php";
-    include ("$file_newsportal"); 
-    include $bbsroot."/admintools/rslight-lib.php";
+    include "$file_newsportal"; 
+    include $bbsroot_dir."/admintools/rslight-lib.php";
     if(file_exists($config_dir."/nntp.disable")) {
        clearstatcache(true, $config_dir."/nntp.disable");
        $parent_pid = file_get_contents($lockdir.'/rslight-nntp.lock', IGNORE_NEW_LINES);
@@ -73,7 +73,7 @@ $config_path,$groupconfig,$workpath,$path,$spooldir,$nntp_group,$auth_ok;
 	$auth_ok = 0;
 	$user = "";
 	$pass = "";
-	$pemfile = $ssldir.'/server.pem';
+	$pemfile = $ssl_dir.'/server.pem';
 	if(!is_file($pemfile)) {
 	  create_certificate($pemfile);
 	}	

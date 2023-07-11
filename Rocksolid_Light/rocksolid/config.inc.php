@@ -16,6 +16,8 @@ if(file_exists($config_dir.$config_name.'.inc.php')) {
 } else {
   $config_file = $config_dir.'rslight.inc.php';
 }
+
+// install path looks like this: /home/user/tomobbs/www/tomonet
 $installed_path = getcwd();
 
 /* $config_path is a directory off the $config_dir
@@ -23,13 +25,13 @@ $installed_path = getcwd();
  * are located
  */
 $config_path = $config_dir.$config_name."/";
-$script_path = $config_dir."/scripts/";
+$script_path = $bbsroot_dir."/admintools/";
 $CONFIG = include($config_file);
 
 $logdir=$spooldir.'/log';
 $lockdir=$spooldir.'/lock';
-$ssldir = $spooldir."ssl";
-
+$ssl_dir = $spooldir."/ssl";
+	
 /* Permanent configuration changes */
 @mkdir($logdir,0755,'recursive');
 @mkdir($spooldir.'/upload',0755,'recursive');
@@ -57,7 +59,7 @@ if(isset($CONFIG['enable_nntp']) && $CONFIG['enable_nntp'] == true) {
 $frames_on=false;
 
 // The default content for the left side 'menu' frame
-$default_menu="/rocksolid/index.php";
+$default_menu="/tomonet/index.php";
 
 if (isset($frames_on) && $frames_on === true) {
   $style_css="style-frames.css";

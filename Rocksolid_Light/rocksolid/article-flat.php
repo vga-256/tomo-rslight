@@ -6,7 +6,7 @@
   header("Pragma: cache");
 
   include "config.inc.php";
-  include "auth.inc";
+  include $auth_file;
   include "$file_newsportal";
 
   $logfile=$logdir.'/newsportal.log';
@@ -170,6 +170,17 @@ if($message) {
            '">'.
            '</form>';
     }
+	// show the message delete button option if administrator is logged in
+	if ($logged_in && $message)
+	{
+		echo '<form name="delete" action="admin.php" method="post">'.
+			'<input type="submit" value="Delete Message">'.
+			'<input type="hidden" name="command" id="command" value="delete_message" readonly="readonly">'.
+			'<input type="hidden" name="group" value="' . urlencode($group) . '">'.
+			'<input type="hidden" name="message_id" value="' . urlencode($message->header->id) .'">'.
+			'</form>';
+	}
+		
   }
   // navigation line
   echo '<table cellpadding="0" cellspacing="0" width="100%" class="np_buttonbar"><tr>';

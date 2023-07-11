@@ -1,7 +1,7 @@
     <?php
     include "config.inc.php";
     include ("$file_newsportal"); 
-    include $config_dir."/scripts/rslight-lib.php";
+    include $bbsroot_dir."/admintools/rslight-lib.php";
     if(file_exists($config_dir."/nntp.disable")) {
        clearstatcache(true, $config_dir."/nntp.disable");
        $parent_pid = file_get_contents($lockdir.'/rslight-nntp.lock', IGNORE_NEW_LINES);

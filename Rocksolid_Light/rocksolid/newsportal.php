@@ -31,7 +31,12 @@ if(file_exists("lib/message.inc.php"))
 if(file_exists("lib/post.inc.php"))
   include "lib/post.inc.php";
 
+
 $CONFIG = include($config_file);
+
+
+if (file_exists($common_lib_dir . "/userauth.inc.php"))
+  include_once $common_lib_dir . "/userauth.inc.php";
 
 /*
  * opens the connection to the NNTP-Server
@@ -1116,78 +1121,7 @@ function group_display_name($gname)
     }
     return $gname;
 }
-function check_bbs_auth($username, $password) {
-  global $config_dir,$CONFIG;
 
-  if($username == '' && $password == '') {
-      return false;
-  }
-  
-  $workpath = $config_dir."users/";
-  $username = trim(strtolower($username));
-  $userFilename = $workpath.$username;
-  $keyFilename = $config_dir."/userconfig/".$username;
-
-// Create accounts for $anonymous and $CONFIG['server_auth_user'] if not exist  
-  if($username == strtolower($CONFIG['anonusername'])) {
-    if(filemtime($config_dir."rslight.inc.php") > filemtime($userFilename)) {
-      if ($userFileHandle = fopen($userFilename, 'w+'))
-      {
-        fwrite($userFileHandle, password_hash($CONFIG['anonuserpass'], PASSWORD_DEFAULT));
-        fclose($userFileHandle);
-      }
-    }
-  }
-  if($username == strtolower($CONFIG['server_auth_user'])) { 
-    if(filemtime($config_dir."rslight.inc.php") > filemtime($userFilename)) {
-      if ($userFileHandle = fopen($userFilename, 'w+'))
-      {
-        fwrite($userFileHandle, password_hash($CONFIG['server_auth_pass'], PASSWORD_DEFAULT));
-        fclose($userFileHandle);
-      }
-    }
-  }
-
-  if(trim($username) == strtolower($CONFIG['anonusername']) && $CONFIG['anonuser'] != true) {
-	return FALSE;
-  }
-
-  if ($userFileHandle = fopen($userFilename, 'r'))
-  {
-        $userFileInfo = fread($userFileHandle, filesize($userFilename));
-        fclose($userFileHandle);
-        if (password_verify ( $password , $userFileInfo))
-        {
-                touch($userFilename);
-                $ok = TRUE;
-        } else {
-                return FALSE;
-        }
-  } else {
-        $ok = FALSE;
-  }
-  if ($ok)
-  {
-        return TRUE;
-  } else {
-	if(isset($CONFIG['auto_create']) && $CONFIG['auto_create'] == true) {
-	  if ($userFileHandle = @fopen($userFilename, 'w+')) {
-            fwrite($userFileHandle, password_hash($password, PASSWORD_DEFAULT));
-            fclose($userFileHandle);
-            chmod($userFilename, 0666);
-          }
-          $newkey = base64_encode(openssl_random_pseudo_bytes(44));
-          if ($userFileHandle = @fopen($keyFilename, 'w+')) {
-            fwrite($userFileHandle, 'encryptionkey:'.$newkey);
-            fclose($userFileHandle);
-            chmod($userFilename, 0666);
-          } 
-	  return TRUE;
-	} else {
-	  return FALSE;
-	}
-  }
-}
 function check_encryption_groups($request) {
   global $config_path;
   $groupsFilename = $config_path."encryption_ok.txt";
@@ -1203,55 +1137,6 @@ function check_encryption_groups($request) {
 	}
     }
     fclose($groupsFileHandle);
-  } else {
-    return FALSE;
-  }
-}
-
-function set_user_config($username,$request,$newval) {
-  global $config_dir;
-  $userconfigpath = $config_dir."userconfig/";
-  $username = strtolower($username);
-  $userFilename = $userconfigpath.$username;
-  $userData = file($userFilename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-  $userFileHandle = fopen($userFilename, 'w');
-
-  $found=0;
-  foreach($userData as $data) {
-    if(strpos($data, $request.':') !== FALSE) {
-      fputs($userFileHandle, $request.':'.$newval."\r\n");
-      $found=1;
-    } else {
-      fputs($userFileHandle, $data."\r\n");
-    }
-  }
-  if($found == 0) {
-    fputs($userFileHandle, $request.':'.$newval."\r\n");
-  }
-  fclose($userFileHandle);
-  return;  
-}
-
-function get_user_config($username,$request) {
-  global $config_dir;
-  $userconfigpath = $config_dir."userconfig/";
-  $username = strtolower($username);
-  $userFilename = $userconfigpath.$username;
-
-  if ($userFileHandle = @fopen($userFilename, 'r'))
-  {
-    while (!feof($userFileHandle))
-    {
-      $buffer = fgets($userFileHandle);
-      if(strpos($buffer, $request.':') !== FALSE) {
-        $userdataline=$buffer;
-        fclose($userFileHandle);
-        $userdatafound = explode(':',$userdataline);
-        return trim($userdatafound[1]);
-      }
-    }
-    fclose($userFileHandle);
-    return FALSE;
   } else {
     return FALSE;
   }
@@ -1646,28 +1531,6 @@ $logfile=$logdir.'/newsportal.log';
   }
 }
 
-function get_user_mail_auth_data($user) {
-  global $spooldir;
-  $userdata = array("$user");
-  $user = strtolower($user);
-  $pkey_config = get_user_config($user, "pkey");
-  if(!isset($_COOKIE['pkey'])) {
-      $_COOKIE['pkey'] = null;
-  }
-  $pkey_cookie = $_COOKIE['pkey'];
-  if((!isset($_COOKIE['pkey'])) || $pkey_config == false || $pkey_cookie == false) {
-    return false;
-  }
-  if($pkey_config == $pkey_cookie) {
-    $userfile=$spooldir.'/'.$user.'-articleviews.dat';
-    if(is_file($userfile)) {
-      $userdata = unserialize(file_get_contents($userfile));
-    }
-    return $userdata;
-  }
-  return false;
-}
-
 function write_access_log() {
   global $logdir;
   $accessfile=$logdir.'/access.log';
@@ -1717,10 +1580,6 @@ function get_data_from_msgid($msgid) {
 }
 
 // Reload all groups
-// Note: this script currently does not work due to the way the
-// groups_read() function gets the current list of data from the nntp server
-// I need to come up with a way of forcing the nntp server itself to reload 
-// its group list without completely restarting itself.
 function reload_groups()
 {
   global $spooldir, $config_name, $config_dir, $spoolnews;
@@ -1757,7 +1616,7 @@ function reload_groups()
    chdir("../".$menuitem[0]);
  # Refresh spool
    if(isset($spoolnews) && ($spoolnews == true)) {
-     exec($CONFIG['php_exec']." ".$config_dir."/scripts/spoolnews.php");
+     exec($CONFIG['php_exec']." ".$bbsroot_dir."/admintools/spoolnews.php");
    }
  }
  // force a refresh of the NNTP server group list
