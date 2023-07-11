@@ -117,7 +117,7 @@ if ($logged_in)
 			{
 				if ($DebugMode)
 					echo "Received deletion request for " . $group . $messageid . '<br>';				
-				delete_message($messageide, $group);
+				delete_message($messageid, $group);
 				echo 'Message successfully deleted.';
 				exit(0);
 			}
