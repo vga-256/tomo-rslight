@@ -176,8 +176,8 @@ if($message) {
 		echo '<form name="delete" action="admin.php" method="post">'.
 			'<input type="submit" value="Delete Message">'.
 			'<input type="hidden" name="command" id="command" value="delete_message" readonly="readonly">'.
-			'<input type="hidden" name="group" value="' . urlencode($group) . '">'.
-			'<input type="hidden" name="message_id" value="' . urlencode($message->header->id) .'">'.
+			'<input type="hidden" name="group" value="' . htmlspecialchars($group) . '">'.
+			'<input type="hidden" name="message_id" value="' . htmlspecialchars($message->header->id) .'">'.
 			'</form>';
 	}
 		
