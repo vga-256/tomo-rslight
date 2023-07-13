@@ -2,7 +2,6 @@
 session_start();
 
 include "config.inc.php";
-include "newsportal.php";
 
   if(isset($_COOKIE['tzo'])) {
     $offset=$_COOKIE['tzo'];
@@ -30,54 +29,21 @@ if($_POST['command'] == 'Logout') {
   echo 'You have been logged out';
   exit(0);
 }
-$title.=' - User Configuration';
-include "head.inc";
 
-// How long should cookie allow user to stay logged in?
-// 14400 = 4 hours
-  $auth_expire = 14400;
-  $logged_in = false;
-  if(!isset($_POST['username'])) {
-    $_POST['username'] = $_COOKIE['mail_name'];
-  }
-  $name = $_POST['username'];
-  if(!isset($_POST['password'])) {
-      $_POST['password'] = null;
-  }
-  if(!isset($_COOKIE['mail_auth'])) {
-      $_COOKIE['mail_auth'] = null;
-  }
-  if(((get_user_mail_auth_data($_COOKIE['mail_name'])) && password_verify($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['mail_auth'])) || (password_verify($_POST['username'].$keys[1].get_user_config($_POST['username'],'encryptionkey'), $_COOKIE['mail_auth']))) {
-    $logged_in = true;
-  } else {
-    if(check_bbs_auth($_POST['username'], $_POST['password'])) {
-      $authkey = password_hash($_POST['username'].$keys[0].get_user_config($_POST['username'],'encryptionkey'), PASSWORD_DEFAULT);
-      $pkey = hash('crc32', get_user_config($_POST['username'],'encryptionkey'));
-      set_user_config(strtolower($_POST['username']), "pkey", $pkey);
-?>
-      <script type="text/javascript">
-       if (navigator.cookieEnabled)
-         var authcookie = "<?php echo $authkey; ?>";
-         var savename = "<?php echo stripslashes($name); ?>";
-	 var auth_expire = "<?php echo $auth_expire; ?>";
-	 var name_expire = "7776000";
-	 var pkey = "<?php echo $pkey; ?>";
-         document.cookie = "mail_auth="+authcookie+"; max-age="+auth_expire+"; path=/";
-         document.cookie = "mail_name="+savename+"; max-age="+name_expire+"; path=/";
-         document.cookie = "pkey="+pkey+"; max-age="+name_expire+"; path=/";
-      </script>
-<?php
-      $logged_in = true;
-    }
-	else
-	{
-		echo 'Login failed.';
-	}
-  }
-  echo '<h1 class="np_thread_headline">';
+include "head.inc";
+include $auth_file;
+  
+  if ($logged_in)
+  {
+  	$title.=' - User Configuration';
+
+  	echo '<h1 class="np_thread_headline">';
     
-  echo '<a href="user.php" target='.$frame['menu'].'>Configuration</a> / ';
-  echo htmlspecialchars($_POST['username']).'</h1>';
+  	echo '<a href="user.php" target='.$frame['menu'].'>Configuration</a> / ';
+  	echo htmlspecialchars($_POST['username']).'</h1>';
+
+  	
+  }
 
 echo '<table cellpadding="0" cellspacing="0" class="np_buttonbar"><tr>';
 // Mail button
@@ -141,29 +107,33 @@ echo '</table>';
   }
 // Apply Config
     if(isset($_POST['command']) && $_POST['command'] == 'SaveConfig') {
-	$user_config['signature'] = $_POST['signature'];
-        $user_config['xface'] = $_POST['xface'];
-        $user_config['timezone'] = $_POST['timezone'];
-	$user_config['theme'] = $_POST['listbox'];
-	file_put_contents($config_dir.'/userconfig/'.$user.'.config', serialize($user_config));
-	$_SESSION['theme'] = $user_config['theme'];
-	$mysubs = explode("\n", $_POST['subscribed']);
-	foreach($mysubs as $sub) {
-	  if(trim($sub) == '') {
-	    continue;
-	  }
-          $sub = trim($sub);
-          if(!isset($userdata[$sub])) {
-            $userdata[$sub] = 0;
-          }
-          $newsubs[$sub] = $userdata[$sub];
-	}
-	file_put_contents($spooldir.'/'.$user.'-articleviews.dat', serialize($newsubs));
-	$userdata = unserialize(file_get_contents($userfile));
-	ksort($userdata);
-	echo 'Configuration Saved for '.$_POST['username'];
-    } else {
-	$user_config = unserialize(file_get_contents($config_dir.'/userconfig/'.$user.'.config'));
+		$user_config['signature'] = $_POST['signature'];
+	        $user_config['xface'] = $_POST['xface'];
+	        $user_config['timezone'] = $_POST['timezone'];
+		$user_config['theme'] = $_POST['listbox'];
+		file_put_contents($config_dir.'/userconfig/'.$user.'.config', serialize($user_config));
+		$_SESSION['theme'] = $user_config['theme'];
+		$mysubs = explode("\n", $_POST['subscribed']);
+		foreach($mysubs as $sub) {
+		  if(trim($sub) == '') {
+		    continue;
+		  }
+	          $sub = trim($sub);
+	          if(!isset($userdata[$sub])) {
+	            $userdata[$sub] = 0;
+	          }
+	          $newsubs[$sub] = $userdata[$sub];
+		}
+		file_put_contents($spooldir.'/'.$user.'-articleviews.dat', serialize($newsubs));
+		$userdata = unserialize(file_get_contents($userfile));
+		// critical: must check if array has data before trying to sort it (cannot sort null!)
+		if ($userdata)
+			ksort($userdata);			
+		echo 'Configuration Saved for '.$_POST['username'];
+    } 
+	else 
+	{
+		$user_config = unserialize(file_get_contents($config_dir.'/userconfig/'.$user.'.config'));
     }
 // Get themes
   $themedir = $rootdir.'/common/themes';
@@ -181,7 +151,7 @@ echo '</table>';
   sort($themes);
 
 // Show Config 
-    echo '<hr><h1 class="np_thread_headline">Configuration:</h1>';
+    echo "<hr><h1 class='np_thread_headline'>".$_POST['username']."'s Profile</h1>";
     echo '<table cellspacing="0" width="100%" class="np_results_table">';
     echo '<tr class="np_thread_head"><td class="np_thread_head">Settings for '.$_POST['username'].' (leave blank for none):</td></tr>';
     echo '<form method="post" action="user.php">';
@@ -225,7 +195,7 @@ echo '</table>';
         echo '</tr>';
 */
       echo '<td class="np_result_line2" style="word-wrap:break-word";>';
-	echo '<button class="np_button_link" type="submit">Save Configuration</button>';
+	echo '<button class="np_button_link" type="submit">Save Profile</button>';
 	echo '<a href="'.$_SERVER['PHP_SELF'].'">Cancel</a>';
       echo '</td></tr>';
       echo '<input name="command" type="hidden" id="command" value="SaveConfig" readonly="readonly">';
