@@ -51,7 +51,7 @@ if (isset($_COOKIE["ts_limit"])) {
   echo '<td><strong>Register Username </strong></td>';
   echo '</tr><tr>';
   echo '<td>Username:</td>';
-  echo '<td><input name="username" type="text" id="username"value="'.$_POST['username'].'"></td>';
+  echo '<td><input name="username" type="text" id="username"value="'.$_POST['username'].'" maxlength="30"></td>';
   echo '</tr><tr>';
   echo '<td>Email:</td>';
   echo '<td><input name="user_email" type="text" id="user_email" value="'.$_POST['user_email'].'"></td>';
@@ -197,6 +197,16 @@ if (empty($_POST['username'])) {
   echo '<input name="user_email" type="hidden" id="user_email" value="'.$user_email.'" readonly="readonly">';
   echo '<input type="submit" name="Submit" value="Back"></td>';
   exit(2);
+}
+
+if (strlen($clean_username) > 30)
+{
+	echo "The maximum username length is 30 characters. You entered ". $clean_username . " which is " . strlen($cleanusername) . " characters long.<br />";
+    echo '<form name="return1" method="post" action="register.php">';
+    echo '<input name="username" type="hidden" id="username" value="'.$clean_username.'" readonly="readonly" maxlength="22">';
+    echo '<input name="user_email" type="hidden" id="user_email" value="'.$user_email.'" readonly="readonly">';
+    echo '<input type="submit" name="Submit" value="Please try again"></td>';
+    exit(2);
 }
 
 if($clean_username != $_POST['username']) {
